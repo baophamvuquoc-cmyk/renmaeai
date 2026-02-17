@@ -1,0 +1,439 @@
+Kỹ thuật Xây dựng và Tối ưu hóa Ảnh 
+Tham chiếu cho Google VEO 3.1: Giao 
+thức Thiết lập Góc quay và Quy trình 
+Đồng nhất Nhân vật trong Sản xuất 
+Video AI Chuyên nghiệp 
+Sự ra đời của mô hình Google Veo 3.1 đã đánh dấu một bước ngoặt quan trọng trong lĩnh vực 
+trí tuệ nhân tạo tạo sinh, chuyển dịch từ việc tạo video dựa trên văn bản thuần túy sang một 
+hệ thống điều khiển hình ảnh chính xác và chuyên nghiệp.1 Trung tâm của sự tiến hóa này là 
+tính năng "Ingredients to Video" (Thành phần tạo video), một khung kỹ thuật cho phép người 
+dùng cung cấp các tài liệu hình ảnh đầu vào để hướng dẫn mô hình về đặc điểm nhân vật, bối 
+cảnh và phong cách nghệ thuật.4 Việc hiểu rõ các góc độ cần thiết cho ảnh tham chiếu 
+(reference images) và quy trình tạo dựng chúng không chỉ là một kỹ năng kỹ thuật mà còn là 
+một yêu cầu tiên quyết để duy trì sự nhất quán của nhân vật – một trong những thách thức 
+lớn nhất trong lĩnh vực điện ảnh AI hiện nay.8 
+Hệ thống Thành phần và Cơ chế Tham chiếu trong Veo 
+3.1 
+Mô hình Veo 3.1 được thiết kế để xử lý tối đa ba hình ảnh tham chiếu trong một lần tạo video.4 
+Khác với các phiên bản tiền nhiệm, hệ thống này không chỉ đơn thuần "hoạt hóa" một bức ảnh 
+tĩnh mà sử dụng các hình ảnh đầu vào như những "mỏ neo thị giác" để định vị các điểm đặc 
+trưng trong không gian tiềm ẩn của mô hình.8 Khi người dùng tải lên các tệp tin này, thuật toán 
+của Google sẽ thực hiện quy trình trích xuất đặc trưng (feature extraction), phân tích các yếu 
+tố như hình học khuôn mặt, kết cấu trang phục và sơ đồ ánh sáng để tái hiện chúng một cách 
+chính xác trong môi trường video chuyển động.8 
+Việc phân bổ ba vị trí tham chiếu này thường tuân theo một chiến lược tối ưu hóa nguồn lực. 
+Thông thường, một vị trí được dành cho nhân vật chính, một vị trí cho bối cảnh hoặc môi 
+trường, và vị trí cuối cùng dành cho phong cách nghệ thuật hoặc vật dụng (props) đặc trưng.7 
+Cách tiếp cận này giúp mô hình giảm thiểu sự phụ thuộc vào các hạt giống ngẫu nhiên (seed), 
+từ đó tạo ra những đoạn phim có độ ổn định cao hơn qua nhiều cảnh quay khác nhau.8 
+Thông số Kỹ thuật và Ràng buộc Hệ thống 
+Để đạt được chất lượng đầu ra tối ưu, người sản xuất cần tuân thủ các thông số kỹ thuật 
+nghiêm ngặt về tệp tin đầu vào và cấu hình hệ thống. Bảng dưới đây tóm tắt các yêu cầu kỹ 
+
+--- PAGE BREAK ---
+thuật cơ bản của mô hình Veo 3.1 khi làm việc với ảnh tham chiếu. 
+ 
+Thông số 
+Yêu cầu Kỹ thuật 
+Ghi chú 
+Số lượng ảnh tối đa 
+3 hình ảnh 
+Có thể kết hợp Nhân vật, 
+Bối cảnh, Phong cách 4 
+Dung lượng tệp tối đa 
+20 MB mỗi ảnh 
+Hỗ trợ ảnh độ phân giải cao 
+để giữ chi tiết 10 
+Định dạng hỗ trợ 
+image/jpeg, image/png 
+Ưu tiên PNG để tránh nhiễu 
+nén 10 
+Độ phân giải đầu vào 
+720p, 1080p, 4K 
+Đồng bộ với độ phân giải 
+video đầu ra mong muốn 6 
+Tỷ lệ khung hình 
+16:9 hoặc 9:16 
+Phải tương thích với tỷ lệ 
+của video mục tiêu 11 
+Thời lượng video 
+4, 6, 8 giây 
+Ảnh tham chiếu chỉ hỗ trợ 
+tạo clip tối đa 8 giây 10 
+Tốc độ khung hình 
+24 FPS 
+Chuẩn điện ảnh truyền 
+thống 13 
+6 
+Phân tích Các Góc Chụp Thiết yếu cho Ảnh Tham 
+chiếu 
+Trong sản xuất video AI, việc cung cấp một bức ảnh duy nhất thường dẫn đến hiện tượng 
+"biến dạng hình học" khi nhân vật quay đầu hoặc thay đổi góc nhìn.8 Để xây dựng một "Bộ hồ 
+sơ nhân vật" (Character Bible) hoàn chỉnh cho Veo 3.1, các chuyên gia khuyến nghị sử dụng ba 
+góc chụp chiến lược nhằm cung cấp dữ liệu hình khối đa chiều cho mô hình.8 
+Góc Trực diện (Front-facing Portrait) 
+Đây là bức ảnh quan trọng nhất, đóng vai trò làm "Neo thị giác" chính.8 Ảnh trực diện cho 
+phép mô hình ánh xạ các đặc điểm đối xứng của khuôn mặt, màu mắt, cấu trúc mũi và các chi 
+tiết đặc thù của da.9 Yêu cầu đối với góc này là nhân vật phải nhìn thẳng vào ống kính, biểu 
+cảm trung tính và không có các yếu tố che khuất khuôn mặt như tóc quá dày hay kính râm (trừ 
+
+--- PAGE BREAK ---
+khi đó là vật dụng cố định của nhân vật).9 Ánh sáng trong ảnh trực diện cần được thiết lập ở 
+mức độ trung hòa, tránh các bóng đổ gắt từ một phía để mô hình có thể dễ dàng áp dụng các 
+sơ đồ ánh sáng khác nhau trong video sau này.8 
+Góc Ba phần tư (Three-quarter View) 
+Góc ba phần tư (đứng giữa góc trực diện và góc nghiêng) cung cấp dữ liệu về chiều sâu và 
+khối lượng của khuôn mặt.8 Đây là góc nhìn tự nhiên nhất trong hầu hết các cảnh quay điện 
+ảnh, giúp AI hiểu được sự chuyển tiếp giữa sống mũi và gò má, cũng như vị trí của tai so với 
+khuôn mặt.9 Nếu thiếu góc này, nhân vật thường gặp lỗi "morphing" (biến dạng mờ) khi thực 
+hiện các chuyển động quay đầu từ trái sang phải trong video.7 
+Góc Nghiêng (Profile Shot) 
+Góc nghiêng 90 độ thiết lập "tính toàn vẹn của hình bóng" (silhouette integrity).8 Nó cực kỳ 
+quan trọng cho các cảnh quay theo dõi (tracking shots) hoặc các phân đoạn đối thoại nơi 
+camera đặt ở phía bên cạnh.8 Ảnh nghiêng giúp cố định độ nhô của cằm, hình dáng của mũi 
+và độ dày của tóc từ phía bên, đảm bảo rằng nhân vật không bị thay đổi diện mạo một cách 
+đột ngột khi góc máy thay đổi trong một chuỗi cảnh quay dài.8 
+Các Góc Chụp Bổ trợ cho Hành động Đặc thù 
+Ngoài ba góc cơ bản, tùy thuộc vào kịch bản, người dùng có thể cần cung cấp các ảnh tham 
+chiếu từ góc cao (high angle) hoặc góc thấp (low angle).15 Điều này đặc biệt cần thiết cho các 
+video có sự tham gia của các góc máy flycam hoặc drone, nơi cấu trúc đỉnh đầu hoặc phần 
+dưới cằm của nhân vật sẽ lộ diện rõ ràng.15 Việc mô tả chi tiết những gì camera nhìn thấy từ 
+phía dưới hoặc phía trên trong phần lời nhắc (prompt) sẽ giúp Veo 3.1 khóa chặt phối cảnh mà 
+người dùng mong muốn.15 
+Quy trình Tạo dựng Ảnh Tham chiếu Hoàn chỉnh 
+Để tạo ra một bộ ảnh tham chiếu đạt chuẩn cho Veo 3.1, quy trình thường bắt đầu bằng việc 
+sử dụng các mô hình tạo ảnh tĩnh tiên tiến như Imagen 3 hoặc Gemini 2.5 Flash Image (Nano 
+Banana Pro).5 Việc này đảm bảo nhân vật được tạo ra là duy nhất và không vi phạm các bộ lọc 
+an toàn về bản quyền hay chân dung người nổi tiếng của Google.12 
+Tiêu chuẩn Nền và Ánh sáng 
+Một trong những sai lầm phổ biến nhất là sử dụng ảnh tham chiếu có bối cảnh phức tạp.12 Các 
+chuyên gia khuyến nghị sử dụng phông nền trắng tinh khiết (pure white background) hoặc 
+xám trung tính để mô hình AI có thể tập trung hoàn toàn vào các đặc điểm của nhân vật mà 
+không bị nhầm lẫn bởi các chi tiết môi trường.12 Hiện tượng "rò rỉ môi trường" (environmental 
+bleeding) xảy ra khi các mảnh vụn của nền ảnh tham chiếu xuất hiện như những bóng ma 
+
+--- PAGE BREAK ---
+trong video cuối cùng, làm giảm tính chuyên nghiệp của sản phẩm.8 
+Về ánh sáng, nên ưu tiên phong cách ánh sáng studio mềm mại (soft diffused lighting).9 Ánh 
+sáng phẳng giúp loại bỏ các "bóng đổ cứng" vốn định nghĩa khuôn mặt thông qua độ tương 
+phản hơn là hình học.15 Khi cung cấp một bức ảnh có ánh sáng trung tính, Veo 3.1 sẽ có khả 
+năng chiếu sáng lại (re-lighting) nhân vật một cách năng động theo mô tả trong kịch bản, 
+chẳng hạn như đặt cùng một nhân vật đó vào một con hẻm đèn neon hoặc dưới ánh nắng rực 
+rỡ mà không bị xung đột về tông màu.8 
+Thiết lập Tư thế và Trang phục 
+Trang phục của nhân vật trong ảnh tham chiếu cần được thiết kế đơn giản và dễ mô tả bằng 
+văn bản.8 Tránh các họa tiết quá phức tạp hoặc các chi tiết quá nhỏ vì chúng dễ gây ra hiện 
+tượng "điểm ảnh bơi" (swimming pixels) – một lỗi thị giác khi các họa tiết thay đổi vị trí và bò 
+trên bề mặt vải trong quá trình chuyển động.3 
+ 
+Yếu tố 
+Tiêu chuẩn Tham chiếu 
+Mục đích Kỹ thuật 
+Nền (Background) 
+Trắng tinh khiết hoặc đơn 
+sắc 
+Tách biệt hoàn toàn nhân 
+vật khỏi nhiễu môi trường.12 
+Ánh sáng (Lighting) 
+Studio, dịu, không bóng gắt 
+Cho phép tái chiếu sáng 
+linh hoạt trong các bối 
+cảnh khác nhau.9 
+Tư thế (Pose) 
+Tư thế A hoặc tư thế trung 
+tính 
+Cung cấp cái nhìn rõ ràng 
+về tỷ lệ cơ thể và các khớp 
+nối.22 
+Trang phục (Wardrobe) 
+Màu đơn sắc, phong cách 
+rõ ràng 
+Giảm thiểu sự biến dạng 
+kết cấu vải khi chuyển 
+động.3 
+Biểu cảm (Expression) 
+Trung tính hoặc mỉm cười 
+nhẹ 
+Làm cơ sở để AI suy diễn ra 
+các biểu cảm cảm xúc 
+khác.9 
+3 
+Kỹ thuật Prompt Engineering để Tối ưu hóa Tham 
+
+--- PAGE BREAK ---
+chiếu 
+Mối quan hệ giữa ảnh tham chiếu và câu lệnh văn bản trong Veo 3.1 là mối quan hệ cộng 
+hưởng.15 Ảnh tham chiếu cung cấp "linh hồn" thị giác, trong khi văn bản cung cấp "ý chí" hành 
+động và bối cảnh.9 Một cấu trúc lệnh tối ưu thường bao gồm 5 thành phần: [Điện ảnh] + [Chủ 
+thể] + [Hành động] + + [Phong cách & Không khí].5 
+Lớp Nhận dạng (Identity Layer) trong Prompt 
+Ngay cả khi đã tải lên ảnh tham chiếu, người dùng vẫn phải lặp lại các đặc điểm nhận dạng 
+cốt lõi trong phần văn bản để củng cố sự tập trung của mô hình.8 Việc này được gọi là thiết lập 
+"Lớp nhận dạng". Ví dụ, nếu ảnh tham chiếu là một "người đàn ông 30 tuổi, tóc đen ngắn, áo 
+sơ mi trắng", thì trong mỗi cảnh quay tiếp theo, cụm từ này cần được lặp lại một cách nhất 
+quán.8 Sự dư thừa này không hề lãng phí mà đóng vai trò như một bộ lọc giúp AI không bị lạc 
+khỏi quỹ đạo thiết kế ban đầu.12 
+Trong không gian toán học của mô hình, xác suất duy trì sự nhất quán (
+) có thể được biểu 
+diễn như một hàm của chất lượng ảnh tham chiếu (
+), độ chi tiết của prompt (
+) và tính 
+ổn định của hạt giống (
+): 
+ 
+Khi bất kỳ biến số nào trong số này bị xem nhẹ, sự nhất quán của nhân vật sẽ sụp đổ, dẫn đến 
+các lỗi biến dạng thị giác.8 
+Tích hợp Ngôn ngữ và Đối thoại 
+Mặc dù các cấu trúc lệnh kỹ thuật của Veo 3.1 ưu tiên tiếng Anh, người dùng vẫn có thể tích 
+hợp đối thoại tiếng Việt cho nhân vật một cách tự nhiên.1 Khi sử dụng ảnh tham chiếu, việc chỉ 
+định cụ thể các câu thoại trong dấu ngoặc kép (ví dụ: The character says in Vietnamese 
+"Chào Hà Nội") sẽ giúp mô hình đồng bộ hóa khẩu hình miệng của nhân vật trong ảnh với âm 
+thanh được tạo ra.1 Lưu ý quan trọng là cần thêm chỉ dẫn "no subtitles" để tránh các lỗi hiển 
+thị font chữ tiếng Việt trên màn hình video.12 
+Quản lý Sự nhất quán trong các Câu chuyện Đa Cảnh 
+quay 
+Sản xuất một video dài hơi với Veo 3.1 đòi hỏi việc ghép nối nhiều đoạn clip 8 giây lại với nhau.7 
+Quy trình này yêu cầu một chiến lược duy trì sự liên tục (continuity) chặt chẽ để đảm bảo ánh 
+
+--- PAGE BREAK ---
+sáng, môi trường và nhân vật không bị thay đổi đột ngột giữa các lần cắt cảnh.1 
+Sử dụng Bảng Liên tục (Continuity Table) 
+Các nhà sản xuất chuyên nghiệp thường sử dụng "Cột liên tục" – một cơ sở dữ liệu về các 
+trường thông tin phải giữ nguyên qua từng shot hình.8 Các trường này bao gồm: trang phục, 
+đạo cụ, loại ống kính (ví dụ: 35mm), phân loại màu sắc (color grade), thời điểm trong ngày và 
+thời tiết.8 Việc cố định các biến số này trong thư viện prompt giúp giảm thiểu "biến thể ngữ 
+nghĩa" – xu hướng AI diễn giải cùng một từ theo những cách khác nhau trong các ngữ cảnh 
+khác nhau.8 
+Một kỹ thuật hiệu quả là sử dụng "Cảnh thiết lập" (Establishing Shot) với đầy đủ mô tả nhân 
+vật và bối cảnh, sau đó lưu khung hình thành công nhất làm ảnh tham chiếu cho các cảnh 
+quay tiếp theo.15 Phương pháp này tạo ra một vòng lặp phản hồi tích cực, nơi mô hình học hỏi 
+từ chính đầu ra tốt nhất của mình để duy trì tính ổn định.8 
+Kỹ thuật Chuyển cảnh và Góc máy Bắc cầu 
+Khi thay đổi góc máy, chẳng hạn từ góc nhìn trực diện sang góc nhìn từ phía sau (POV), người 
+dùng nên sử dụng các góc máy "bắc cầu" để hỗ trợ AI.5 Một cú máy "Arc Shot" 180 độ là lựa 
+chọn tối ưu vì nó cung cấp một quỹ đạo không gian logic mà mô hình có thể bám theo, giúp 
+duy trì tính toàn vẹn của môi trường xung quanh nhân vật.5 
+ 
+Loại cú máy 
+Tác dụng trong Duy trì 
+Nhất quán 
+Cách sử dụng với Ảnh 
+Tham chiếu 
+Dolly-in 
+Xây dựng sự thân mật và 
+tập trung vào chi tiết 
+Dùng ảnh tham chiếu cận 
+cảnh (Close-up) để cố định 
+các chi tiết nhỏ.5 
+Tracking Shot 
+Theo dõi nhân vật đang di 
+chuyển 
+Cần ảnh tham chiếu góc 
+nghiêng để giữ hình dáng 
+cơ thể ổn định.5 
+Arc Shot 
+Chuyển đổi giữa các góc 
+nhìn đối diện 
+Sử dụng cả ảnh trực diện 
+và ảnh nghiêng làm mỏ neo 
+không gian.5 
+Establishing Shot 
+Xác định bối cảnh và vị trí 
+nhân vật 
+Dùng làm ảnh tham chiếu 
+môi trường cho các shot 
+hình tiếp theo.15 
+
+--- PAGE BREAK ---
+5 
+Xử lý Lỗi và Khắc phục Hiện tượng "Biến dạng Nhân 
+vật" 
+Ngay cả khi có ảnh tham chiếu hoàn hảo, hiện tượng "biến dạng nhân vật" (identity drift) vẫn 
+có thể xảy ra do bản chất xác suất của các mô hình khuếch tán (diffusion models).8 Sự biến 
+dạng này thường biểu hiện qua những thay đổi nhỏ về độ dài tóc, độ đầy đặn của khuôn mặt 
+hoặc màu mắt trong suốt video.7 
+Chỉ số Nhất quán Khuôn mặt (FCS) và Tái tạo Hạt giống 
+Để đảm bảo tiêu chuẩn chuyên nghiệp, các chuỗi cảnh quay nên được đánh giá dựa trên Chỉ 
+số Nhất quán Khuôn mặt (FCS).9 Chỉ số này, thường được tính toán thông qua sự tương đồng 
+cosine của các vector đặc trưng khuôn mặt, nên duy trì ở mức trên 
+ giữa các shot hình 
+liền kề.9 Nếu chỉ số này giảm, người sản xuất cần thực hiện các bước sau: 
+1.​ Kiểm tra lại lớp nhận dạng trong prompt và tăng cường độ chi tiết.8 
+2.​ Tải lại ảnh tham chiếu trực diện (Canonical Portrait) để tái định hướng mô hình.8 
+3.​ Sử dụng một số hạt giống (seed) cố định nếu đang làm việc trong các công cụ như Flow 
+để giảm thiểu sự thay đổi ngẫu nhiên giữa các lần render.8 
+Điều hướng Bộ lọc An toàn và Lỗi API 
+Veo 3.1 sở hữu hệ thống bộ lọc an toàn cực kỳ nhạy bén để ngăn chặn việc tạo ra các hình ảnh 
+nhạy cảm hoặc giả mạo người nổi tiếng.20 Một lỗi phổ biến mà người dùng gặp phải là 
+PUBLIC_ERROR_MINOR hoặc các mã hỗ trợ 8 chữ số, thường chỉ ra rằng ảnh tham chiếu hoặc 
+prompt đã vi phạm nguyên tắc sử dụng.21 
+Ảnh tham chiếu lấy từ các trang web thương mại hoặc tạp chí thời trang thường bị gắn cờ là 
+"người mẫu" hoặc "có bản quyền", dẫn đến thất bại trong việc tạo video.21 Cách giải quyết 
+triệt để nhất là tự tạo nhân vật thông qua Nano Banana Pro hoặc Imagen 3, nơi các đặc điểm 
+được tạo ra từ đầu và không trùng khớp với bất kỳ danh tính thực tế nào.5 Ngoài ra, cần tránh 
+các từ khóa nhạy cảm trong prompt như "fire", "shot", "strike" vì chúng dễ bị bộ lọc hiểu lầm là 
+các hành động bạo lực.32 
+Quy trình Nâng cao: Kết hợp "First/Last Frame" và 
+"Scene Extension" 
+Đỉnh cao của việc sử dụng Veo 3.1 là quy trình làm việc đa bước, kết hợp sức mạnh của nhiều 
+mô hình khác nhau để tạo ra những video dài và có tính kể chuyện cao.5 
+
+--- PAGE BREAK ---
+Hoạt hóa Khoảng cách với First and Last Frame 
+Trong quy trình này, người dùng tạo ra một khung hình bắt đầu và một khung hình kết thúc 
+bằng Gemini 2.5 Flash Image.5 Ví dụ, Khung hình A là "Nhân vật đứng trước cửa nhà", và 
+Khung hình B là "Nhân vật đã ngồi trong xe hơi".5 Veo 3.1 sẽ thực hiện nhiệm vụ "hoạt hóa 
+khoảng trống", tạo ra một quá trình chuyển đổi mượt mà giữa hai trạng thái này.5 Phương 
+pháp này vượt trội hơn hẳn so với việc tạo video từ văn bản vì nó loại bỏ sự mơ hồ của mô hình 
+về điểm kết thúc của cảnh quay.4 
+Mở rộng Cảnh quay và Đồng bộ Âm thanh 
+Khác với các thế hệ trước, Veo 3.1 tạo ra âm thanh đồng bộ một cách tự nhiên, bao gồm tiếng 
+động môi trường, đối thoại và nhạc nền.1 Người dùng có thể kéo dài một clip 8 giây thành một 
+câu chuyện dài hơn bằng tính năng "Scene Extension".3 Mỗi clip mới sẽ được tạo ra dựa trên 
+giây cuối cùng của clip trước đó, đảm bảo sự liên tục tuyệt đối về cả hình ảnh lẫn âm thanh.4 
+Quy trình "chuỗi hóa" này cho phép thực hiện các cảnh quay phức tạp như một hành trình từ 
+lúc tư vấn, điều trị cho đến khi có kết quả trong các video quảng cáo hoặc đào tạo.28 
+Tầm nhìn Tương lai và Tác động của Điện ảnh AI 
+Sự chuyển dịch từ Veo 3 sang Veo 3.1 đã mang lại mức tăng 650% về thời lượng tiềm năng và 
+cải thiện 93% độ trung thực của âm thanh.3 Khi mô hình "Ingredients to Video" tiếp tục hoàn 
+thiện, ranh giới giữa nội dung "tạo ra" và nội dung "quay chụp" sẽ ngày càng trở nên mong 
+manh.3 Việc tích hợp khả năng nâng cấp lên độ phân giải 4K trực tiếp trong quy trình sản xuất 
+đảm bảo rằng video AI không còn bị giới hạn trong mạng xã hội mà hoàn toàn có thể phục vụ 
+cho các buổi phát sóng chuyên nghiệp và màn hình điện ảnh cỡ lớn.1 
+Bằng cách tuân thủ giao thức ảnh tham chiếu ba góc, thực hiện các công thức prompt 
+nghiêm ngặt và quản lý tính liên tục thông qua "Character Bible", các nhà sáng tạo có thể khai 
+thác tối đa sức mạnh của Veo 3.1.8 Chìa khóa của sự thành công nằm ở sự kỷ luật trong giai 
+đoạn "tiền sản xuất" – tạo ra những thành phần hoàn hảo trước khi một pixel video nào được 
+render.5 Khi các mô hình trở nên nhạy bén hơn với các chỉ dẫn sắc thái, vai trò của người sáng 
+tạo sẽ chuyển dịch từ một người "đặt lệnh" đơn thuần sang một "đạo diễn kỹ thuật", giám sát 
+một hệ sinh thái phức tạp của các mỏ neo thị giác và các biến số điện ảnh.3 
+Sự tiến hóa của các công cụ này gợi mở về một tương lai nơi việc kể chuyện chất lượng cao 
+được dân chủ hóa, nhưng chất lượng của câu chuyện vẫn sẽ gắn liền với sự làm chủ của người 
+sáng tạo đối với các giao thức kỹ thuật đã nêu.6 Dù là cho các chiến dịch thương hiệu, phim 
+ngắn hay nội dung đào tạo, sự cộng hưởng giữa ảnh tham chiếu và trí tuệ tạo sinh chính là 
+biên giới mới của biểu đạt kỹ thuật số trong kỷ nguyên hiện đại.1 
+Nguồn trích dẫn 
+
+--- PAGE BREAK ---
+1.​ Cách sử dụng veo 3 AI tạo video siêu thực từ văn bản và hình ảnh, truy cập vào 
+tháng 2 16, 2026, 
+https://phongvu.vn/cong-nghe/veo-3-la-gi-cach-tao-video-bang-veo-3/ 
+2.​ Veo 3 | Google AI Studio, truy cập vào tháng 2 16, 2026, 
+https://aistudio.google.com/models/veo-3 
+3.​ Veo 3.1 API Tutorial: Complete Guide to Google DeepMind Video Generation, truy 
+cập vào tháng 2 16, 2026, https://www.cursor-ide.com/blog/veo-31-api-tutorial 
+4.​ Introducing Veo 3.1 and new creative capabilities in the Gemini API, truy cập vào 
+tháng 2 16, 2026, 
+https://developers.googleblog.com/introducing-veo-3-1-and-new-creative-capa
+bilities-in-the-gemini-api/ 
+5.​ Ultimate prompting guide for Veo 3.1 | Google Cloud Blog, truy cập vào tháng 2 
+16, 2026, 
+https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting
+-guide-for-veo-3-1 
+6.​ Veo 3.1 Ingredients to Video: More consistency, creativity and control, truy cập 
+vào tháng 2 16, 2026, 
+https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video
+/ 
+7.​ Google Veo Ingredients to Video — The Update That Changes AI Video : 
+r/AISEOInsider, truy cập vào tháng 2 16, 2026, 
+https://www.reddit.com/r/AISEOInsider/comments/1qoa534/google_veo_ingredien
+ts_to_video_the_update_that/ 
+8.​ How Veo 3.1 Maintains Character & Scene Consistency in AI Video - Sider.AI, truy 
+cập vào tháng 2 16, 2026, 
+https://sider.ai/blog/ai-tools/how-veo-3_1-maintains-character-scene-consistenc
+y-in-ai-video 
+9.​ Veo 3.1 Multi-Prompt Storytelling Best Practices (2025): Character & Scene 
+Consistency, truy cập vào tháng 2 16, 2026, 
+https://skywork.ai/blog/multi-prompt-multi-shot-consistency-veo-3-1-best-pract
+ices/ 
+10.​Generate Veo videos from reference images | Generative AI on ..., truy cập vào 
+tháng 2 16, 2026, 
+https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/use-reference-i
+mages-to-guide-video-generation 
+11.​Generate videos with Veo 3.1 in Gemini API | Google AI for Developers, truy cập 
+vào tháng 2 16, 2026, https://ai.google.dev/gemini-api/docs/video 
+12.​Hướng Dẫn Chi Tiết Cách Giữ Nhân Vật ổn định Trong Veo 3 - Vbee, truy cập vào 
+tháng 2 16, 2026, 
+https://vbee.vn/blog/chia-se/cach-giu-nhan-vat-on-dinh-trong-veo-3/ 
+13.​Generative AI on Vertex AI - Veo 3.1 - Google Cloud Documentation, truy cập vào 
+tháng 2 16, 2026, 
+https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/veo/3-1-gene
+rate 
+14.​How do I prompt VEO 3.1 to create a shot of a reference image from another 
+
+--- PAGE BREAK ---
+angle without losing continuity? - Reddit, truy cập vào tháng 2 16, 2026, 
+https://www.reddit.com/r/VEO3/comments/1od8a6r/how_do_i_prompt_veo_31_to
+_create_a_shot_of_a/ 
+15.​Veo 3.1 Prompt Guide: Best Veo 3.1 Prompts | LTX Studio, truy cập vào tháng 2 16, 
+2026, https://ltx.studio/blog/veo-prompt-guide 
+16.​How do you guys get character consistency in Veo3 if you can't use most of the 
+extending or other functions? - Reddit, truy cập vào tháng 2 16, 2026, 
+https://www.reddit.com/r/VEO3/comments/1o1tkeq/how_do_you_guys_get_chara
+cter_consistency_in_veo3/ 
+17.​Veo 3 Prompt Guide – Tips & Examples - Leonardo AI, truy cập vào tháng 2 16, 
+2026, https://leonardo.ai/news/mastering-prompts-for-veo-3/ 
+18.​Create Entire FILM With Consistent Character ( Google VEO 3.1 + Nano Banana 
+Pro ), truy cập vào tháng 2 16, 2026, 
+https://www.youtube.com/watch?v=KAlHetoeBlc 
+19.​Testing Gemini 3 Pro Image. Nano Banana Pro is the new… | by Laurent Picard | 
+Google Cloud - Community, truy cập vào tháng 2 16, 2026, 
+https://medium.com/google-cloud/testing-gemini-3-pro-image-f585236ae411 
+20.​Veo-3-Tech-Report.pdf - Googleapis.com, truy cập vào tháng 2 16, 2026, 
+https://storage.googleapis.com/deepmind-media/veo/Veo-3-Tech-Report.pdf 
+21.​Veo3.1 - Giving error in generation from image when human like face/model 
+detected, truy cập vào tháng 2 16, 2026, 
+https://discuss.ai.google.dev/t/veo3-1-giving-error-in-generation-from-image-wh
+en-human-like-face-model-detected/109707 
+22.​T-Poses vs A-Poses for 3D Modeling #shorts - YouTube, truy cập vào tháng 2 16, 
+2026, https://www.youtube.com/shorts/n4GUkclQGRw 
+23.​T-pose or not to T-pose? Or A-pose? - CG Cookie, truy cập vào tháng 2 16, 2026, 
+https://cgcookie.com/community/20686-t-pose-or-not-to-t-pose-or-a-pose 
+24.​The Ultimate Veo 3.1 Prompt Guide - DreamHost, truy cập vào tháng 2 16, 2026, 
+https://www.dreamhost.com/blog/veo-3-1-prompt-guide/ 
+25.​How to Use Veo 3.1 in Gemini: The Ultimate AI Video Guide - GlobalGPT, truy cập 
+vào tháng 2 16, 2026, 
+https://www.glbgpt.com/hub/how-to-use-veo-3-1-in-gemini/ 
+26.​Veo 3.1 Prompt Guide - Imagine.Art, truy cập vào tháng 2 16, 2026, 
+https://www.imagine.art/blogs/veo-3-1-prompt-guide 
+27.​A guide on how to craft VEO prompts & keep character consistency across every 
+scene, truy cập vào tháng 2 16, 2026, 
+https://www.reddit.com/r/VEO3/comments/1p0slkg/a_guide_on_how_to_craft_ve
+o_prompts_keep/ 
+28.​Veo 3.1 Consistency Help: Preventing Hallucinations in Professional Dental 
+Workflow (Gemini 2.5 + Veo Pipeline) - Google AI Developers Forum, truy cập vào 
+tháng 2 16, 2026, 
+https://discuss.ai.google.dev/t/veo-3-1-consistency-help-preventing-hallucination
+s-in-professional-dental-workflow-gemini-2-5-veo-pipeline/111898 
+29.​Veo 3 Video Prompt Examples and Best Practices | Powtoon Blog, truy cập vào 
+tháng 2 16, 2026, 
+
+--- PAGE BREAK ---
+https://www.powtoon.com/blog/veo-3-video-prompt-examples/ 
+30.​Google Veo 3.1 Tutorial 🚀 Longer AI videos ✅ Consistent Characters, 
+Add/Remove in AI videos, truy cập vào tháng 2 16, 2026, 
+https://www.youtube.com/watch?v=MnDtUsmSQ9s 
+31.​How to Create Long Videos in VEO 3 1 Complete character Sequencing Tutorial, 
+truy cập vào tháng 2 16, 2026, https://www.youtube.com/watch?v=JLb3i6LHQtk 
+32.​'Veo 3.1 Complete Error Code Guide: Analysis and Solutions for Common Errors - 
+APIYI, truy cập vào tháng 2 16, 2026, 
+https://help.apiyi.com/en/veo-3-error-codes-troubleshooting-guide-en.html 
+33.​GemCinema: Recreate movie scenes with Gemini 3 Pro and Veo 3.1 | by Nitin 
+Tiwari | Google Developer Experts | Dec, 2025 | Medium, truy cập vào tháng 2 16, 
+2026, 
+https://medium.com/google-developer-experts/gemcinema-recreate-movie-sce
+nes-with-gemini-3-pro-and-veo-3-1-9b3151f64ce7 
+34.​Mọi điều cần biết về Veo 3, công cụ AI tạo video gây sốt hiện nay - Báo Mới, truy 
+cập vào tháng 2 16, 2026, 
+https://baomoi.com/moi-dieu-can-biet-ve-veo-3-cong-cu-ai-tao-video-gay-sot-
+hien-nay-c52393200.epi 
+35.​Creating consistent character videos with Veo 3.1, GPT-4o, and Google 
+NanoBanana - N8N, truy cập vào tháng 2 16, 2026, 
+https://n8n.io/workflows/11594-creating-consistent-character-videos-with-veo-3
+1-gpt-4o-and-google-nanobanana/ 
+36.​Use “Ingredients to Video” from Veo 3.1 to create clips from images in Google 
+Vids, truy cập vào tháng 2 16, 2026, 
+https://workspaceupdates.googleblog.com/2025/11/google-vids-veo-ingredients
+-to-video.html 
+
+--- PAGE BREAK ---

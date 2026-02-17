@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+dist/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+build/
+
+# Backend build artifacts (PyInstaller)
+backend/build/
+backend/dist/
+backend/*.spec.bak
+
+# Environment
+.env
+.env.local
+*.local
+
+# Cache & Temp
+temp_downloads/
+raw_assets/
+processed_assets/
+output/
+.cache/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build artifacts
+release/
+*.exe
+*.msi
+*.dmg
+*.app
+
+# Bundled ffmpeg binaries (auto-downloaded)
+backend/bin/
+video_output/
+
+# Python virtual environment
+.venv/
+
+# Footage cache (downloaded clips)
+footage_cache/
+
+# Production Hub data (SQLite DB + per-production files)
+backend/productions.db
+backend/productions_data/
+
+# Voice output (generated audio files)
+backend/voice_output/
+
+# Temp inspection/debug scripts
+backend/_*.py
+backend/_*.txt
+
+# PDF documents (too large for git)
+*.pdf
+
+# Misc temp files
+_extract_pdf.py
+_pdf1.txt
+_pdf_log.txt
+_test.pdf
+
+# Gemini agent data
+.gemini/

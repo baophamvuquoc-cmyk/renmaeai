@@ -1,0 +1,46 @@
+{
+    "scenes": [
+        {
+            "scene_id": 1,
+            "content": "Vào một buổi sáng mùa đông lạnh giá ở Hà Nội, Minh thức dậy trong căn phòng trọ nhỏ, nhìn ra cửa sổ thấy sương mù phủ kín thành phố."
+        },
+        {
+            "scene_id": 2,
+            "content": "Anh đạp xe qua những con phố cổ vắng lặng, hơi thở tạo thành những đám khói trắng trong không khí lạnh buốt."
+        },
+        {
+            "scene_id": 3,
+            "content": "Minh đến quán cà phê nhỏ ở góc phố, nơi bà chủ quán đã pha sẵn một ly cà phê trứng nóng hổi đang bốc khói."
+        },
+        {
+            "scene_id": 4,
+            "content": "Trong quán, anh mở laptop và bắt đầu code một dự án AI mà anh đã ấp ủ suốt nhiều tháng trời."
+        },
+        {
+            "scene_id": 5,
+            "content": "Màn hình hiện lên những dòng code phức tạp, các thuật toán machine learning đang được huấn luyện với dữ liệu khổng lồ."
+        },
+        {
+            "scene_id": 6,
+            "content": "Buổi chiều, Minh gặp đồng nghiệp Lan tại công viên Thống Nhất để thảo luận về kiến trúc hệ thống mới."
+        },
+        {
+            "scene_id": 7,
+            "content": "Hai người ngồi trên ghế đá dưới hàng cây bàng đỏ rực, vẽ sơ đồ hệ thống trên giấy trong khi lá rơi xung quanh."
+        },
+        {
+            "scene_id": 8,
+            "content": "Trời tối dần, ánh đèn đường bắt đầu sáng lên, phản chiếu trên mặt hồ Hoàn Kiếm trong ánh hoàng hôn cuối cùng."
+        },
+        {
+            "scene_id": 9,
+            "content": "Minh chạy về nhà dưới cơn mưa phùn nhẹ, ôm chặt laptop trong áo khoác, những giọt mưa nhỏ lấp lánh dưới ánh đèn neon."
+        },
+        {
+            "scene_id": 10,
+            "content": "Đêm khuya, anh ngồi bên cửa sổ nhìn thành phố yên bình ngủ say, mỉm cười vì biết rằng ngày mai sẽ là một ngày tuyệt vời."
+        }
+    ],
+    "language": "vi",
+    "mode": "storytelling"
+}

@@ -1,0 +1,39 @@
+fastapi==0.115.6
+uvicorn==0.34.0
+python-multipart==0.0.20
+Pillow==11.1.0
+requests==2.32.3
+beautifulsoup4==4.12.3
+pydantic==2.10.5
+python-dotenv==1.0.1
+httpx==0.28.1
+google-generativeai==0.8.3
+
+# GPM Browser Automation
+playwright==1.49.1
+
+
+# LLM Integration
+google-generativeai==0.3.2
+openai==1.11.1
+
+# Video Processing
+moviepy==1.0.3
+ffmpeg-python==0.2.0
+
+# YouTube & Web Scraping
+yt-dlp>=2024.1.16
+youtube-transcript-api>=0.6.0
+
+# Image Processing
+Pillow==10.2.0
+opencv-python==4.9.0.80
+
+# Utilities
+python-dotenv==1.0.1
+
+# Text-to-Speech
+edge-tts>=6.1.0
+
+# Audio Analysis
+mutagen>=1.47.0

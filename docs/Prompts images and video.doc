@@ -1,0 +1,251 @@
+Kiến trúc của Trí tưởng tượng: Lý thuyết Thống nhất về Kỹ thuật Viết Lệnh (Prompt Engineering) cho Veo 3.1 và Nano Banana Pro
+Tóm tắt Điều hành
+Bối cảnh của trí tuệ nhân tạo tạo sinh (Generative AI) đã trải qua một sự thay đổi địa chấn trong quá trình chuyển đổi từ năm 2024 sang năm 2026. Kỷ nguyên của "tag soup"—việc lắp ghép ngẫu nhiên các từ khóa rời rạc để ép buộc mô hình tạo ra kết quả mong muốn—đã thực sự kết thúc. Nó đã được thay thế bởi các Hệ thống Tạo sinh Dựa trên Suy luận (Reasoning-Based Generative Systems). Các mô hình chủ lực mới nhất của Google, Veo 3.1 (Video) và Nano Banana Pro (Hình ảnh, tên chính thức là Gemini 3 Pro Image), hoạt động ít giống như những cỗ máy đánh bạc ngẫu nhiên và giống hơn với những cộng sự sáng tạo có tư duy.1 Chúng sở hữu "kiến thức thế giới", hiểu biết về vật lý, khả năng mô phỏng ánh sáng phức tạp, và quan trọng nhất là khả năng tuân theo các hướng dẫn logic đa bước.4
+Báo cáo nghiên cứu này thiết lập một Khung Viết Lệnh Phổ Quát (Universal Prompting Framework) được rút ra từ việc phân tích toàn diện các tài liệu kỹ thuật của Google DeepMind, các kỹ thuật đảo ngược (reverse-engineering) từ cộng đồng chuyên gia, và các hướng dẫn sáng tạo chính thức.1 Khung này được thiết kế theo hướng "bất khả tri mô hình" (model-agnostic) nhưng "tối ưu hóa cho mô hình" (model-optimized), nghĩa là trong khi nó có thể áp dụng rộng rãi cho các phương tiện truyền thông tạo sinh, nó đặc biệt khai thác các khả năng suy luận bậc cao của kiến trúc Gemini 3.3
+Phát hiện cốt lõi của nghiên cứu này là một lệnh nhắc (prompt) mạnh mẽ nhất không phải là một chuỗi các từ ngữ, mà là một đặc tả tường thuật có cấu trúc (structured narrative specification). Bằng cách làm chủ Công thức Phổ quát 7 Thành phần, các nhà sáng tạo trong các lĩnh vực quảng cáo, làm phim, giáo dục và trực quan hóa khoa học có thể đạt được các kết quả mang tính xác định, độ trung thực cao và phù hợp hoàn hảo với ý định chuyên nghiệp.7
+
+
+
+Phần I: Sự Chuyển Dịch Nhận Thức Trong AI Tạo Sinh
+Để làm chủ kỹ thuật viết lệnh cho Veo 3.1 và Nano Banana Pro, trước hết cần phải hiểu "bộ não" đằng sau những công cụ này. Khác với các thế hệ trước dựa nhiều vào việc khớp mẫu từ các bộ dữ liệu khổng lồ, các mô hình mới này được xây dựng trên nền tảng kiến trúc Gemini 3 Pro.11 Sự khác biệt này mang tính quyết định bởi nó đưa suy luận đa phương thức (multimodal reasoning) vào quá trình tạo sinh.
+1.1 Từ Khuếch Tán (Diffusion) Đến Suy Luận (Reasoning)
+Trong các thế hệ trước (ví dụ: giai đoạn 2023-2024), các mô hình tạo ra hình ảnh hoặc video bằng cách "khử nhiễu" (denoising) các điểm ảnh ngẫu nhiên dựa trên xác suất thống kê. Nếu người dùng yêu cầu "một con mèo trên tấm thảm", mô hình không thực sự hiểu "con mèo" là gì về mặt sinh học hay ngữ nghĩa; nó chỉ biết những điểm ảnh nào thường xuất hiện cùng nhau khi từ khóa "con mèo" hiện diện.3 Đây là quá trình mô phỏng xác suất thuần túy, thiếu sự hiểu biết về cấu trúc vật lý hay logic của thế giới thực.
+Veo 3.1 và Nano Banana Pro hoạt động theo một cơ chế hoàn toàn khác biệt. Chúng sử dụng một giai đoạn "Tư duy" (Thinking phase)—một bước suy luận nơi mô hình phân tích lệnh nhắc để kiểm tra tính nhất quán logic, các quy luật vật lý và ý định tường thuật trước khi bắt đầu quá trình kết xuất (rendering).3
+Hàm ý đối với Lệnh nhắc: Giờ đây, người dùng có thể đưa ra các hướng dẫn logic (ví dụ: "Con mèo nên nhìn vào con chuột bởi vì nó đang đói") thay vì chỉ đơn thuần là các mô tả thị giác.4 Mô hình có khả năng hiểu mối quan hệ nhân quả này để điều chỉnh hướng nhìn và biểu cảm của chủ thể.
+Tư duy "Đạo diễn": Người dùng phải chuyển đổi vai trò từ một "người chọn từ khóa" sang một "Đạo diễn Hình ảnh" (Director of Photography). Các mô hình hiện nay hiểu được thuật ngữ điện ảnh, mô phỏng vật lý (như động lực học chất lỏng, trọng lực) và các mối quan hệ không gian phức tạp.1
+1.2 Sự Thất Bại của "Tag Soup" (Súp Thẻ)
+Thói quen viết lệnh của các thế hệ cũ thường liên quan đến "tag soup"—một danh sách hỗn loạn các từ bổ ngữ được ngăn cách bởi dấu phẩy (ví dụ: "4k, trending on artstation, masterpiece, best quality, ultra realistic").4 Trong quá khứ, việc nhồi nhét từ khóa này giúp "kích hoạt" các vùng dữ liệu chất lượng cao trong không gian tiềm ẩn (latent space) của mô hình.
+Tuy nhiên, đối với các động cơ suy luận hiện đại, phương pháp này không những không hiệu quả mà còn gây phản tác dụng.
+Tại sao nó thất bại: Các động cơ suy luận mới diễn giải các thẻ này theo nghĩa đen. Nếu bạn làm quá tải lệnh nhắc với các thẻ phong cách mâu thuẫn nhau, mạch logic của mô hình sẽ bị bối rối, dẫn đến các hiện tượng giả tạo (artifacts) hoặc kết quả chung chung, thiếu điểm nhấn.3
+Tiêu chuẩn Mới: Các câu văn ngôn ngữ tự nhiên mô tả nguyên nhân và kết quả, mối quan hệ không gian, và sắc thái cảm xúc hiện là tiêu chuẩn vàng. Mô hình Gemini 3 được tối ưu hóa để hiểu cú pháp và ngữ pháp phức tạp, cho phép nó nắm bắt được các sắc thái tinh tế mà danh sách từ khóa không thể truyền tải.13
+1.3 Kiến Trúc Đa Phương Thức Tự Nhiên (Native Multimodal Architecture)
+Một đặc điểm quan trọng khác của thế hệ mô hình này là khả năng xử lý đa phương thức tự nhiên. Nano Banana Pro và Veo 3.1 không chỉ hiểu văn bản; chúng hiểu hình ảnh, video và âm thanh như là các đầu vào nguyên bản.15
+Đầu vào hình ảnh (Image Prompts): Khả năng sử dụng hình ảnh tham chiếu không chỉ dừng lại ở việc lấy cảm hứng về bố cục. Với tính năng "Identity Locking" (Khóa Danh tính) và "Ingredients to Video" (Nguyên liệu thành Video), người dùng có thể tải lên các hình ảnh nhân vật cụ thể và yêu cầu mô hình giữ nguyên các đặc điểm nhận dạng này qua các cảnh quay khác nhau.1
+Đầu vào video và âm thanh: Veo 3.1 có thể nhận đầu vào là video để mở rộng hoặc biến đổi, đồng thời hiểu các gợi ý âm thanh để tạo ra nhạc nền và hiệu ứng âm thanh đồng bộ.1
+Sự chuyển dịch này đòi hỏi một phương pháp tiếp cận mới trong việc xây dựng lệnh nhắc—một phương pháp có hệ thống, logic và toàn diện hơn. Đây chính là nền tảng cho sự ra đời của Công thức Phổ quát.
+Phần II: Công Thức Viết Lệnh Phổ Quát 7 Thành Phần
+Thông qua việc tổng hợp và phân tích các hướng dẫn viết lệnh từ Google Cloud, LTX Studio, và các khung làm việc của người dùng chuyên gia, một Công thức Phổ quát 7 Thành phần mang tính định nghĩa đã được xác lập.1 Công thức này được gọi là "phổ quát" bởi vì nó áp dụng cho cả hình ảnh tĩnh (Nano Banana Pro) và phương tiện thời gian (Veo 3.1), với biến số duy nhất là thành phần "Âm thanh" dành cho video.
+Việc tuân thủ cấu trúc này không chỉ giúp tổ chức tư duy của người sáng tạo mà còn giúp mô hình "hiểu" được trọn vẹn ý định, giảm thiểu sự ảo giác (hallucination) và tăng cường độ chính xác chi tiết.
+2.1 Bảy Thành Phần Cốt Lõi
+Chủ thể (Subject - "Ai/Cái gì"): Điểm neo của cảnh. Phần này phải bao gồm danh tính, đặc điểm vật lý, và trang phục chi tiết.6
+Bối cảnh (Context - "Ở đâu"): Môi trường, các yếu tố xây dựng thế giới, và thiết lập không gian.6
+Hành động (Action - "Chuyện gì xảy ra"): Động từ của cảnh. Đối với hình ảnh, đây là tư thế; đối với video, đó là một chuỗi chuyển động hoặc hành vi.6
+Quay phim (Cinematography - "Như thế nào"): Ống kính máy ảnh, góc quay, chuyển động máy, và khung hình.6
+Thẩm mỹ (Aesthetics - "Cảm xúc"): Phong cách hình ảnh, chất liệu nghệ thuật, ánh sáng, và bảng màu.6
+Âm thanh (Audio - "Không gian âm thanh" - Chỉ Veo): Đối thoại, hiệu ứng âm thanh (SFX), và tiếng ồn môi trường.6
+Ràng buộc Kỹ thuật (Technical Constraints - "Hàng rào bảo vệ"): Tỷ lệ khung hình, độ phân giải, và các lệnh phủ định (những gì cần tránh).4
+2.2 Phân Tích Chuyên Sâu Các Thành Phần
+Thành phần 1: Chủ thể (Danh tính & Thuộc tính)
+Mô hình cần một điểm neo thị giác cụ thể. Một mô tả như "một người đàn ông" là không đủ và sẽ dẫn đến kết quả chung chung. Thay vào đó, "một ngư dân 40 tuổi, khuôn mặt khắc khổ với bộ râu muối tiêu, mặc áo mưa màu vàng đã sờn cũ" cung cấp các điểm dữ liệu cần thiết để động cơ suy luận xây dựng một nhân vật nhất quán.19
+Để đảm bảo tính nhất quán của nhân vật, đặc biệt khi sử dụng Nano Banana Pro hoặc Veo 3.1 cho các dự án dài hơi, người dùng nên tuân theo Danh sách kiểm tra 15 thuộc tính 10:
+Nhân khẩu học: Tên (để mô hình gán nhãn nội bộ), Tuổi, Giới tính, Chiều cao và Thân hình.
+Chi tiết Vật lý: Hình dạng khuôn mặt, Màu và hình dạng mắt, Loại mũi, Miệng và môi, Tóc (màu sắc, độ dài, kiểu dáng, kết cấu), Tông màu da, Các dấu vết đặc biệt (sẹo, hình xăm).
+Phong cách: Trang phục đặc trưng, Bảng màu quần áo, Phụ kiện (kính, trang sức).
+Tính cách: 3-5 đặc điểm chính ảnh hưởng đến biểu cảm và tư thế.
+Việc xác định chi tiết này giúp mô hình "khóa" danh tính nhân vật tốt hơn, ngay cả khi không sử dụng hình ảnh tham chiếu.21
+Thành phần 2: Bối cảnh (Thiết lập & Môi trường)
+Thành phần này xác định mô phỏng vật lý và ánh sáng. Một bối cảnh tốt không chỉ liệt kê các đối vật mà còn mô tả bầu không khí và cách ánh sáng tương tác với môi trường.
+Ví dụ: Thay vì "trong một căn phòng", hãy sử dụng "trong một phòng làm việc thời Victoria ngập nắng, những hạt bụi nhảy múa trong các luồng sáng chiếu qua cửa sổ lồi cao từ trần đến sàn".22
+Móc nối Suy luận: Việc mô tả nguồn sáng (cửa sổ) giúp mô hình tính toán bóng đổ chính xác và tạo ra hiệu ứng thể tích (volumetric effects) chân thực.4
+Độ chính xác lịch sử và địa lý: Với khả năng kết nối kiến thức của Gemini 3, bối cảnh có thể bao gồm các yêu cầu về độ chính xác lịch sử (ví dụ: "kiến trúc Rome năm 100 sau Công nguyên") hoặc địa lý cụ thể.9
+Thành phần 3: Hành động (Chuyển động & Hành vi)
+Đây là nơi Veo 3.1 thực sự tỏa sáng nhờ khả năng hiểu vật lý phức tạp.
+Tĩnh (Nano Banana): Tập trung vào "tư thế" (pose) và "trạng thái" (state). Ví dụ: "đông cứng giữa không trung khi nhảy", "ngồi trầm tư".19
+Động (Veo): Tập trung vào "động từ chuyển động" (movement verbs) và "tương tác vật lý". Ví dụ: "đi bộ với bước chân khập khiễng nặng nề", "chạy nước rút một cách hung hăng", "nước bắn tung tóe dữ dội".18
+Nâng cao: Sử dụng các động từ "nguyên nhân và kết quả". Ví dụ: "Nhân vật giật mình ngay khi chiếc ly vỡ tan." Điều này kích hoạt khả năng hiểu thời gian và phản ứng của mô hình.1
+Thành phần 4: Quay phim (Kiểm soát Camera)
+Cả hai mô hình đều được huấn luyện trên các bộ dữ liệu điện ảnh và nhiếp ảnh khổng lồ. Chúng hiểu ngôn ngữ của các đạo diễn. Việc sử dụng thuật ngữ chuyên ngành sẽ kích hoạt các tham số camera giả lập trong không gian tiềm ẩn.7
+Loại Cảnh (Shot Types):
+Close-up (CU): Cận cảnh, tập trung vào cảm xúc hoặc chi tiết khuôn mặt.
+Medium Shot (MS): Trung cảnh, từ thắt lưng trở lên, phù hợp cho hội thoại.
+Wide Shot (WS): Toàn cảnh, hiển thị môi trường và bối cảnh.
+Extreme Close-up (ECU): Đặc tả, chi tiết cực nhỏ như mắt, ngón tay.
+Chuyển động Camera (Veo):
+Dolly In/Out: Di chuyển máy ảnh vật lý về phía/ra xa chủ thể. Thay đổi phối cảnh nền.
+Truck (Track) Left/Right: Di chuyển song song với chủ thể.
+Pan/Tilt: Xoay máy ảnh trên trục cố định.
+Crane Up/Down: Nâng/hạ máy ảnh theo phương thẳng đứng.
+Handheld: Giả lập độ rung của máy cầm tay, tạo cảm giác thực tế hoặc hỗn loạn.
+Ống kính (Lens):
+"35mm": Tự nhiên, giống mắt người.
+"85mm": Tiêu cự chân dung, làm phẳng hậu cảnh.
+"Fisheye/Wide Angle": Góc rộng, gây biến dạng, tạo cảm giác năng động hoặc kỳ quái.
+"Macro": Dành cho các chi tiết cực nhỏ.23
+Thành phần 5: Thẩm mỹ (Phong cách & Ánh sáng)
+Thành phần này thiết lập "công cụ kết xuất" (render engine) và tông màu cảm xúc.
+Phong cách: Photorealistic (Chân thực như ảnh), Cinematic (Điện ảnh), 3D Render (Phong cách Unreal Engine 5), Oil Painting (Tranh sơn dầu), Anime (cần ghi rõ tên studio như 'Studio Ghibli' hoặc 'Makoto Shinkai' để có kết quả tốt nhất).8
+Ánh sáng: Đây là yếu tố quan trọng để tạo chiều sâu.
+Golden Hour: Ánh sáng vàng ấm, mặt trời thấp.
+Blue Hour: Ánh sáng xanh lạnh, trước bình minh hoặc sau hoàng hôn.
+Noir: Tương phản cao, bóng đổ đậm.
+Softbox: Ánh sáng studio mềm mại, không bóng gắt.
+Volumetric Lighting: Hiệu ứng sương mù, tia sáng (god rays).4
+Thành phần 6: Âm thanh (Đặc thù của Veo)
+Veo 3.1 tạo ra "âm thanh tự nhiên" (native audio), nghĩa là âm thanh được tạo ra song song với các điểm ảnh, không phải là hậu kỳ.17
+Các lớp âm thanh:
+Đối thoại: "Anh ấy nói 'Xin chào'". Veo 3.1 có khả năng đồng bộ môi (lip-sync) rất tốt.1
+SFX (Hiệu ứng âm thanh): "Tiếng bước chân lạo xạo trên sỏi", "Tiếng kính vỡ".
+Ambience (Môi trường): "Tiếng xe cộ xa xa", "Tiếng gió rít".
+Chiến lược Viết lệnh: Phải mô tả chất lượng của âm thanh. Thay vì chỉ viết "có âm thanh", hãy viết: "Âm thanh: Tiếng lá khô lạo xạo rõ rệt dưới chân, tiếng thở nặng nhọc, và tiếng kêu thảm thiết xa xa của một con quạ".25
+Thành phần 7: Ràng buộc Kỹ thuật
+Negative Prompts (Lệnh phủ định): Nêu rõ những gì bạn không muốn (ví dụ: "Không có văn bản", "Không có nền mờ", "Không biến dạng ngón tay").4
+Định dạng: Tỷ lệ khung hình (16:9 cho điện ảnh, 9:16 cho mạng xã hội) và độ phân giải (1080p, hoặc nâng cấp lên 4K).
+Phần III: Chuyên Sâu - Nano Banana Pro (Tạo Sinh Hình Ảnh)
+Nano Banana Pro (Gemini 3 Pro Image) đại diện cho đỉnh cao của việc tạo sinh hình ảnh ngữ nghĩa. Chế độ "Tư duy" (Thinking mode) của nó cho phép mức độ kiểm soát mà trước đây là không thể nếu không có các công cụ phức tạp như ControlNet.3
+3.1 "Cổng Logic" của Nano Banana
+Khác với các mô hình khuếch tán tiêu chuẩn, Nano Banana Pro có thể xử lý các câu đố logic phức tạp ngay trong hình ảnh.26
+Trường hợp sử dụng: "Sáu người cầm các đồng xu mà tổng giá trị của bất kỳ ba người nào cũng là một số nguyên tố." Mô hình thực sự cố gắng giải quyết logic trực quan này.
+Kết xuất văn bản (Text Rendering): Hiện tại, đây là công cụ hiện đại nhất để tích hợp văn bản dễ đọc. Bạn có thể chỉ định phông chữ, vị trí và nội dung (ví dụ: "Một bảng hiệu đèn neon ghi 'TƯƠNG LAI' bằng phông chữ cyberpunk").4 Khả năng này cực kỳ hữu ích cho việc thiết kế poster, bao bì sản phẩm và tài liệu quảng cáo đa ngôn ngữ.8
+3.2 Quy trình Nâng cao: "Ingredients to Image" (Nguyên liệu thành Hình ảnh)
+Tính năng này cho phép sự nhất quán về nhân vật và phong cách, vốn là "chén thánh" của hình ảnh AI.2
+Tải lên Tham chiếu: Người dùng có thể tải lên tới 14 hình ảnh tham chiếu.4
+Khóa Danh tính (Identity Locking): Bằng cách gắn thẻ một tham chiếu là "Chủ thể", mô hình khóa các đặc điểm khuôn mặt và hình dáng cơ thể, cho phép đặt nhân vật vào các tình huống mới mà không làm biến dạng khuôn mặt.4
+Chuyển đổi Phong cách (Style Transfer): Gắn thẻ một hình ảnh là "Phong cách" buộc mô hình áp dụng kỹ thuật cọ vẽ, ánh sáng hoặc phân loại màu sắc của tham chiếu đó vào hình ảnh mới.2
+3.3 Chiến lược Viết lệnh theo Lĩnh vực
+A. Trực quan hóa Khoa học & Đồ họa Thông tin (Infographics)
+Nano Banana Pro được kết nối với Google Search (tính năng Grounding), cho phép nó truy xuất dữ liệu thực tế.16
+Chiến lược: Sử dụng các thuật ngữ chuyên ngành chính xác.
+Ví dụ Lệnh nhắc: "Tạo một sơ đồ mặt cắt chính xác về mặt khoa học của động cơ V6. Dán nhãn các piston, trục khuỷu, van và bugi chính xác bằng các đường chỉ dẫn. Sử dụng phong cách minh họa kỹ thuật nền trắng sạch sẽ." 3
+Các từ khóa quan trọng: "Cross-section" (Mặt cắt), "Exploded view" (Sơ đồ phân rã), "Labeled diagram" (Sơ đồ có nhãn), "White background" (Nền trắng), "Vector style" (Phong cách vector).28
+Ứng dụng: Vẽ biểu đồ khoa học, sơ đồ plasmid trong sinh học phân tử, hoặc sơ đồ quy trình kỹ thuật.28
+B. Quảng cáo & Nhiếp ảnh Sản phẩm
+Sự thay đổi "Bối cảnh": Đặt sản phẩm vào các môi trường lý tưởng hóa để tăng tính hấp dẫn.
+Mẫu Lệnh nhắc: "Một đặt trên trong [Môi trường]. Ánh sáng là [Loại ánh sáng]. Chụp bằng [Ống kính] để có vẻ ngoài [Cảm xúc/Vibe]."
+Ví dụ: "Một chai nước hoa sang trọng đặt trên đá núi lửa đen trong một đầm phá Iceland đầy sương mù. Ánh sáng phương Bắc dịu nhẹ, khuếch tán. Chụp bằng ống kính macro 100mm cho vẻ ngoài cao cấp, thanh thoát." 8
+Phần IV: Chuyên Sâu - Veo 3.1 (Tạo Sinh Video)
+Veo 3.1 giới thiệu chiều kích thời gian, làm tăng độ phức tạp của lệnh nhắc theo cấp số nhân. "Công thức Phổ quát" giờ đây phải tính đến nhịp độ (pacing), chuyển cảnh (transition) và âm thanh.
+4.1 Từ vựng của "Đạo diễn"
+Veo 3.1 được huấn luyện để phản hồi các lệnh chỉ đạo cụ thể. Sử dụng các từ khóa này sẽ kích hoạt các đường chuyển động cụ thể trong mô hình.7
+Chuyển động Camera (Camera Movements):
+Dolly In/Out: Di chuyển máy ảnh vật lý về phía/ra xa chủ thể. Điều này thay đổi phối cảnh, làm cho hậu cảnh thay đổi kích thước tương đối so với chủ thể, tạo cảm giác đi sâu vào không gian hoặc rời bỏ nó. Tăng tính thân mật hoặc sự cô lập.
+Zoom In/Out: Thay đổi quang học tiêu cự. Hậu cảnh bị nén lại hoặc giãn ra. Không tạo ra sự thay đổi phối cảnh vật lý như Dolly.
+Truck (Track) Left/Right: Di chuyển máy ảnh song song với chủ thể. Rất tốt để theo dõi các nhân vật đang đi bộ hoặc các phương tiện đang di chuyển.
+Pan/Tilt: Xoay máy ảnh trên một trục cố định (Pan: ngang, Tilt: dọc). Phù hợp để tiết lộ môi trường rộng lớn hoặc theo dõi hành động theo chiều dọc (ví dụ: nhìn lên một tòa nhà chọc trời).
+Orbit/Arc: Di chuyển vòng quanh một chủ thể. Tạo cảm giác "Ma trận" (Matrix-like) hoặc "Cảnh quay Anh hùng" (Hero shot), nhấn mạnh tầm quan trọng của chủ thể.1
+Crane Up/Down: Di chuyển máy ảnh lên hoặc xuống theo phương thẳng đứng, thường dùng để tiết lộ quy mô của cảnh quan hoặc đám đông.
+Kỹ thuật Điện ảnh:
+Rack Focus: Thay đổi tiêu điểm từ một vật thể ở tiền cảnh sang một vật thể ở hậu cảnh (hoặc ngược lại) trong cùng một cảnh quay. Kỹ thuật này hướng dẫn sự chú ý của người xem một cách tinh tế.23
+Bullet Time: Hiệu ứng thời gian chậm (slow motion) trong khi máy ảnh di chuyển ở tốc độ bình thường (hoặc ngược lại).
+Timelapse: Tua nhanh thời gian (mây trôi nhanh, hoa nở, giao thông thành phố). Thường kết hợp với máy ảnh cố định (Static tripod) để tránh rung lắc.23
+4.2 Quy trình "Ingredients to Video" (Nguyên liệu thành Video)
+Đây là quy trình làm việc mạnh mẽ nhất cho sự nhất quán chuyên nghiệp, đặc biệt trong sản xuất phim hoạt hình hoặc quảng cáo.1
+Bước 1: Tạo Tài sản (Các Nguyên liệu). Sử dụng Nano Banana Pro để tạo "Dàn diễn viên" (Nhân vật) và "Bối cảnh" (Địa điểm). Điều này cho phép kiểm soát chi tiết tĩnh tốt nhất.
+Bước 2: Nạp vào Veo. Tải Hình ảnh Nhân vật và Hình ảnh Địa điểm vào Veo 3.1.
+Bước 3: Chỉ đạo Hành động. "Hoạt hình hóa nhân vật đi bộ qua địa điểm này. Giữ danh tính nhân vật nhất quán với tham chiếu." Veo 3.1 sẽ nội suy chuyển động trong khi giữ nguyên các đặc điểm thị giác của hình ảnh đầu vào.25
+4.3 Tạo Sinh Âm Thanh Tự Nhiên (Native Audio)
+Veo 3.1 tạo ra âm thanh theo mặc định, nhưng để đạt chất lượng cao, cần có sự chỉ đạo rõ ràng.30
+Nguyên tắc: Phải mô tả chất lượng và nguồn của âm thanh.
+Lệnh xấu: "Có âm thanh."
+Lệnh tốt: "Âm thanh: Tiếng lạo xạo rõ rệt của lá khô dưới chân, tiếng thở nặng nhọc, và tiếng kêu thảm thiết xa xa của một con quạ." 25
+Đối thoại: Veo 3.1 có khả năng đồng bộ môi (lip-sync) chính xác. Cú pháp: "Nhân vật nhìn vào máy ảnh và nói, 'Chúng ta cần phải rời đi, ngay bây giờ.'".22 Lưu ý sử dụng dấu ngoặc kép cho lời thoại trực tiếp.
+4.4 Vật lý & Mô phỏng Nâng cao
+Veo 3.1 sở hữu trực giác mạnh mẽ về "động cơ vật lý" (physics engine).
+Động lực học chất lỏng: Các lệnh nhắc liên quan đến nước, khói hoặc lửa được hiển thị với độ chân thực cao.
+Mô phỏng vải (Cloth simulation): Quần áo chuyển động tự nhiên theo gió hoặc chuyển động của nhân vật.
+Cách viết lệnh Vật lý: Mô tả sự tương tác của các vật liệu. "Lốp xe trượt trên đường nhựa ướt, làm bắn lên một màn sương nước và khói.".31
+
+
+
+Phần V: Quy Trình Meta-Prompting (Tự Động Hóa)
+Viết các lệnh nhắc 7 thành phần phức tạp theo cách thủ công cho mỗi cảnh quay là một công việc tẻ nhạt và dễ mắc lỗi. Kỹ thuật "Meta-Prompt" liên quan đến việc sử dụng một Mô hình Ngôn ngữ Lớn (LLM) dựa trên văn bản (như Gemini Advanced hoặc ChatGPT) để viết các lệnh nhắc cho Veo 3.1 và Nano Banana Pro thay cho bạn.32
+5.1 Mẫu Meta-Prompt (The Meta-Prompt Template)
+Bạn có thể lập trình một LLM để đóng vai trò là "Kỹ sư Lệnh nhắc" (Prompt Engineer) của bạn bằng chỉ thị hệ thống sau:
+Chỉ thị Hệ thống (System Instruction): "Bạn là một Kỹ sư Lệnh nhắc chuyên gia cho Google Veo 3.1 và Nano Banana Pro. Mục tiêu của bạn là chuyển đổi các ý tưởng đơn giản của tôi thành 'Công thức Phổ quát 7 Thành phần'. Luôn cấu trúc đầu ra của bạn với các tiêu đề sau: 1. Chủ thể, 2. Bối cảnh, 3. Hành động, 4. Quay phim, 5. Thẩm mỹ, 6. Âm thanh (nếu là video), 7. Lệnh phủ định. Sau đó, kết hợp chúng thành một đoạn văn trôi chảy duy nhất cho lệnh nhắc cuối cùng." 32
+5.2 Chu Trình Lặp
+Ý tưởng: Người dùng nhập "Một robot buồn bã trong mưa."
+Meta-Prompt: LLM mở rộng điều này thành: "Một robot đơn độc, rỉ sét (Chủ thể) đang ngồi trên ghế đá công viên ở Tokyo tương lai (Bối cảnh), đầu cúi xuống buồn bã (Hành động). Cảnh trung, dolly in chậm (Quay phim). Phong cách cyberpunk noir, phản chiếu neon, vệt mưa (Thẩm mỹ). Âm thanh mưa rơi trên kim loại và tiếng vo ve điện tử trầm thấp (Âm thanh)."
+Tạo sinh: Người dùng nạp lệnh này vào Veo 3.1.
+Tinh chỉnh: Nếu robot trông quá mới, người dùng nói với LLM: "Làm cho nó rỉ sét hơn." LLM cập nhật cụ thể thành phần "Chủ thể" của lệnh nhắc trong khi giữ nguyên phần còn lại.4
+Phần VI: Ứng Dụng Theo Lĩnh Vực Cụ Thể
+6.1 Làm Phim & Giải Trí
+Trực quan hóa Bảng phân cảnh (Storyboard): Sử dụng Nano Banana để tạo bảng phân cảnh chi tiết. Sử dụng quy trình "Ingredients" để biến các khung hình chính thành các đoạn video clip.3
+Tạo Trailer: Tạo các đoạn clip 4 giây của "những khoảnh khắc cao trào" (vụ nổ, cận cảnh cảm xúc) và biên tập chúng lại với nhau.
+Video Dọc (Mạng xã hội): Sử dụng ràng buộc tỷ lệ khung hình "9:16". Một mẹo nhỏ (hack): Nếu một mô hình cụ thể không hỗ trợ 9:16 tự nhiên, hãy tạo 16:9 và sử dụng lệnh "Pan" (xoay) để giữ hành động ở trung tâm, sau đó cắt (crop) lại.35
+Cảnh chiến đấu: Sử dụng các từ khóa như "kung fu fight scene" (cảnh chiến đấu kung fu) hoặc "lightsaber duel" (đấu kiếm ánh sáng). Veo 3.1 hiểu rất tốt về nhịp độ và hiệu ứng ánh sáng của các cảnh hành động này.35
+6.2 Tiếp Thị & Quảng Cáo
+Demo Sản phẩm: Sử dụng lệnh ống kính "Macro" để hiển thị kết cấu sản phẩm. Sử dụng chuyển động camera "Turntable" (bàn xoay) hoặc "Orbit" (quỹ đạo) để giới thiệu sản phẩm từ mọi góc độ.23
+Nhất quán Thương hiệu: Sử dụng tính năng "Reference Image" (Hình ảnh Tham chiếu) để đảm bảo cùng một người mẫu hoặc linh vật xuất hiện trong mọi quảng cáo, duy trì nhận diện thương hiệu.34
+6.3 Giáo Dục & Khoa Học
+Tái hiện Lịch sử: "Một cảnh quay flycam của Rome Cổ đại năm 100 sau Công nguyên, kiến trúc chính xác, đám đông nhộn nhịp trong trang phục toga." Gemini 3 cung cấp kiến thức lịch sử để đảm bảo các chi tiết kiến trúc và trang phục là chính xác.22
+Y tế/Giải phẫu: "Một mặt cắt hoạt hình 3D của tim người đang đập, kết cấu chân thực, các van được dán nhãn." Động cơ suy luận của Veo 3.1 đảm bảo tim đập theo nhịp điệu và logic sinh học chính xác.25
+Mô phỏng Game: Tạo concept art cho môi trường và nhân vật game. Sử dụng Nano Banana Pro để thiết kế texture và Veo 3.1 để tạo các đoạn cắt cảnh (cutscenes) hoặc hình nền động.16
+Phần VII: Khắc Phục Sự Cố và Tối Ưu Hóa
+Ngay cả với công thức tốt nhất, kết quả không phải lúc nào cũng hoàn hảo. Dưới đây là các giải pháp cho các vấn đề thường gặp.
+7.1 Xử lý Ảo giác (Hallucinations)
+Vấn đề: Thêm ngón tay, văn bản vô nghĩa, vật thể bay lơ lửng.
+Giải pháp: Sử dụng Negative Prompts mạnh mẽ. Ví dụ: "bad anatomy, extra limbs, floating objects, blurry text". Đối với văn bản, hãy chắc chắn đặt nội dung mong muốn trong dấu ngoặc kép và chỉ định phông chữ rõ ràng.4
+7.2 Vấn đề Nhất quán (Consistency Issues)
+Vấn đề: Khuôn mặt nhân vật thay đổi giữa các cảnh quay.
+Giải pháp: Luôn sử dụng quy trình "Ingredients to Video" hoặc "Identity Locking" với cùng một bộ hình ảnh tham chiếu gốc. Đừng dựa vào mô tả văn bản đơn thuần cho các nhân vật lặp lại. Sử dụng tên riêng cho nhân vật trong lệnh nhắc để giúp mô hình gán nhãn nội bộ.19
+7.3 Kỹ thuật JSON Prompting
+Đối với người dùng nâng cao và các nhà phát triển, việc sử dụng định dạng JSON có thể mang lại sự kiểm soát chính xác hơn, đặc biệt khi làm việc qua API.
+Lợi ích: Cấu trúc JSON phân tách rõ ràng các tham số, giúp mô hình phân tích cú pháp tốt hơn và giảm thiểu sự nhầm lẫn giữa các thành phần mô tả.37
+Ví dụ:
+JSON
+{
+  "subject": "Cyberpunk detective",
+  "action": "running",
+  "environment": "Neo-Tokyo rainy street",
+  "camera": "tracking shot",
+  "lighting": "neon signs"
+}
+
+
+Kết Luận: Kỷ Nguyên của Tác Giả (The Era of the Auteur)
+Sự chuyển đổi sang Veo 3.1 và Nano Banana Pro đánh dấu sự dân chủ hóa của việc sáng tạo hình ảnh chất lượng cao. Tuy nhiên, rào cản gia nhập đã chuyển từ kỹ năng kỹ thuật (biết vẽ hoặc quay phim) sang tầm nhìn đạo diễn (biết cách mô tả).
+Công thức Phổ quát 7 Thành phần được cung cấp trong báo cáo này là chìa khóa để mở khóa tiềm năng này. Nó buộc người sáng tạo phải diễn đạt mọi chiều kích của cảnh quay—ai, ở đâu, cái gì, như thế nào, và tại sao. Bằng cách làm chủ công thức này và tận dụng khả năng "suy luận" của kiến trúc Gemini 3, bất kỳ người sáng tạo nào cũng có thể đạt được những kết quả không chỉ là "được tạo ra" (generated), mà thực sự là "được đạo diễn" (directed).
+Triển vọng Tương lai (2026+)
+Khi chúng ta nhìn về cuối năm 2026 và xa hơn, chúng ta có thể mong đợi:
+Tương tác Thời gian thực: Khả năng sửa đổi video đang phát trong thời gian thực thông qua các lệnh giọng nói.
+Sự Bền vững Toàn cảnh (Total Scene Persistence): Tạo ra một thế giới 3D hoàn chỉnh từ một lệnh nhắc, nơi camera có thể di chuyển đến bất kỳ đâu, không chỉ dọc theo một đường dẫn được tạo trước.
+Khóa Âm thanh-Video Ngữ nghĩa: Âm thanh điều khiển việc tạo sinh video (ví dụ: tải lên một bài hát và video tự động cắt và chuyển cảnh hoàn hảo theo nhịp điệu).39
+Các công cụ đã sẵn sàng. Công thức đã được xác định. Phần còn lại phụ thuộc vào trí tưởng tượng của người dùng.
+Tóm tắt Nhanh: 7 Thành Phần Cốt Lõi
+Để tiện tra cứu, dưới đây là danh sách kiểm tra nhanh cho mọi lệnh nhắc bạn viết:
+Chủ thể: Danh tính, Tuổi, Trang phục, Đặc điểm.
+Bối cảnh: Địa điểm, Thời gian, Thời tiết, Chi tiết môi trường.
+Hành động: Tư thế (Ảnh) hoặc Chuyển động (Video), Tương tác.
+Quay phim: Loại cảnh (CU, MS, WS), Chuyển động (Dolly, Pan, Orbit), Ống kính.
+Thẩm mỹ: Phong cách nghệ thuật, Ánh sáng, Màu sắc, Cảm xúc.
+Âm thanh (Veo): Đối thoại, SFX, Tiếng ồn nền.
+Ràng buộc: Tỷ lệ khung hình, Độ phân giải, Lệnh phủ định.
+Nguồn trích dẫn
+Ultimate prompting guide for Veo 3.1 | Google Cloud Blog, truy cập vào tháng 2 14, 2026, https://cloud.google.com/blog/products/ai-machine-learning/ultimate-prompting-guide-for-veo-3-1
+Nano Banana Pro - AI Image Generator | Edit image with chat, truy cập vào tháng 2 14, 2026, https://nanobanana.org/
+20 Trending Nano Banana Pro Prompts & Use Cases You Should Try, truy cập vào tháng 2 14, 2026, https://notegpt.io/blog/trending-nano-banana-pro-prompts-use-cases
+Nano-Banana Pro: Prompting Guide & Strategies - DEV Community, truy cập vào tháng 2 14, 2026, https://dev.to/googleai/nano-banana-pro-prompting-guide-strategies-1h9n
+Veo 3.1 Ingredients to Video: More consistency, creativity and control - Google Blog, truy cập vào tháng 2 14, 2026, https://blog.google/innovation-and-ai/technology/ai/veo-3-1-ingredients-to-video/
+Veo on Vertex AI video generation prompt guide - Google Cloud Documentation, truy cập vào tháng 2 14, 2026, https://docs.cloud.google.com/vertex-ai/generative-ai/docs/video/video-gen-prompt-guide
+Veo 3.1 Prompt Guide: Best Veo 3.1 Prompts | LTX Studio, truy cập vào tháng 2 14, 2026, https://ltx.studio/blog/veo-prompt-guide
+Nano Banana Pro Prompting Guide + 75 Prompts - Imagine.Art, truy cập vào tháng 2 14, 2026, https://imagine.art/blogs/nano-banana-pro-prompt-guide
+Nano Banana Pro image generation in Gemini: Prompt tips - Google Blog, truy cập vào tháng 2 14, 2026, https://blog.google/products-and-platforms/products/gemini/prompting-tips-nano-banana-pro/
+Spent 6 hours on this — a full guide to building professional meta prompts for Google Veo 3, truy cập vào tháng 2 14, 2026, https://www.reddit.com/r/VEO3/comments/1m7vbdb/spent_6_hours_on_this_a_full_guide_to_building/
+Nano Banana Pro - Gemini AI image generator & photo editor, truy cập vào tháng 2 14, 2026, https://gemini.google/overview/image-generation/
+Nano Banana Pro Guide: How to Use Google’s New AI Image Model | by Anangsha Alammyan | Freelancer’s Hub, truy cập vào tháng 2 14, 2026, https://medium.com/freelancers-hub/nano-banana-pro-guide-how-to-use-googles-new-ai-image-model-fe944a224e6a
+3 Proven Nano Banana Tips You've Been Missing, truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=8kU4sKh2va4&vl=en
+7 Prompt Formulas That Beat 99% of ChatGPT Users - YouTube, truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=KdNVPsWOjSo
+Google Nano Banana Pro & Veo 3: Pushing AI Creativity Boundaries in 2026 - YouTube, truy cập vào tháng 2 14, 2026, https://m.youtube.com/watch?v=3UfeXkuHJ5k
+5 ways businesses can use Nano Banana Pro and Veo 3.1 for visual content | Google Workspace Blog, truy cập vào tháng 2 14, 2026, https://workspace.google.com/blog/ai-and-machine-learning/beyond-the-hype-5-practical-ways-to-use-ai-powered-visual-content
+Google's Veo 3: A Guide With Practical Examples - DataCamp, truy cập vào tháng 2 14, 2026, https://www.datacamp.com/tutorial/veo-3
+AI Video Prompt Guide: How To Write AI Video Prompts | LTX Studio, truy cập vào tháng 2 14, 2026, https://ltx.studio/blog/ai-video-prompt-guide
+How to Design Consistent AI Characters with Prompts, Diffusion & Reference Control (2025), truy cập vào tháng 2 14, 2026, https://medium.com/design-bootcamp/how-to-design-consistent-ai-characters-with-prompts-diffusion-reference-control-2025-a1bf1757655d
+How to Create Consistent Characters with AI: A Guide - Feedough, truy cập vào tháng 2 14, 2026, https://www.feedough.com/how-to-create-consistent-characters-with-ai/
+Character Consistency Guide - Create with LlamaGen, truy cập vào tháng 2 14, 2026, https://help.llamagen.ai/en/characters-ai/character-consistency-guide
+How to create effective prompts with Veo 3 - Google DeepMind, truy cập vào tháng 2 14, 2026, https://deepmind.google/models/veo/prompt-guide/
+18 Essential Google Veo 3 Prompt Examples (2025) for Cinematic ..., truy cập vào tháng 2 14, 2026, https://skywork.ai/blog/google-veo-3-prompt-examples-2025/
+Complete List of Prompts & Styles for Nano Banana AI Images - Travis Nicholson - Medium, truy cập vào tháng 2 14, 2026, https://travisnicholson.medium.com/complete-list-of-prompts-styles-for-nano-banana-ai-images-ee2229f1c48c
+Getting Started With Google Veo 3.1 - AKOOL, truy cập vào tháng 2 14, 2026, https://akool.com/blog-posts/getting-started-with-google-veo-3-1
+NANO BANANA PRO: Expert Use Cases with Prompts - Higgsfield, truy cập vào tháng 2 14, 2026, https://higgsfield.ai/blog/Nano-Banana-Pro-Expert-Use-Cases
+Gemini 3 Pro Image (Nano Banana Pro) - Google DeepMind, truy cập vào tháng 2 14, 2026, https://deepmind.google/models/gemini-image/pro/
+How to use Nano Banana Pro for scientific plotting? 7 practical tips + ..., truy cập vào tháng 2 14, 2026, https://help.apiyi.com/en/nano-banana-pro-scientific-illustration-guide-en.html
+The Ultimate Veo 3.1 Prompt Guide - DreamHost, truy cập vào tháng 2 14, 2026, https://www.dreamhost.com/blog/veo-3-1-prompt-guide/
+How to prompt Veo 3 for the best results – Replicate blog, truy cập vào tháng 2 14, 2026, https://replicate.com/blog/using-and-prompting-veo-3
+Veo 3 | Google AI Studio, truy cập vào tháng 2 14, 2026, https://aistudio.google.com/models/veo-3
+Nano Banana Pro Ultimate Prompting Guide : r/PromptEngineering, truy cập vào tháng 2 14, 2026, https://www.reddit.com/r/PromptEngineering/comments/1pid4cs/nano_banana_pro_ultimate_prompting_guide/
+CSAPR: COMPLEX-SCENARIO-AWARE PROMPT RE- | OpenReview, truy cập vào tháng 2 14, 2026, https://openreview.net/pdf/bc016cb703443d01feb01b300cb376b1bb470a94.pdf
+Ultimate Nano Banana Pro Guide 2026: How to Use Gemini 3 Image AI, truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=ZCw325FiS78
+30 Google Veo 3.1 Hacks You Need to Know in 2026 (Become a Pro), truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=rEkHKRDErX4
+Veo 3.1 Vertical Video (9:16) Creation Guide - Skywork.ai, truy cập vào tháng 2 14, 2026, https://skywork.ai/blog/ai-video/veo-3-1-vertical-video-916-creation-guide/
+Nano Banana Pro Prompt Builder V1 [User Guide]: Setup & Cinematic Angles Workflow, truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=r9UsREDyc_I
+Master Nano Banana Pro JSON Prompting – Complete Step-by-Step Guide, truy cập vào tháng 2 14, 2026, https://www.youtube.com/watch?v=oQf49nMdo44
+Constructing Visual Prompts for AI Video Generation | by Ayca Turan - Medium, truy cập vào tháng 2 14, 2026, https://medium.com/@aycaturan/constructing-visual-prompts-for-ai-video-generation-5e7003253c90
