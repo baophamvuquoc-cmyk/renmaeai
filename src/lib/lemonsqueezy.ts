@@ -10,6 +10,40 @@ const LS_API_BASE = 'https://api.lemonsqueezy.com/v1/licenses';
 // Replace with your actual LemonSqueezy store URL after creating your product
 export const LEMONSQUEEZY_STORE_URL = 'https://renmaeai.lemonsqueezy.com/checkout/buy/67fa8a80-96f6-49ac-b9eb-8ae172d65bbd';
 
+// ── Master Keys (permanent, unlimited, no API needed) ──
+const MASTER_KEYS = [
+    'RENMAE-MASTER-2026-ALPHA-KEY01',
+    'RENMAE-MASTER-2026-ALPHA-KEY02',
+];
+
+export function isMasterKey(key: string): boolean {
+    return MASTER_KEYS.includes(key.trim().toUpperCase());
+}
+
+function masterKeyResult() {
+    return {
+        license_key: {
+            id: 0,
+            status: 'active',
+            key: 'MASTER',
+            activation_limit: 999,
+            activation_usage: 1,
+            expires_at: null,
+        },
+        instance: { id: 'master', name: 'master' },
+        meta: {
+            store_id: 0,
+            product_id: 0,
+            product_name: 'RenmaeAI Studio',
+            variant_id: 0,
+            variant_name: 'Master License',
+            customer_id: 0,
+            customer_name: 'Owner',
+            customer_email: 'owner@renmaeai.com',
+        },
+    };
+}
+
 // ── Machine ID ──
 function generateMachineId(): string {
     const stored = localStorage.getItem('renmae_machine_id');
@@ -81,6 +115,11 @@ export interface LicenseValidationResult {
  * Activate a license key for this machine
  */
 export async function activateLicense(licenseKey: string): Promise<LicenseActivationResult> {
+    if (isMasterKey(licenseKey)) {
+        const m = masterKeyResult();
+        return { activated: true, ...m };
+    }
+
     try {
         const response = await fetch(`${LS_API_BASE}/activate`, {
             method: 'POST',
@@ -118,6 +157,11 @@ export async function activateLicense(licenseKey: string): Promise<LicenseActiva
  * Validate an already-activated license key
  */
 export async function validateLicense(licenseKey: string, instanceId?: string): Promise<LicenseValidationResult> {
+    if (isMasterKey(licenseKey)) {
+        const m = masterKeyResult();
+        return { valid: true, license_key: m.license_key, meta: m.meta };
+    }
+
     try {
         const body: Record<string, string> = { license_key: licenseKey.trim() };
         if (instanceId) body.instance_id = instanceId;
