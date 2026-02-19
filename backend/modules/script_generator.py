@@ -2066,27 +2066,27 @@ KỊCH BẢN:
                 # Fallback: Legacy synthesis with full JSON re-send
                 analyses_summary = json.dumps(individual_analyses, ensure_ascii=False, indent=2)
                 
-                synthesis_prompt = f"""Dựa trên TẤT CẢ các kết quả phân tích sau, hãy ĐÚC KẾT thành "PHONG CÁCH VĂN A".
+                synthesis_prompt = f"""Based on ALL the analysis results below, SYNTHESIZE them into a "WRITING STYLE A" profile.
 
-KẾT QUẢ PHÂN TÍCH {len(individual_analyses)} KỊCH BẢN:
+ANALYSIS RESULTS FROM {len(individual_analyses)} SCRIPTS:
 {analyses_summary}
 
-Trả về JSON:
+Return JSON:
 {{
-    "voice_description": "Mô tả giọng văn (3-5 câu)",
-    "storytelling_approach": "Cách dẫn chuyện (3-5 câu)",
-    "character_embodiment": "Cách nhập vai (2-3 câu)",
-    "authors_soul": "HỒN VĂN (3-5 câu)",
+    "voice_description": "Describe the writing voice (3-5 sentences)",
+    "storytelling_approach": "How stories are told (3-5 sentences)",
+    "character_embodiment": "How characters are embodied (2-3 sentences)",
+    "authors_soul": "The SOUL of the writing (3-5 sentences)",
     "common_hook_types": ["hook 1", "hook 2"],
-    "retention_techniques": ["kỹ thuật 1", "kỹ thuật 2"],
+    "retention_techniques": ["technique 1", "technique 2"],
     "cta_patterns": ["CTA 1", "CTA 2"],
-    "tone_spectrum": "Phổ tone",
-    "vocabulary_signature": "Từ vựng đặc trưng",
-    "sentence_rhythm": "Nhịp câu văn",
-    "emotional_palette": "Bảng màu cảm xúc",
-    "cultural_markers": "Dấu ấn văn hóa",
-    "narrative_perspective": "Ngôi kể",
-    "signature_phrases": ["cụm từ 1", "cụm từ 2"],
+    "tone_spectrum": "Tone range",
+    "vocabulary_signature": "Signature vocabulary",
+    "sentence_rhythm": "Sentence rhythm patterns",
+    "emotional_palette": "Emotional palette",
+    "cultural_markers": "Cultural markers",
+    "narrative_perspective": "Narrative perspective",
+    "signature_phrases": ["phrase 1", "phrase 2"],
     "unique_patterns": ["pattern 1", "pattern 2"],
     "confidence_score": 0.85
 }}
@@ -2180,7 +2180,7 @@ class AdvancedRemakeWorkflow:
         if not style_profile:
             return ""
         
-        is_en = language == "en"
+        is_en = language != "vi"
         context_parts = []
         
         # ═══════════════════════════════════════════════════════════════
@@ -2478,45 +2478,45 @@ class AdvancedRemakeWorkflow:
     
     def analyze_original_script(self, script: str) -> OriginalScriptAnalysis:
         """
-        STEP 1: Bóc tách nội dung gốc
+        STEP 1: Extract and analyze original script content
         
-        Phân tích:
-        - Core Angle (góc nhìn cốt lõi)
-        - Main Ideas (ý quan trọng)
+        Analyzes:
+        - Core Angle (unique selling proposition)
+        - Main Ideas
         - Viewer INSIGHT
         - HOOK analysis
         - Writing style, narrative voice, cultural context
-        - Retention Engine (cơ chế giữ người xem)
+        - Retention Engine
         - CTA strategy
         """
-        prompt = f"""Bạn là chuyên gia phân tích kịch bản video. Hãy bóc tách NỘI DUNG GỐC của kịch bản sau:
+        prompt = f"""You are an expert video script analyst. Extract and analyze the ORIGINAL CONTENT of the following script:
 
-KỊCH BẢN GỐC:
+ORIGINAL SCRIPT:
 {script[:5000]}
 
-Phân tích và trả về JSON với các trường sau:
+Analyze and return JSON with the following fields:
 
 {{
-    "core_angle": "<Góc nhìn cốt lõi của video - điểm unique selling proposition>",
-    "main_ideas": ["<Ý quan trọng 1>", "<Ý quan trọng 2>", "<Ý quan trọng 3>", ...],
-    "viewer_insight": "<INSIGHT người xem - vấn đề/nỗi đau/mong muốn mà video đánh vào>",
+    "core_angle": "<Core angle of the video - unique selling proposition>",
+    "main_ideas": ["<Main idea 1>", "<Main idea 2>", "<Main idea 3>", ...],
+    "viewer_insight": "<Viewer INSIGHT - pain point/desire/need the video addresses>",
     "hook_analysis": {{
         "hook_type": "<curiosity|shock|emotion|question|story|benefit>",
-        "hook_content": "<Nội dung hook chính>",
-        "hook_effectiveness": "<Đánh giá hiệu quả hook>"
+        "hook_content": "<Main hook content>",
+        "hook_effectiveness": "<Evaluation of hook effectiveness>"
     }},
     "writing_style": {{
         "tone": "<formal|casual|humorous|dramatic|inspiring|educational>",
         "language_level": "<simple|intermediate|advanced>",
         "formality": "<very formal|formal|neutral|informal|very informal>"
     }},
-    "cultural_context": "<Văn hóa vùng miền/quốc gia trong kịch bản>",
+    "cultural_context": "<Cultural context of the region/country in the script>",
     "narrative_voice": "<first_person|second_person|third_person|mixed>",
-    "retention_engine": "<Cơ chế giữ người xem: open loops, cliffhangers, promises, pattern interrupts, etc.>",
-    "cta_strategy": "<Cách kêu gọi hành động trong video: subscribe, like, comment, buy, etc.>"
+    "retention_engine": "<Viewer retention mechanisms: open loops, cliffhangers, promises, pattern interrupts, etc.>",
+    "cta_strategy": "<Call to action strategy: subscribe, like, comment, buy, etc.>"
 }}
 
-Chỉ trả về JSON, không giải thích.
+Return only JSON, no explanation.
 """
         try:
             response = self._route_task(TaskType.STYLE_ANALYSIS, prompt, temperature=0.3)
@@ -2583,41 +2583,41 @@ Chỉ trả về JSON, không giải thích.
         total_word_count = len(words)
         logger.info(f"[analyze_structure] Word count: {total_word_count}")
         
-        prompt = f"""Phân tích CẤU TRÚC của kịch bản video sau:
+        prompt = f"""Analyze the STRUCTURE of the following video script:
 
-KỊCH BẢN (tổng {total_word_count} từ):
+SCRIPT (total {total_word_count} words):
 {script[:5000]}
 
-Phân tích nhịp cấu trúc và trả về JSON:
+Analyze the structural rhythm and return JSON:
 
 {{
     "total_word_count": {total_word_count},
-    "hook_duration": "<Hook chiếm bao lâu: first X seconds/first X words>",
-    "hook_word_count": <số từ của phần hook>,
+    "hook_duration": "<How long the hook lasts: first X seconds/first X words>",
+    "hook_word_count": <number of words in hook section>,
     "intro_analysis": {{
-        "segments": <số đoạn trong phần mở bài>,
-        "word_count": <số từ phần mở bài>,
-        "purpose": "<mục đích của phần mở bài>"
+        "segments": <number of segments in intro>,
+        "word_count": <intro word count>,
+        "purpose": "<purpose of the intro>"
     }},
     "body_analysis": {{
-        "segments": <số đoạn trong thân bài>,
-        "word_count": <số từ thân bài>,
-        "main_issues": ["<vấn đề/nội dung chính 1>", "<vấn đề 2>", ...]
+        "segments": <number of body segments>,
+        "word_count": <body word count>,
+        "main_issues": ["<main topic/content 1>", "<topic 2>", ...]
     }},
     "conclusion_analysis": {{
-        "segments": <số đoạn trong kết bài>,
-        "word_count": <số từ kết bài>,
-        "purpose": "<mục đích phần kết>"
+        "segments": <number of conclusion segments>,
+        "word_count": <conclusion word count>,
+        "purpose": "<purpose of conclusion>"
     }},
     "section_breakdown": [
-        {{"order": 1, "title": "<tên đoạn>", "word_count": <số từ>, "purpose": "<mục đích>"}},
+        {{"order": 1, "title": "<section name>", "word_count": <word count>, "purpose": "<purpose>"}},
         ...
     ],
-    "climax_location": "<Cao trào nằm ở đâu: phần nào, % video>",
-    "payoff_location": "<Payoff nằm ở đâu: phần nào, % video>"
+    "climax_location": "<Where the climax is: which section, % of video>",
+    "payoff_location": "<Where the payoff is: which section, % of video>"
 }}
 
-Chỉ trả về JSON.
+Return only JSON.
 """
         try:
             logger.info(f"[analyze_structure] Calling _route_task with prompt of {len(prompt)} chars...")
@@ -2703,14 +2703,20 @@ Chỉ trả về JSON.
             "vi": "Vietnamese", 
             "ja": "Japanese",
             "ko": "Korean",
-            "zh": "Chinese"
+            "zh": "Chinese",
+            "es": "Spanish",
+            "fr": "French",
+            "th": "Thai",
+            "de": "German",
+            "pt": "Portuguese",
+            "ru": "Russian"
         }
         lang_name = lang_names.get(language, "English")
         
         # Storytelling style descriptions - language aware
         storytelling_section = ""
         if storytelling_style:
-            if language == "en":
+            if language != "vi":
                 storytelling_desc = {
                     "immersive": "🎭 Immersive - Narrator embodies the character, telling as if living the story",
                     "documentary": "🎥 Documentary - Recounting events like a report, objective and informative",
@@ -2734,7 +2740,7 @@ Chỉ trả về JSON.
         # Narrative voice descriptions - language aware
         narrative_section = ""
         if narrative_voice:
-            if language == "en":
+            if language != "vi":
                 narrative_voice_desc = {
                     "first_person": "First person (I/We) - narrator is the speaker",
                     "second_person": "Second person (You) - speaking directly to viewer",
@@ -2756,7 +2762,7 @@ Chỉ trả về JSON.
         # Audience address section - cách xưng hô khán giả
         audience_section = ""
         if audience_address:
-            if language == "en":
+            if language != "vi":
                 audience_section = f'- AUDIENCE ADDRESS: Use "{audience_address}" when addressing the audience (use consistently throughout)'
                 if custom_audience_address:
                     audience_section += f'\n- ADDRESS DETAILS: {custom_audience_address}'
@@ -2768,7 +2774,7 @@ Chỉ trả về JSON.
         # Build StyleA context if available - language aware
         style_context = ""
         if style_profile:
-            if language == "en":
+            if language != "vi":
                 style_context = f"""
 STYLE A PROFILE (APPLY THROUGHOUT):
 - Voice: {style_profile.get('voice_description', 'N/A')}
@@ -2786,7 +2792,7 @@ PHONG CÁCH VĂN A (ÁP DỤNG XUYÊN SUỐT):
 """
         
         # Language-aware prompt to prevent mixing languages
-        if language == "en":
+        if language != "vi":
             prompt = f"""Based on the original script analysis, create a new OUTLINE A in {lang_name} ({dialect}).
 
 ORIGINAL SCRIPT ANALYSIS:
@@ -2806,16 +2812,16 @@ ORIGINAL STRUCTURE:
 STANDARDIZED AIDA 8-STAGE STRUCTURE (MUST FOLLOW):
 1. Hook/Intro (8% words): Create STRONG emotions. ❌ NO subscribe/like
 2. State the Problem (10% words): Present problem/pain point, create emotional connection
-3. CTA#1 Engagement (8% words): ✅ LIGHT CTA - encourage engagement naturally
-4. Brand Intro (3% words): Brief, natural channel introduction
+{f'3. CTA#1 Engagement (8% words): ✅ LIGHT CTA - encourage engagement naturally' if channel_name else '3. Interaction (8% words): Ask thought-provoking questions, encourage comments. ❌ NO subscribe/like/share'}
+{f'4. Brand Intro (3% words): Brief, natural channel introduction' if channel_name else '4. Transition (3% words): Brief connecting transition to main content'}
 5. Main Content (40% words): ⭐ VALUE section - deep analysis, personalization. ❌ NO CTA
 6. Create Urgency (12% words): Emphasize benefits/consequences. ❌ NO CTA
-7. CTA#2 Call to Action (10% words): ✅ MAIN CTA - subscribe, like, share
+{f'7. CTA#2 Call to Action (10% words): ✅ MAIN CTA - subscribe, like, share' if channel_name else '7. Conclusion & Lesson (10% words): Deep lesson, key takeaway. ❌ NO subscribe/like/share'}
 8. Outro (9% words): Natural closing, thank you. ❌ NO additional CTA
 
 ⚠️ MANDATORY RULES:
 - Each stage must have UNIQUE CONTENT, NO repetition
-- ONLY 2 CTAs: Stage 3 (light) and Stage 7 (strong)
+{f'- ONLY 2 CTAs: Stage 3 (light) and Stage 7 (strong)' if channel_name else '- ❌ NO subscribe, like, share, channel promotion anywhere in the script'}
 - Stage 5 is the main VALUE section - takes 40%
 - Focus on PERSONALIZATION and connecting with viewers
 
@@ -2863,7 +2869,7 @@ Return JSON:
 Return ONLY JSON.
 """
         else:
-            # Vietnamese prompt
+            # Vietnamese prompt (only for vi)
             prompt = f"""Dựa vào phân tích kịch bản gốc, tạo DÀN Ý A mới bằng {lang_name} ({dialect}).
 
 PHÂN TÍCH KỊCH BẢN GỐC:
@@ -2883,16 +2889,16 @@ CẤU TRÚC GỐC:
 CẤU TRÚC AIDA 8 GIAI ĐOẠN CHUẨN HÓA (BẮT BUỘC FOLLOW):
 1. Hook/Intro (8% từ): Gây CẢM GIÁC MẠNH. ❌ KHÔNG subscribe/like
 2. Nêu vấn đề (10% từ): Trình bày vấn đề/nỗi đau, tạo kết nối cảm xúc
-3. CTA#1 Tương tác (8% từ): ✅ CTA NHẸ - khuyến khích tương tác tự nhiên
-4. Intro thương hiệu (3% từ): Giới thiệu kênh ngắn gọn, tự nhiên
+{f'3. CTA#1 Tương tác (8% từ): ✅ CTA NHẸ - khuyến khích tương tác tự nhiên' if channel_name else '3. Tương tác (8% từ): Đặt câu hỏi suy ngẫm, khuyến khích comment. ❌ KHÔNG nhắc subscribe/đăng ký kênh'}
+{f'4. Intro thương hiệu (3% từ): Giới thiệu kênh ngắn gọn, tự nhiên' if channel_name else '4. Chuyển tiếp (3% từ): Câu chuyển tiếp ngắn gọn sang nội dung chính'}
 5. Nội dung chính (40% từ): ⭐ PHẦN TẠO GIÁ TRỊ - phân tích sâu, cá nhân hóa. ❌ KHÔNG CTA
 6. Kích động nhu cầu (12% từ): Nhấn mạnh lợi ích/hậu quả. ❌ KHÔNG CTA
-7. CTA#2 Kêu gọi (10% từ): ✅ CTA CHÍNH - subscribe, like, share
+{f'7. CTA#2 Kêu gọi (10% từ): ✅ CTA CHÍNH - subscribe, like, share' if channel_name else '7. Đúc kết & Bài học (10% từ): Bài học sâu sắc, kết luận. ❌ KHÔNG subscribe/like/share'}
 8. Outro (9% từ): Kết thúc tự nhiên, cảm ơn. ❌ KHÔNG thêm CTA
 
 ⚠️ QUY TẮC BẮT BUỘC:
 - Mỗi giai đoạn phải có NỘI DUNG KHÁC BIỆT, KHÔNG lặp lại ý
-- CHỈ có ĐÚNG 2 CTA: Giai đoạn 3 (nhẹ) và Giai đoạn 7 (mạnh)
+{f'- CHỈ có ĐÚNG 2 CTA: Giai đoạn 3 (nhẹ) và Giai đoạn 7 (mạnh)' if channel_name else '- ❌ KHÔNG nhắc subscribe, like, share, đăng ký kênh, quảng bá kênh ở bất kỳ đâu'}
 - Giai đoạn 5 là phần TẠO GIÁ TRỊ chính - chiếm 40% 
 - Hướng tới CÁ NHÂN HÓA và kết nối với người xem
 
@@ -3009,43 +3015,81 @@ Chỉ trả về JSON.
             8: 0.09,  # Outro: 9%
         }
         
-        brand_intro = f'Giới thiệu kênh {channel_name}' if channel_name else 'Giới thiệu kênh'
+        brand_intro = f'Giới thiệu kênh {channel_name}' if channel_name else 'Chuyển tiếp sang nội dung chính'
         
         # AIDA 8-stage sections with CTA rules embedded
-        default_sections = [
-            ("Hook/Intro", 
-             "Mở đầu gây CẢM GIÁC MẠNH, tò mò, sốc hoặc xúc động", 
-             "❌ KHÔNG nhắc subscribe/like ở đây. Tạo ấn tượng mạnh ngay từ đầu.",
-             ["hook gây chú ý", "câu mở đầu ấn tượng"]),
-            ("Nêu vấn đề", 
-             "Trình bày VẤN ĐỀ/NỖI ĐAU mà khán giả đang gặp", 
-             "Tạo kết nối cảm xúc, khiến họ thấy 'đúng là mình'. Đánh vào INSIGHT người xem.",
-             ["vấn đề thực tế", "kết nối cảm xúc"]),
-            ("CTA Tương tác #1", 
-             "✅ CTA NHẸ - Đặt câu hỏi mở, yêu cầu comment ý kiến", 
-             "Đây là CTA #1 - CHỈ kêu gọi comment/thảo luận. VD: 'Bạn nghĩ sao? Comment nhé!'",
-             ["câu hỏi tương tác", "kêu gọi comment"]),
-            ("Intro thương hiệu", 
-             brand_intro, 
-             "Ngắn gọn 3-5s, tự nhiên, cài vào tiềm thức. KHÔNG quảng cáo.",
-             ["giới thiệu kênh"]),
-            ("Nội dung chính - Tạo giá trị", 
-             "⭐ PHẦN QUAN TRỌNG NHẤT - Phân tích sâu, giải pháp chi tiết, thông tin CÁ NHÂN HÓA", 
-             "Đây là phần TẠO GIÁ TRỊ chính - chiếm 40% script. ❌ KHÔNG CTA ở đây.",
-             ["giải pháp chi tiết", "giá trị thực sự", "cá nhân hóa"]),
-            ("Kích động nhu cầu", 
-             "Nhấn mạnh HẬU QUẢ nếu không hành động, đề cao LỢI ÍCH", 
-             "Tạo urgency tự nhiên, không ép buộc. ❌ KHÔNG CTA ở đây.",
-             ["lợi ích", "urgency"]),
-            ("CTA Kêu gọi #2", 
-             "✅ CTA CHÍNH - Kêu gọi subscribe, like, share hoặc hành động cụ thể", 
-             f"Đây là CTA #2 - CTA MẠNH và DUY NHẤT còn lại. Mời tham gia kênh {channel_name}.",
-             ["subscribe", "like", "share"]),
-            ("Outro/Kết thúc", 
-             "Kết thúc TỰ NHIÊN, chào tạm biệt, cảm ơn", 
-             "❌ KHÔNG thêm CTA ở đây - đã có ở giai đoạn 7. Hẹn gặp lại.",
-             ["cảm ơn", "hẹn gặp lại"]),
-        ]
+        # When no channel_name: no subscribe/CTA, replace with natural interaction
+        if channel_name:
+            default_sections = [
+                ("Hook/Intro", 
+                 "Mở đầu gây CẢM GIÁC MẠNH, tò mò, sốc hoặc xúc động", 
+                 "❌ KHÔNG nhắc subscribe/like ở đây. Tạo ấn tượng mạnh ngay từ đầu.",
+                 ["hook gây chú ý", "câu mở đầu ấn tượng"]),
+                ("Nêu vấn đề", 
+                 "Trình bày VẤN ĐỀ/NỖI ĐAU mà khán giả đang gặp", 
+                 "Tạo kết nối cảm xúc, khiến họ thấy 'đúng là mình'. Đánh vào INSIGHT người xem.",
+                 ["vấn đề thực tế", "kết nối cảm xúc"]),
+                ("CTA Tương tác #1", 
+                 "✅ CTA NHẸ - Đặt câu hỏi mở, yêu cầu comment ý kiến", 
+                 "Đây là CTA #1 - CHỈ kêu gọi comment/thảo luận. VD: 'Bạn nghĩ sao? Comment nhé!'",
+                 ["câu hỏi tương tác", "kêu gọi comment"]),
+                ("Intro thương hiệu", 
+                 brand_intro, 
+                 "Ngắn gọn 3-5s, tự nhiên, cài vào tiềm thức. KHÔNG quảng cáo.",
+                 ["giới thiệu kênh"]),
+                ("Nội dung chính - Tạo giá trị", 
+                 "⭐ PHẦN QUAN TRỌNG NHẤT - Phân tích sâu, giải pháp chi tiết, thông tin CÁ NHÂN HÓA", 
+                 "Đây là phần TẠO GIÁ TRỊ chính - chiếm 40% script. ❌ KHÔNG CTA ở đây.",
+                 ["giải pháp chi tiết", "giá trị thực sự", "cá nhân hóa"]),
+                ("Kích động nhu cầu", 
+                 "Nhấn mạnh HẬU QUẢ nếu không hành động, đề cao LỢI ÍCH", 
+                 "Tạo urgency tự nhiên, không ép buộc. ❌ KHÔNG CTA ở đây.",
+                 ["lợi ích", "urgency"]),
+                ("CTA Kêu gọi #2", 
+                 "✅ CTA CHÍNH - Kêu gọi subscribe, like, share hoặc hành động cụ thể", 
+                 f"Đây là CTA #2 - CTA MẠNH và DUY NHẤT còn lại. Mời tham gia kênh {channel_name}.",
+                 ["subscribe", "like", "share"]),
+                ("Outro/Kết thúc", 
+                 "Kết thúc TỰ NHIÊN, chào tạm biệt, cảm ơn", 
+                 "❌ KHÔNG thêm CTA ở đây - đã có ở giai đoạn 7. Hẹn gặp lại.",
+                 ["cảm ơn", "hẹn gặp lại"]),
+            ]
+        else:
+            # No channel_name: no CTA, natural interaction only
+            default_sections = [
+                ("Hook/Intro", 
+                 "Mở đầu gây CẢM GIÁC MẠNH, tò mò, sốc hoặc xúc động", 
+                 "❌ KHÔNG nhắc subscribe/like/đăng ký kênh. Tạo ấn tượng mạnh ngay từ đầu.",
+                 ["hook gây chú ý", "câu mở đầu ấn tượng"]),
+                ("Nêu vấn đề", 
+                 "Trình bày VẤN ĐỀ/NỖI ĐAU mà khán giả đang gặp", 
+                 "Tạo kết nối cảm xúc, khiến họ thấy 'đúng là mình'. Đánh vào INSIGHT người xem.",
+                 ["vấn đề thực tế", "kết nối cảm xúc"]),
+                ("Tương tác suy ngẫm", 
+                 "Đặt câu hỏi suy ngẫm, khuyến khích comment ý kiến", 
+                 "❌ KHÔNG nhắc subscribe/đăng ký kênh. CHỈ đặt câu hỏi tự nhiên để tương tác.",
+                 ["câu hỏi suy ngẫm", "khuyến khích comment"]),
+                ("Chuyển tiếp", 
+                 brand_intro, 
+                 "Ngắn gọn 3-5s, chuyển tiếp tự nhiên sang nội dung chính.",
+                 ["chuyển tiếp"]),
+                ("Nội dung chính - Tạo giá trị", 
+                 "⭐ PHẦN QUAN TRỌNG NHẤT - Phân tích sâu, giải pháp chi tiết, thông tin CÁ NHÂN HÓA", 
+                 "Đây là phần TẠO GIÁ TRỊ chính - chiếm 40% script. ❌ KHÔNG CTA ở đây.",
+                 ["giải pháp chi tiết", "giá trị thực sự", "cá nhân hóa"]),
+                ("Kích động nhu cầu", 
+                 "Nhấn mạnh HẬU QUẢ nếu không hành động, đề cao LỢI ÍCH", 
+                 "Tạo urgency tự nhiên, không ép buộc. ❌ KHÔNG CTA ở đây.",
+                 ["lợi ích", "urgency"]),
+                ("Đúc kết & Bài học", 
+                 "Đúc kết sâu sắc, bài học áp dụng vào cuộc sống", 
+                 "❌ KHÔNG nhắc subscribe/like/share/đăng ký kênh. CHỈ đúc kết bài học.",
+                 ["bài học sâu sắc", "kết luận"]),
+                ("Outro/Kết thúc", 
+                 "Kết thúc TỰ NHIÊN, chào tạm biệt, cảm ơn", 
+                 "❌ KHÔNG thêm CTA ở đây. Hẹn gặp lại.",
+                 ["cảm ơn", "hẹn gặp lại"]),
+            ]
         
         sections = []
         num_sections = min(max_sections, 8)  # Max 8 sections for AIDA
@@ -3103,7 +3147,7 @@ Chỉ trả về JSON.
         style_context = self._build_style_context(style_profile, language=outline_a.language)
         
         # Use language-specific prompt to prevent mixing languages
-        if outline_a.language == "en":
+        if outline_a.language != "vi":
             context_text = ""
             if previous_content:
                 context_text = f"\nPREVIOUS CONTENT (for coherent transition):\n{previous_content[-500:]}\n"
@@ -3125,7 +3169,7 @@ STYLE FROM ORIGINAL SCRIPT:
 - Retention Engine: {original_analysis.retention_engine}
 {style_context}
 {context_text}
-OUTLINE A (FOUNDATION - FOLLOW STRICTLY):
+OUTLINE A (USE AS GUIDE):
 - Target total words: {outline_a.target_word_count}
 - Narrative Voice: {outline_a.narrative_voice} - use throughout
 - Audience Address: "{outline_a.audience_address}" - use consistently when addressing the audience
@@ -3141,35 +3185,34 @@ MAIN REQUIREMENTS:
 
 📋 AIDA 8-STAGE RULES (CRITICAL):
 - Section 1 (Hook): Create STRONG emotions. ❌ NO subscribe/like here
-- Section 3 (CTA#1): LIGHT CTA only - ask questions, request comments
+{f'- Section 3 (CTA#1): LIGHT CTA only - ask questions, request comments' if outline_a.channel_name else '- Section 3 (Interaction): Ask thought-provoking questions. ❌ NO subscribe/like/share'}
 - Section 5 (Main Content): This is the VALUE section. ❌ NO CTA here
 - Section 6 (Urgency): Emphasize benefits/consequences. ❌ NO CTA here  
-- Section 7 (CTA#2): MAIN CTA - subscribe, like, share
+{f'- Section 7 (CTA#2): MAIN CTA - subscribe, like, share' if outline_a.channel_name else '- Section 7 (Conclusion): Deep lesson and takeaway. ❌ NO subscribe/like/share'}
 - Section 8 (Outro): Natural closing. ❌ NO additional CTA
 - Each section must have UNIQUE content - NO repetition from other sections
 - Focus on PERSONALIZATION and VALUE for viewers
 
-🚫 STRICTLY FORBIDDEN (CRITICAL):
-- DO NOT use technical terms: "Core Angle", "Main Idea", "Hook", "CTA", "Loop", "Retention", "Climax", "Payoff"
-- DO NOT write meta-commentary: "this part creates curiosity", "this is the climax"
-- DO NOT mention "like", "subscribe", "share" EXCEPT in Section 3 (light) and Section 7 (main CTA)
-- DO NOT fabricate statistics, coordinates, specific dates (only use info from original script)
-- DO NOT use quiz format A/B/C
-- DO NOT repeat "I promise", "I believe", "I guarantee" more than once
+AVOID:
+- Technical terms: "Core Angle", "Main Idea", "Hook", "CTA", "Loop", "Retention", "Climax", "Payoff"
+- Meta-commentary: "this part creates curiosity", "this is the climax"
+- Mentioning "like", "subscribe", "share" {f'except in Section 3 (light) and Section 7 (main CTA)' if outline_a.channel_name else 'anywhere in the script'}
+- Fabricating statistics, coordinates, or specific dates not in the original
+- Quiz format A/B/C
+- Repeating "I promise", "I believe", "I guarantee" more than once
 
 📝 NATURAL VOICE:
-- Write like a REAL PERSON telling a story, not a robot
-- Use natural idioms appropriate to the language
-- AVOID literal translated metaphors that feel unnatural
-- Keep sentences concise with natural rhythm like conversation
-- DO NOT use empty abstract adjectives
+- Write like a NATIVE SPEAKER telling a story, natural, with rhythm
+- Use idioms and expressions natural to the language
+- Avoid literal translated metaphors that feel forced
+- Sentences should flow naturally, not feel forced
 
 Write ONLY in {lang_name}. Do NOT mix languages.
 
 Write the content (ONLY content, no titles/notes):
 """
         else:
-            # Vietnamese or other languages - use Vietnamese prompt
+            # Vietnamese prompt (only for vi)
             context_text = ""
             if previous_content:
                 context_text = f"\nNỘI DUNG TRƯỚC (để liên kết mạch lạc):\n{previous_content[-500:]}\n"
@@ -3207,28 +3250,27 @@ YÊU CẦU CHÍNH:
 
 📋 QUY TẮC AIDA 8 GIAI ĐOẠN (QUAN TRỌNG):
 - Giai đoạn 1 (Hook): Tạo CẢM XÚC MẠNH. ❌ KHÔNG subscribe/like ở đây
-- Giai đoạn 3 (CTA#1): CTA NHẸ - đặt câu hỏi, yêu cầu comment
+{f'- Giai đoạn 3 (CTA#1): CTA NHẸ - đặt câu hỏi, yêu cầu comment' if outline_a.channel_name else '- Giai đoạn 3 (Tương tác): Đặt câu hỏi suy ngẫm. ❌ KHÔNG subscribe/đăng ký kênh'}
 - Giai đoạn 5 (Nội dung chính): Đây là phần TẠO GIÁ TRỊ. ❌ KHÔNG CTA ở đây
 - Giai đoạn 6 (Kích động): Nhấn mạnh lợi ích/hậu quả. ❌ KHÔNG CTA ở đây
-- Giai đoạn 7 (CTA#2): CTA CHÍNH - subscribe, like, share
+{f'- Giai đoạn 7 (CTA#2): CTA CHÍNH - subscribe, like, share' if outline_a.channel_name else '- Giai đoạn 7 (Đúc kết): Bài học sâu sắc, kết luận. ❌ KHÔNG subscribe/like/share'}
 - Giai đoạn 8 (Outro): Kết thúc tự nhiên. ❌ KHÔNG thêm CTA
 - Mỗi giai đoạn phải có NỘI DUNG KHÁC BIỆT - KHÔNG lặp lại từ giai đoạn khác
 - Tập trung vào CÁ NHÂN HÓA và GIÁ TRỊ cho người xem
 
-🚫 CẤM TUYỆT ĐỐI (QUAN TRỌNG):
-- KHÔNG dùng thuật ngữ: "Core Angle", "Main Idea", "Hook", "CTA", "Loop", "Retention", "Climax", "Payoff"
-- KHÔNG viết meta: "phần này tạo tò mò", "đây là cao trào"
-- KHÔNG đề cập "like", "subscribe", "share" NGOẠI TRỪ Giai đoạn 3 (nhẹ) và Giai đoạn 7 (CTA chính)
-- KHÔNG bịa số liệu, tọa độ, ngày tháng cụ thể (chỉ dùng info từ gốc)
-- KHÔNG dùng format trắc nghiệm A/B/C
-- KHÔNG lặp "tôi hứa", "tôi tin", "tôi cam đoan" quá 1 lần
+TRÁNH:
+- Thuật ngữ kỹ thuật: "Core Angle", "Hook", "CTA", "Loop", "Retention"
+- Viết meta: "phần này tạo tò mò", "đây là cao trào"
+- Nhắc "like", "subscribe", "share" {f'ngoài Giai đoạn 3 (nhẹ) và Giai đoạn 7 (CTA chính)' if outline_a.channel_name else 'ở bất kỳ đâu'}
+- Bịa số liệu, tọa độ, ngày tháng không có trong gốc
+- Format trắc nghiệm A/B/C
+- Lặp "tôi hứa", "tôi tin", "tôi cam đoan" quá 1 lần
 
-📝 GIỌNG VĂN VIỆT THUẦN:
-- Viết như NGƯỜI THẬT kể chuyện, không phải robot
-- Dùng thành ngữ, tục ngữ Việt Nam nếu phù hợp
+📝 GIỌNG VĂN TỰ NHIÊN:
+- Viết như NGƯỜI BẢN XỨ kể chuyện, tự nhiên, có nhịp thở
+- Dùng thành ngữ, tục ngữ phù hợp với ngôn ngữ
 - TRÁNH ẩn dụ dịch từ tiếng Anh (VD: "ngọn đèn tò mò sáng", "não mở khóa")
-- Câu văn ngắn gọn, nhịp điệu tự nhiên như nói chuyện
-- KHÔNG dùng tính từ sáo rỗng: "đấu trường sinh học", "bản tin tĩnh lặng"
+- Câu văn có nhịp điệu tự nhiên, không gượng ép
 
 CHỈ viết bằng {lang_name}. KHÔNG trộn ngôn ngữ khác.
 
@@ -3399,17 +3441,27 @@ Chỉ trả về JSON.
         style_context = self._build_style_context(style_profile, language=outline_a.language)
         
         # Use language-specific prompts to prevent mixing languages
-        if outline_a.language == "en":
+        if outline_a.language != "vi":
             special_instructions = ""
             if is_first_section:
                 # COMMAND 1: Opening section - Hook + Subscribe CTA + Quiz
-                special_instructions = f"""
+                if outline_a.channel_name:
+                    special_instructions = f"""
 SPECIAL INSTRUCTIONS FOR OPENING SECTION (COMMAND 1):
 1. Write to create curiosity, mystery, and captivation
 2. Create strong emotions, shock right from the start to HOOK into the viewer's mind
 3. Make them compelled to watch until the end
 4. Weave subscription mention for {outline_a.channel_name} NATURALLY - match the narrator's StyleA voice
-🚫 AVOID: Generic phrases like "Don't forget to subscribe"
+🚧 AVOID: Generic phrases like "Don't forget to subscribe"
+"""
+                else:
+                    special_instructions = """
+SPECIAL INSTRUCTIONS FOR OPENING SECTION (COMMAND 1):
+1. Write to create curiosity, mystery, and captivation
+2. Create strong emotions, shock right from the start to HOOK into the viewer's mind
+3. Make them compelled to watch until the end
+❌ DO NOT mention subscribe, like, share, or any channel promotion
+❌ NO call to action of any kind in this section
 """
                 if add_quiz:
                     special_instructions += """
@@ -3419,7 +3471,8 @@ SPECIAL INSTRUCTIONS FOR OPENING SECTION (COMMAND 1):
 """
             elif is_last_section:
                 # COMMAND 3: Closing section - Summary + Lesson + Subscribe CTA (NO quiz here)
-                special_instructions = f"""
+                if outline_a.channel_name:
+                    special_instructions = f"""
 SPECIAL INSTRUCTIONS FOR CLOSING SECTION (COMMAND 3):
 1. Write a profound summary (300-500 words) of all content
 2. Provide a deep LESSON that can be applied to current daily life for viewers
@@ -3427,6 +3480,16 @@ SPECIAL INSTRUCTIONS FOR CLOSING SECTION (COMMAND 3):
 4. This is the ONLY section where subscribe/like/share is allowed besides the opening
 ❌ NO engagement questions - keep it simple
 🚧 AVOID: Generic phrases like "Don't forget to subscribe"
+"""
+                else:
+                    special_instructions = """
+SPECIAL INSTRUCTIONS FOR CLOSING SECTION (COMMAND 3):
+1. Write a profound summary (300-500 words) of all content
+2. Provide a deep LESSON that can be applied to current daily life for viewers
+3. End with a natural, thoughtful conclusion
+❌ DO NOT mention subscribe, like, share, or any channel promotion
+❌ NO call to action of any kind - keep it pure content
+❌ NO engagement questions - keep it simple
 """
             else:
                 # COMMAND 2: Middle sections - Main content, NO CTA
@@ -3437,10 +3500,10 @@ INSTRUCTIONS FOR MAIN CONTENT SECTION (COMMAND 2):
 3. Follow outline A closely, don't repeat content from previous sections
 4. Focus 100% on providing VALUE to viewers
 
-🚫 STRICTLY FORBIDDEN IN THIS SECTION:
-- ❌ ABSOLUTELY NO mention of subscribe, like, share, follow, or any call to action
-- ❌ NO interactive questions or quizzes asking for comments
-- ❌ NO channel promotion or engagement requests
+AVOID in this section:
+- Mentioning subscribe, like, share, follow, or any call to action
+- Interactive questions or quizzes asking for comments
+- Channel promotion or engagement requests
 - This section is PURE CONTENT ONLY
 """
             
@@ -3471,16 +3534,26 @@ IMPORTANT: Write ONLY in {lang_name}. Do NOT mix any other languages.
 Write the refined content (ONLY content):
 """
         else:
-            # Vietnamese or other languages
+            # Vietnamese prompt (only for vi)
             special_instructions = ""
             if is_first_section:
                 # CÂU LỆNH 1: Phần mở bài - Hook + Subscribe CTA + Quiz
-                special_instructions = f"""
+                if outline_a.channel_name:
+                    special_instructions = f"""
 HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN MỞ BÀI (CÂU LỆNH 1):
 1. Viết gây ra sự tò mò, bí ẩn, thu hút
 2. Tạo cảm xúc mạnh, sốc ngay từ đầu để HOOK vào tâm trí khán giả
 3. Khiến họ thôi thúc nghe đến cuối video
 4. Sau hook, kêu gọi đăng ký kênh: "Đừng quên đăng ký kênh {outline_a.channel_name} để ủng hộ mình có động lực làm tiếp các video hay!"
+"""
+                else:
+                    special_instructions = """
+HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN MỞ BÀI (CÂU LỆNH 1):
+1. Viết gây ra sự tò mò, bí ẩn, thu hút
+2. Tạo cảm xúc mạnh, sốc ngay từ đầu để HOOK vào tâm trí khán giả
+3. Khiến họ thôi thúc nghe đến cuối video
+❌ KHÔNG nhắc đăng ký kênh, subscribe, like, share
+❌ KHÔNG có bất kỳ CTA nào trong phần này
 """
                 if add_quiz:
                     special_instructions += """
@@ -3490,7 +3563,8 @@ HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN MỞ BÀI (CÂU LỆNH 1):
 """
             elif is_last_section:
                 # CÂU LỆNH 3: Phần kết - Đúc kết + Bài học + Subscribe CTA (KHÔNG câu hỏi ở đây)
-                special_instructions = f"""
+                if outline_a.channel_name:
+                    special_instructions = f"""
 HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN KẾT (CÂU LỆNH 3):
 1. Viết đoạn đúc kết sâu sắc (300-500 từ) về toàn bộ nội dung
 2. Đưa ra BÀI HỌC sâu sắc và cách ÁP DỤNG vào cuộc sống hiện tại cho khán giả
@@ -3499,20 +3573,30 @@ HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN KẾT (CÂU LỆNH 3):
 ❌ KHÔNG thêm câu hỏi engagement - giữ đơn giản
 🚧 TRÁNH: Câu generic như "Đừng quên đăng ký"
 """
+                else:
+                    special_instructions = """
+HƯỚNG DẪN ĐẶC BIỆT CHO PHẦN KẾT (CÂU LỆNH 3):
+1. Viết đoạn đúc kết sâu sắc (300-500 từ) về toàn bộ nội dung
+2. Đưa ra BÀI HỌC sâu sắc và cách ÁP DỤNG vào cuộc sống hiện tại cho khán giả
+3. Kết thúc bằng câu kết luận sâu sắc, tự nhiên
+❌ KHÔNG nhắc đăng ký kênh, subscribe, like, share
+❌ KHÔNG có bất kỳ CTA nào - giữ nội dung thuần túy
+❌ KHÔNG thêm câu hỏi engagement - giữ đơn giản
+"""
             else:
                 # CÂU LỆNH 2: Phần giữa - Nội dung chính, KHÔNG CTA
                 special_instructions = f"""
 HƯỚNG DẪN CHO PHẦN NỘI DUNG CHÍNH (CÂU LỆNH 2):
-1. Dùng 1 câu để kết nối mượt mà với phần trước
+1. Dùng 1 câu để kết nối tự nhiên với phần trước
 2. Viết mạch lạc, có cảm xúc, xuyên suốt
 3. Bám sát dàn ý A, không lặp lại nội dung các phần trước
 4. Tập trung 100% vào việc tạo GIÁ TRỊ cho người xem
 
-🚫 CẤM TUYỆT ĐỐI TRONG PHẦN NÀY:
-- ❌ KHÔNG được nhắc đến subscribe, like, share, follow, đăng ký kênh
-- ❌ KHÔNG đặt câu hỏi tương tác hay quiz yêu cầu comment
-- ❌ KHÔNG quảng bá kênh hay kêu gọi engagement
-- Phần này CHỈ có NỘI DUNG THUẦN TÚY
+TRÁNH trong phần này:
+- Nhắc subscribe, like, share, đăng ký kênh
+- Câu hỏi tương tác hay quiz
+- Quảng bá kênh hay kêu gọi engagement
+- Phần này chỉ có NỘI DUNG THUẦN TÚY
 """
             
             prompt = f"""Tinh chỉnh và viết lại phần sau cho hay hơn, sâu sắc hơn:
@@ -3597,7 +3681,7 @@ Viết nội dung đã tinh chỉnh (CHỈ nội dung):
         style_context = self._build_style_context(style_profile, language=outline_a.language)
         
         # Use language-specific prompts to prevent mixing languages
-        if outline_a.language == "en":
+        if outline_a.language != "vi":
             value_instructions = {
                 "sell": "Write a 300-400 word conclusion with deep lesson, then connect the content to the course/product and call viewers to purchase. Use urgency, scarcity, benefits, and pain points.",
                 "engage": "Write a 300-500 word conclusion with deep lesson, then create a SIMPLE easy-to-answer question asking viewers to comment their opinion for discussion, then call for channel subscription.",
@@ -3629,16 +3713,16 @@ INSTRUCTIONS:
 4. APPLY THE LEARNED WRITING STYLE (StyleA) if provided above
 5. Output must be the COMPLETE ENHANCED SCRIPT, not a description of the value
 
-🚫 STRICTLY FORBIDDEN:
-- DO NOT use technical terms: "Core Angle", "Main Idea", "Hook", "CTA", "Loop", "Retention"
-- DO NOT write meta-commentary about what you're doing
-- DO NOT fabricate statistics, coordinates, specific dates
-- DO NOT use quiz format A/B/C
-- DO NOT repeat "I promise", "I believe" more than once
-- "Subscribe", "like" ONLY at the very end, and ONLY if appropriate
+AVOID:
+- Technical terms: "Core Angle", "Hook", "CTA", "Retention"
+- Meta-commentary about what you're doing
+- Fabricating statistics, coordinates, or specific dates
+- Quiz format A/B/C
+- Repeating "I promise", "I believe" more than once
+- "Subscribe", "like" only at the very end, if appropriate
 
 📝 NATURAL VOICE:
-- Write like a REAL PERSON, not a robot
+- Write like a NATIVE SPEAKER, natural, with rhythm
 - Use natural idioms, avoid literal translated metaphors
 - Sentences should flow naturally like conversation
 
@@ -3681,18 +3765,18 @@ HƯỚNG DẪN:
 4. ÁP DỤNG PHONG CÁCH VIẾT ĐÃ HỌC (StyleA) nếu có ở trên  
 5. Kết quả phải là SCRIPT HOÀN CHỈNH, không phải mô tả về giá trị
 
-🚫 CẤM TUYỆT ĐỐI:
-- KHÔNG dùng thuật ngữ: "Core Angle", "Main Idea", "Hook", "CTA", "Loop", "Retention"
-- KHÔNG viết meta về việc bạn đang làm
-- KHÔNG bịa số liệu, tọa độ, ngày tháng cụ thể
-- KHÔNG dùng format trắc nghiệm A/B/C
-- KHÔNG lặp "tôi hứa", "tôi tin" quá 1 lần
-- "Subscribe", "like" CHỈ ở cuối cùng, nếu phù hợp
+TRÁNH:
+- Thuật ngữ kỹ thuật: "Core Angle", "Hook", "CTA", "Retention"
+- Viết meta về việc bạn đang làm
+- Bịa số liệu, tọa độ, ngày tháng không có trong gốc
+- Format trắc nghiệm A/B/C
+- Lặp "tôi hứa", "tôi tin" quá 1 lần
+- "Subscribe", "like" chỉ ở cuối cùng, nếu phù hợp
 
 📝 GIỌNG VĂN TỰ NHIÊN:
-- Viết như NGƯỜI THẬT, không phải robot
-- Dùng thành ngữ Việt, tránh ẩn dụ dịch từ tiếng Anh
-- Câu văn tự nhiên như đang nói chuyện
+- Viết như NGƯỜI BẢN XỨ, tự nhiên, có nhịp thở
+- Dùng thành ngữ phù hợp ngôn ngữ, tránh ẩn dụ dịch từ tiếng Anh
+- Câu văn tự nhiên như đang trò chuyện
 
 QUAN TRỌNG: 
 - CHỈ viết bằng {lang_name}, KHÔNG trộn ngôn ngữ
@@ -4007,55 +4091,63 @@ Translated {out_name} script:"""
             conversation_id = self.ai_client.start_conversation()
             logger.info(f"Started pipeline conversation: {conversation_id[:8]}...")
             
-            # BƯỚC 2: Nhập cấu trúc AIDA
+            # BƯỚC 2: Nhập cấu trúc AIDA (flexible ranges)
             logger.info("📚 [3%] Bước 2: Dạy cấu trúc AIDA...")
             _progress("step2_aida", 3, "Học cấu trúc AIDA...", "Learning AIDA structure...")
             
-            wc_hook = int(target_word_count * 0.08)
-            wc_problem = int(target_word_count * 0.10)
-            wc_cta1 = int(target_word_count * 0.08)
-            wc_brand = int(target_word_count * 0.03)
-            wc_main = int(target_word_count * 0.40)
-            wc_urgency = int(target_word_count * 0.12)
-            wc_cta2 = int(target_word_count * 0.10)
-            wc_outro = int(target_word_count * 0.09)
+            # Flexible ranges instead of fixed percentages
+            wc_opening_approx = int(target_word_count * 0.25)  # stages 1-4 combined
+            wc_main_approx = int(target_word_count * 0.45)     # stage 5
+            wc_closing_approx = int(target_word_count * 0.30)  # stages 6-8 combined
             
             if use_en_prompts:
-                aida_prompt = f"""You are an expert video script writer. I will teach you a special 8-stage AIDA structure.
+                stage3_en = f'3. CTA #1: Light engagement' if channel_name else '3. INTERACTION: Questions, encourage comments. NO subscribe/like'
+                stage4_en = f'4. BRAND INTRO: Brief channel intro.' if channel_name else '4. TRANSITION: Brief transition to main content.'
+                stage7_en = f'7. CTA #2: Main CTA, subscribe' if channel_name else '7. CONCLUSION: Deep lesson, key takeaway. NO subscribe/like'
+                cta_rule_en = 'CTAs ONLY in stages 3 and 7.' if channel_name else 'NO subscribe, like, share, or channel promotion ANYWHERE.'
+                
+                aida_prompt = f"""You are a video script writer. Learn this 8-stage structure as a FLEXIBLE GUIDE — not a rigid formula.
 
-TARGET WORD COUNT: {target_word_count} words
+TARGET WORD COUNT: ~{target_word_count} words (approximate, prioritize natural flow over exact count)
 
-🎯 8-STAGE AIDA STRUCTURE:
-1. HOOK/INTRO (8% = ~{wc_hook} words): Create strong emotions. ❌ NO CTA
-2. STATE THE PROBLEM (10% = ~{wc_problem} words): Present problem. ❌ NO CTA
-3. CTA #1 (8% = ~{wc_cta1} words): ✅ Light CTA, engagement
-4. BRAND INTRO (3% = ~{wc_brand} words): Brief channel intro. ❌ NO CTA
-5. MAIN CONTENT (40% = ~{wc_main} words): ⭐ Create VALUE. ❌ NO CTA
-6. CREATE URGENCY (12% = ~{wc_urgency} words): Benefits. ❌ NO CTA
-7. CTA #2 (10% = ~{wc_cta2} words): ✅ Main CTA, subscribe
-8. OUTRO (9% = ~{wc_outro} words): Natural ending. ❌ NO CTA
+8-STAGE STRUCTURE (proportions are approximate — adjust naturally):
+1. HOOK/INTRO: Open with something that immediately pulls the viewer in
+2. STATE THE PROBLEM: Present the core issue or question
+{stage3_en}
+{stage4_en}
+5. MAIN CONTENT (~40-50%): The core value — insights, stories, analysis
+6. DEEPEN: Go deeper, connect to real life, show why it matters
+{stage7_en}
+8. OUTRO: Natural ending that feels complete, not abrupt
 
-⚠️ CTAs ONLY in stages 3 and 7.
+{cta_rule_en}
+The percentages are GUIDES. Let the content breathe naturally.
 
-Reply only "Understood AIDA"."""
+Reply only "Understood"."""
             else:
-                aida_prompt = f"""Bạn là chuyên gia viết kịch bản video. Tôi sẽ dạy bạn cấu trúc AIDA 8 giai đoạn.
+                stage3_vi = f'3. CTA #1: Tương tác nhẹ' if channel_name else f'3. TƯƠNG TÁC: Đặt câu hỏi, khuyến khích comment. KHÔNG subscribe'
+                stage4_vi = f'4. GIỚI THIỆU KÊNH: Ngắn gọn.' if channel_name else f'4. CHUYỂN TIẾP: Dẫn dắt sang nội dung chính.'
+                stage7_vi = f'7. CTA #2: CTA chính, đăng ký' if channel_name else f'7. ĐÚC KẾT: Bài học sâu sắc. KHÔNG subscribe/like'
+                cta_rule_vi = 'CHỈ CTA ở giai đoạn 3 và 7.' if channel_name else 'KHÔNG subscribe, like, share, quảng bá kênh ở BẤT KỲ ĐÂU.'
+                
+                aida_prompt = f"""Bạn là người viết kịch bản video. Học cấu trúc 8 giai đoạn sau như HƯỚNG DẪN LINH HOẠT — không phải công thức cứng.
 
-SỐ TỪ MỤC TIÊU: {target_word_count} từ
+SỐ TỪ MỤC TIÊU: ~{target_word_count} từ (ước lượng, ưu tiên mạch lạc tự nhiên hơn đếm từ chính xác)
 
-🎯 CẤU TRÚC AIDA 8 GIAI ĐOẠN:
-1. HOOK/INTRO (8% = ~{wc_hook} từ): Gây cảm xúc mạnh. ❌ KHÔNG CTA
-2. NÊU VẤN ĐỀ (10% = ~{wc_problem} từ): Trình bày vấn đề. ❌ KHÔNG CTA
-3. CTA #1 (8% = ~{wc_cta1} từ): ✅ CTA nhẹ, tương tác
-4. INTRO KÊNH (3% = ~{wc_brand} từ): Giới thiệu kênh. ❌ KHÔNG CTA
-5. NỘI DUNG CHÍNH (40% = ~{wc_main} từ): ⭐ Tạo GIÁ TRỊ. ❌ KHÔNG CTA
-6. KÍCH ĐỘNG (12% = ~{wc_urgency} từ): Lợi ích. ❌ KHÔNG CTA
-7. CTA #2 (10% = ~{wc_cta2} từ): ✅ CTA chính, subscribe
-8. OUTRO (9% = ~{wc_outro} từ): Kết thúc. ❌ KHÔNG CTA
+CẤU TRÚC 8 GIAI ĐOẠN (tỷ lệ linh hoạt — điều chỉnh theo nội dung):
+1. MỞ ĐẦU: Mở bằng thứ khiến người xem muốn nghe tiếp
+2. NÊU VẤN ĐỀ: Trình bày vấn đề/câu hỏi cốt lõi
+{stage3_vi}
+{stage4_vi}
+5. NỘI DUNG CHÍNH (~40-50%): Giá trị cốt lõi — góc nhìn, câu chuyện, phân tích
+6. ĐÀO SÂU: Kết nối với đời thực, cho thấy tại sao điều này quan trọng
+{stage7_vi}
+8. KẾT: Kết thúc tự nhiên, trọn vẹn
 
-⚠️ CHỈ CTA ở giai đoạn 3 và 7.
+{cta_rule_vi}
+Các tỷ lệ chỉ là HƯỚNG DẪN. Để nội dung phát triển tự nhiên.
 
-Chỉ trả lời "Đã hiểu AIDA"."""
+Chỉ trả lời "Đã hiểu"."""
 
             response = self.ai_client.send_message(conversation_id, aida_prompt, temperature=0.3)
             logger.info(f"📚 Bước 2 done: {response[:30]}...")
@@ -4298,21 +4390,21 @@ Chỉ trả về JSON."""
 🧬 DNA GIỌNG VĂN YÊU THÍCH (giữ nguyên 100% - từ StyleA đã lưu):"""
                 
                 # Voice description
-                voice_label = "Voice/Style" if language == "en" else "Giọng văn"
+                voice_label = "Voice/Style" if use_en_prompts else "Giọng văn"
                 if style_profile.get("voice_description"):
                     dna_section += f"\n- {voice_label}: {style_profile['voice_description']}"
                 elif style_profile.get("tone"):
                     dna_section += f"\n- {voice_label}: {style_profile['tone']}"
                 
                 # Storytelling approach
-                storytelling_label = "Storytelling Approach" if language == "en" else "Cách dẫn chuyện"
+                storytelling_label = "Storytelling Approach" if use_en_prompts else "Cách dẫn chuyện"
                 if style_profile.get("storytelling_approach"):
                     dna_section += f"\n- {storytelling_label}: {style_profile['storytelling_approach']}"
                 elif style_profile.get("narrative_structure"):
                     dna_section += f"\n- {storytelling_label}: {style_profile['narrative_structure']}"
                 
                 # Author's Soul
-                soul_label = "Author's Soul" if language == "en" else "Hồn văn"
+                soul_label = "Author's Soul" if use_en_prompts else "Hồn văn"
                 if style_profile.get("authors_soul"):
                     dna_section += f"\n- {soul_label}: {style_profile['authors_soul']}"
                 
@@ -4499,9 +4591,10 @@ Chỉ trả về JSON."""
             logger.info("✍️ [48%] Bước 8: Viết 3 câu lệnh...")
             _progress("step8_write", 48, "Viết nội dung...", "Writing content...")
             
-            wc_opening = int(target_word_count * 0.10)
-            wc_body = int(target_word_count * 0.70)
-            wc_closing = int(target_word_count * 0.20)
+            # CL1 = stages 1-4 (~25-30%), CL2 = stage 5 (~40-50%), CL3 = stages 6-8 (~25-30%)
+            wc_opening = int(target_word_count * 0.28)
+            wc_body = int(target_word_count * 0.44)
+            wc_closing = int(target_word_count * 0.28)
             
             full_content = ""
             draft_sections = []
@@ -4515,29 +4608,27 @@ Chỉ trả về JSON."""
                 quiz_instr = "\n- Tạo 1 câu hỏi trắc nghiệm A/B để tương tác" if not use_en_prompts else "\n- Create a short A/B quiz"
             
             if use_en_prompts:
-                cl1 = f"""Using Style A and Outline B you memorized, write OPENING (stages 1-4 combined). ~{wc_opening} words.
-- Create CURIOSITY, SHOCK to HOOK
-- Include greeting: "This is {channel_name}"
-- After hook, call for subscribe{quiz_instr}
-- Apply the HOOK technique from Style A
-- Write in {lang_name}. No icons. No canvas.
-- NEVER use "..." (ellipsis) — use complete sentences with proper punctuation.
+                greeting_instr = f'- Include greeting: "This is {channel_name}"\n- After hook, call for subscribe' if channel_name else '- NO channel greeting, NO subscribe/like/share calls'
+                cl1 = f"""Using Style A and Outline B, write OPENING (stages 1-4 combined). ~{wc_opening} words.
+- Open naturally — draw the viewer in with genuine curiosity or emotion
+{greeting_instr}{quiz_instr}
+- Apply hook techniques from Style A
+- Write in {lang_name} as a native speaker would naturally speak. No icons. No canvas.
 {culture_rules}
 
-🚫 CRITICAL: Do NOT use any channel name, brand name, or CTA from the ORIGINAL script. Use ONLY "{channel_name}" as the channel name. Do NOT mention any books, products, or courses from the original script.
+{f'Do NOT use any channel name, brand, or CTA from the ORIGINAL script. Use ONLY "{channel_name}".' if channel_name else 'No channel names, brands, or CTAs. No subscribe/like/share.'} No books, products, or courses from the original.
 
 Write opening ONLY:"""
             else:
-                cl1 = f"""Dựa trên Giọng văn A và Dàn ý B đã ghi nhớ, viết MỞ BÀI (gộp giai đoạn 1-4). ~{wc_opening} từ.
-- Gây TÒ MÒ, SỐC để HOOK
-- Chèn lời chào: "Đây là {channel_name}"
-- Sau hook, kêu gọi đăng ký kênh{quiz_instr}
-- Áp dụng kỹ thuật HOOK từ Giọng văn A
-- Viết bằng {lang_name}. Không icon. Tắt canvas.
-- TUYỆT ĐỐI KHÔNG dùng dấu "..." (ba chấm) — viết câu hoàn chỉnh với dấu chấm câu đúng.
-- ĐẢM BẢO tất cả từ có dấu tiếng Việt đầy đủ (ví dụ: bạn, không, được, mình, những).
+                greeting_instr_vi = f'- Chèn lời chào: "Đây là {channel_name}"\n- Sau hook, kêu gọi đăng ký kênh' if channel_name else '- KHÔNG chào tên kênh, KHÔNG nhắc subscribe/like/share/đăng ký kênh'
+                cl1 = f"""Dựa trên Giọng văn A và Dàn ý B, viết MỞ BÀI (gộp giai đoạn 1-4). ~{wc_opening} từ.
+- Mở đầu tự nhiên — cuốn người xem bằng sự tò mò hoặc cảm xúc thật
+{greeting_instr_vi}{quiz_instr}
+- Áp dụng kỹ thuật mở bài từ Giọng văn A
+- Viết bằng {lang_name} như người bản xứ thực sự nói. Không icon. Tắt canvas.
+- ĐẢM BẢO dấu tiếng Việt đầy đủ (bạn, không, được, mình, những).
 
-🚫 QUAN TRỌNG: KHÔNG được sử dụng bất kỳ tên kênh, thương hiệu, hay CTA nào từ kịch bản GỐC. CHỈ dùng "{channel_name}" làm tên kênh. KHÔNG đề cập sách, sản phẩm, khóa học từ kịch bản gốc.
+{f'KHÔNG dùng bất kỳ tên kênh, thương hiệu, hay CTA nào từ kịch bản GỐC. CHỈ dùng "{channel_name}".' if channel_name else 'KHÔNG nhắc subscribe, like, share, đăng ký kênh.'} KHÔNG đề cập sách, sản phẩm, khóa học từ kịch bản gốc.
 
 Chỉ viết mở bài:"""
 
@@ -4555,28 +4646,26 @@ Chỉ viết mở bài:"""
             
             if use_en_prompts:
                 cl2 = f"""Continue with Style A, write stage 5 (Main Content). ~{wc_body} words.
-- Connect smoothly with previous section
-- Use Retention Engine from Style A
-- Maintain Core Angle analyzed earlier
-- Write in {lang_name}. No icons. No canvas.
-- NEVER use "..." (ellipsis) — use complete sentences with proper punctuation.
+- Connect naturally with the previous section
+- This is the HEART of the video — deliver real value through stories, insights, analysis
+- Maintain the Core Angle analyzed earlier
+- Write in {lang_name} as a native speaker would. No icons. No canvas.
 {culture_rules}
 
-🚫 FORBIDDEN: No subscribe, like, share, quiz, channel promotion.
-🚫 CRITICAL: Do NOT use any channel name, brand name, book/product/course names from the ORIGINAL script. This must be 100% original content.
+No subscribe, like, share, quiz, or channel promotion.
+No channel names, brands, books, products, or courses from the ORIGINAL script.
 
 Write main content ONLY:"""
             else:
                 cl2 = f"""Tiếp tục với Giọng văn A, viết giai đoạn 5 (Nội dung chính). ~{wc_body} từ.
-- Kết nối mượt mà với phần trước
-- Dùng Retention Engine từ Giọng văn A
-- Giữ đúng Core Angle đã phân tích
-- Viết bằng {lang_name}. Không icon. Tắt canvas.
-- TUYỆT ĐỐI KHÔNG dùng dấu "..." (ba chấm) — viết câu hoàn chỉnh.
-- ĐẢM BẢO dấu tiếng Việt đầy đủ (bạn, không, được, mình, những).
+- Kết nối tự nhiên với phần trước
+- Đây là TRÁI TIM của video — mang lại giá trị thật qua câu chuyện, góc nhìn, phân tích
+- Giữ đúng góc nhìn chủ đạo đã phân tích
+- Viết bằng {lang_name} như người bản xứ thực sự nói. Không icon. Tắt canvas.
+- ĐẢM BẢO dấu tiếng Việt đầy đủ.
 
-🚫 CẤM: Không nhắc subscribe, like, share, quiz, quảng bá kênh.
-🚫 QUAN TRỌNG: KHÔNG sử dụng bất kỳ tên kênh, thương hiệu, tên sách/sản phẩm/khóa học nào từ kịch bản GỐC. Nội dung phải 100% mới.
+Không nhắc subscribe, like, share, quiz, quảng bá kênh.
+KHÔNG dùng tên kênh, thương hiệu, tên sách/sản phẩm/khóa học từ kịch bản GỐC.
 
 Chỉ viết nội dung chính:"""
 
@@ -4611,29 +4700,37 @@ Chỉ viết nội dung chính:"""
                         value_instr = f"\n- Add value: {val_map.get(value_type, value_type)}"
             
             if use_en_prompts:
+                if channel_name:
+                    cta_closing_en = f"- Use CTA approach from Style A\n- Include subscribe to {channel_name}{value_instr}"
+                    closing_warning_en = f'Use ONLY "{channel_name}" as channel name. No names, brands, or products from the original script.'
+                else:
+                    cta_closing_en = f"- Provide a natural, thoughtful conclusion{value_instr}\n- NO subscribe, like, share, or channel promotion"
+                    closing_warning_en = 'No channel names, brands, or CTAs. Focus on a meaningful conclusion.'
                 cl3 = f"""Finish with Style A, combine stages 6-8 into closing. ~{wc_closing} words.
-- Connect smoothly with previous section
-- Provide deep lesson and application
-- Use CTA Strategy from Style A
-- Call for subscribe to {channel_name}{value_instr}
-- Write in {lang_name}. No icons. No canvas.
-- NEVER use "..." (ellipsis) — use complete sentences with proper punctuation.
+- Flow naturally from the previous section
+- Provide depth — a real lesson or insight the viewer takes away
+{cta_closing_en}
+- Write in {lang_name} as a native speaker would. No icons. No canvas.
 {culture_rules}
 
-🚫 CRITICAL: Do NOT use any channel name, brand name, or product/book/course recommendations from the ORIGINAL script. Use ONLY "{channel_name}" as the channel name. Any CTA must be for "{channel_name}" only. If a custom value/product is specified above, use THAT instead of anything from the original.
+{closing_warning_en}
 
 Write closing ONLY:"""
             else:
+                if channel_name:
+                    cta_closing_vi = f"- Dùng cách CTA từ Giọng văn A\n- Kêu gọi đăng ký kênh {channel_name}{value_instr}"
+                    closing_warning_vi = f'CHỈ dùng "{channel_name}" làm tên kênh. Không dùng tên, thương hiệu, sản phẩm từ kịch bản gốc.'
+                else:
+                    cta_closing_vi = f"- Đưa ra kết luận tự nhiên, sâu sắc{value_instr}\n- KHÔNG nhắc subscribe, like, share, đăng ký kênh"
+                    closing_warning_vi = 'KHÔNG nhắc subscribe, like, share. Tập trung vào bài học ý nghĩa.'
                 cl3 = f"""Hoàn thành với Giọng văn A, gộp giai đoạn 6-8 thành đoạn kết. ~{wc_closing} từ.
-- Kết nối mượt mà với phần trước
-- Đưa ra bài học sâu sắc và cách áp dụng
-- Dùng CTA Strategy từ Giọng văn A
-- Kêu gọi đăng ký kênh {channel_name}{value_instr}
-- Viết bằng {lang_name}. Không icon. Tắt canvas.
-- TUYỆT ĐỐI KHÔNG dùng dấu "..." (ba chấm) — viết câu hoàn chỉnh.
+- Kết nối tự nhiên với phần trước
+- Đưa ra bài học sâu sắc, điều người xem thực sự mang đi được
+{cta_closing_vi}
+- Viết bằng {lang_name} như người bản xứ thực sự nói. Không icon. Tắt canvas.
 - ĐẢM BẢO dấu tiếng Việt đầy đủ.
 
-🚫 QUAN TRỌNG: KHÔNG sử dụng bất kỳ tên kênh, thương hiệu, hay giới thiệu sách/sản phẩm/khóa học nào từ kịch bản GỐC. CHỈ dùng "{channel_name}" làm tên kênh. Mọi CTA chỉ dành cho "{channel_name}". Nếu có custom value/sản phẩm được chỉ định ở trên, dùng ĐÚNG sản phẩm đó thay vì sản phẩm từ kịch bản gốc.
+{closing_warning_vi}
 
 Chỉ viết phần kết:"""
 
@@ -4703,118 +4800,7 @@ Trả lời ngắn:"""
             except:
                 results["similarity_review"] = "Review skipped"
             
-            _progress("step10_done", 88, "Kiểm tra xong", "Check complete")
-            
-            # BƯỚC 11: Rà soát câu cứng nhắc
-            logger.info("🔍 [90%] Bước 11: Rà soát câu cứng nhắc...")
-            _progress("step11_rigid", 90, "Rà soát câu cứng nhắc...", "Checking rigid sentences...")
-            
-            if use_en_prompts:
-                rigid_check = f"""Review the written content and identify any RIGID/UNNATURAL sentences.
-
-A rigid sentence is:
-- Sounds like a robot or formula
-- Uses awkward phrasing
-- Lacks natural flow
-- Has strange word order
-
-List each rigid sentence found (one per line). If none found, reply "No rigid sentences".
-
-Check the content and list rigid sentences:"""
-            else:
-                rigid_check = f"""Đọc lại nội dung đã viết và liệt kê các CÂU CỨNG NHẮC/KHÔNG TỰ NHIÊN.
-
-Câu cứng nhắc là:
-- Nghe như robot hoặc công thức
-- Dùng cụm từ khó hiểu
-- Thiếu sự mạch lạc tự nhiên
-- Thứ tự từ kỳ lạ
-
-Liệt kê từng câu cứng nhắc (mỗi dòng 1 câu). Nếu không có, trả lời "Không có câu cứng nhắc".
-
-Kiểm tra nội dung và liệt kê câu cứng nhắc:"""
-            
-            try:
-                rigid_resp = self.ai_client.send_message(conversation_id, rigid_check, temperature=0.3)
-                results["rigid_sentences_check"] = rigid_resp.strip()
-                has_rigid = not ("no rigid" in rigid_resp.lower() or "không có câu" in rigid_resp.lower())
-            except:
-                rigid_resp = ""
-                has_rigid = False
-            
-            logger.info(f"🔍 Bước 11: Found rigid sentences: {has_rigid}")
-            _progress("step11_done", 91, "Rà soát xong", "Rigidity check complete")
-            
-            # BƯỚC 11.5: Sửa câu cứng nhắc theo Giọng văn A
-            if has_rigid and rigid_resp and len(rigid_resp) > 20:
-                logger.info("✨ [92%] Bước 11.5: Chỉnh sửa câu cứng nhắc...")
-                _progress("step11_5_fix", 92, "Chỉnh sửa câu cứng nhắc...", "Fixing rigid sentences...")
-                
-                if use_en_prompts:
-                    fix_prompt = f"""You found these rigid sentences:
-{rigid_resp}
-
-Now rewrite ONLY those rigid sentences naturally using Style A you memorized.
-Keep the SAME meaning, just make them flow naturally.
-Maintain coherence with the rest of the content.
-
-For each rigid sentence, provide:
-OLD: [original rigid sentence]
-NEW: [natural rewrite]
-
-Rewrite the rigid sentences:"""
-                else:
-                    fix_prompt = f"""Bạn đã tìm thấy các câu cứng nhắc:
-{rigid_resp}
-
-Giờ viết lại CHỈ những câu cứng nhắc đó một cách tự nhiên theo Giọng văn A đã ghi nhớ.
-Giữ nguyên Ý NGHĨA, chỉ làm cho mạch lạc tự nhiên hơn.
-Đảm bảo mạch lạc với phần còn lại.
-
-Với mỗi câu cứng nhắc, cho:
-CŨ: [câu cứng nhắc gốc]
-MỚI: [viết lại tự nhiên]
-
-Viết lại các câu cứng nhắc:"""
-                
-                try:
-                    fix_resp = self.ai_client.send_message(conversation_id, fix_prompt, temperature=0.5)
-                    results["rigid_fixes"] = fix_resp.strip()
-                    
-                    # Parse and apply fixes to full_content
-                    lines = fix_resp.strip().split('\n')
-                    old_new_pairs = []
-                    current_old = None
-                    
-                    for line in lines:
-                        line = line.strip()
-                        if line.lower().startswith(('old:', 'cũ:')):
-                            current_old = line.split(':', 1)[1].strip() if ':' in line else None
-                        elif line.lower().startswith(('new:', 'mới:')) and current_old:
-                            new_text = line.split(':', 1)[1].strip() if ':' in line else None
-                            if new_text:
-                                old_new_pairs.append((current_old, new_text))
-                            current_old = None
-                    
-                    # Apply replacements
-                    fixed_content = full_content
-                    replacements_made = 0
-                    for old_text, new_text in old_new_pairs:
-                        if old_text in fixed_content:
-                            fixed_content = fixed_content.replace(old_text, new_text, 1)
-                            replacements_made += 1
-                    
-                    if replacements_made > 0:
-                        full_content = fixed_content
-                        logger.info(f"✨ Bước 11.5: Replaced {replacements_made} rigid sentences")
-                    
-                except Exception as e:
-                    logger.warning(f"Bước 11.5 fix failed: {e}")
-                
-                _progress("step11_5_done", 94, f"Sửa xong ({replacements_made if 'replacements_made' in dir() else 0} câu)", f"Fixed ({replacements_made if 'replacements_made' in dir() else 0} sentences)")
-            else:
-                logger.info("✨ Bước 11.5: No rigid sentences to fix")
-                _progress("step11_5_skip", 94, "Không có câu cứng nhắc", "No rigid sentences found")
+            _progress("step10_done", 93, "Kiểm tra xong", "Check complete")
             
             # BƯỚC 12: Kiểm tra cuối
             logger.info("🔍 [95%] Bước 12: Kiểm tra cuối...")

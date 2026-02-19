@@ -51,6 +51,12 @@ class CreateProductionRequest(BaseModel):
     prompts_concept: str = ""
     prompts_video: str = ""
     settings_snapshot: Dict[str, Any] = {}
+    original_title: str = ""
+    original_description: str = ""
+    thumbnail_url: str = ""
+    generated_title: str = ""
+    generated_description: str = ""
+    generated_thumbnail_prompt: str = ""
 
 
 class UpdateProductionRequest(BaseModel):
@@ -72,6 +78,12 @@ class UpdateProductionRequest(BaseModel):
     prompts_scene_builder: Optional[str] = None
     prompts_concept: Optional[str] = None
     prompts_video: Optional[str] = None
+    original_title: Optional[str] = None
+    original_description: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    generated_title: Optional[str] = None
+    generated_description: Optional[str] = None
+    generated_thumbnail_prompt: Optional[str] = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -170,6 +182,12 @@ async def create_production(request: CreateProductionRequest):
             prompts_concept=request.prompts_concept,
             prompts_video=request.prompts_video,
             settings_snapshot=request.settings_snapshot,
+            original_title=request.original_title,
+            original_description=request.original_description,
+            thumbnail_url=request.thumbnail_url,
+            generated_title=request.generated_title,
+            generated_description=request.generated_description,
+            generated_thumbnail_prompt=request.generated_thumbnail_prompt,
         )
 
         # ── Auto-save: only script_split (as file) and thumbnail (download URL) ──

@@ -19,10 +19,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Configuration
+# CORS Configuration — supports both Electron (localhost) and Web deployments
+_default_origins = ["http://localhost:5173", "http://localhost:3000", "http://localhost:4173"]
+_env_origins = os.environ.get("CORS_ORIGINS", "")
+_cors_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] if _env_origins else _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +57,48 @@ try:
         print("[Startup] FFmpeg not found. Will auto-download when needed.")
 except Exception:
     print("[Startup] FFmpeg check skipped")
+
+# ── Cache cleanup at startup ──
+try:
+    import shutil
+    from pathlib import Path
+
+    _cleaned_total = 0
+    _freed_mb = 0.0
+
+    # 1. Footage cache: cleanup videos older than 24h
+    try:
+        from modules.video_cache import get_video_cache
+        _vc = get_video_cache()
+        _cleaned_total += _vc.cleanup_old_cache(max_age_hours=24)
+    except Exception as e:
+        print(f"[Startup] Footage cache cleanup error: {e}")
+
+    # 2. Session subfolders: cleanup >24h old sessions in voice_output and video_output
+    _max_age = 24 * 3600  # 24 hours in seconds
+    for _dir_name in ["voice_output", "video_output"]:
+        _base = Path(_dir_name)
+        if not _base.exists():
+            continue
+        for _sub in _base.iterdir():
+            if not _sub.is_dir():
+                continue
+            try:
+                _age = time.time() - _sub.stat().st_mtime
+                if _age > _max_age:
+                    _size = sum(f.stat().st_size for f in _sub.rglob("*") if f.is_file())
+                    _freed_mb += _size / 1024 / 1024
+                    shutil.rmtree(_sub, ignore_errors=True)
+                    _cleaned_total += 1
+            except Exception:
+                pass
+
+    if _cleaned_total > 0:
+        print(f"[Startup] Cache cleanup: removed {_cleaned_total} old items, freed {_freed_mb:.1f} MB")
+    else:
+        print("[Startup] Cache cleanup: nothing to clean")
+except Exception as e:
+    print(f"[Startup] Cache cleanup error: {e}")
 
 print(f"[Startup] App ready in {time.time()-_startup_t:.1f}s")
 

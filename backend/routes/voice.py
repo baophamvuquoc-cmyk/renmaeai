@@ -56,6 +56,7 @@ class BatchGenerateRequest(BaseModel):
     voice: str = "vi-VN-HoaiMyNeural"
     language: str = "vi"
     speed: float = 1.0
+    session_id: Optional[str] = None  # Queue item ID for file isolation
 
 
 class DownloadAllRequest(BaseModel):
@@ -123,6 +124,13 @@ async def generate_batch_voice(request: BatchGenerateRequest):
     if not export_scenes:
         raise HTTPException(status_code=400, detail="Không có scene nào được chọn để xuất voice")
 
+    # Session isolation: use subfolder if session_id provided
+    session_output_dir = None
+    if request.session_id:
+        session_output_dir = os.path.join(VOICE_OUTPUT_DIR, request.session_id)
+        os.makedirs(session_output_dir, exist_ok=True)
+        print(f"[Voice Batch] Session isolation: {session_output_dir}")
+
     async def event_generator():
         total = len(export_scenes)
         results = []
@@ -154,22 +162,25 @@ async def generate_batch_voice(request: BatchGenerateRequest):
                     voice=request.voice,
                     speed=request.speed,
                     output_filename=filename,
+                    output_dir=session_output_dir,
                 )
                 
                 # Measure audio duration
                 duration_seconds = 0.0
                 try:
                     from mutagen.mp3 import MP3
-                    mp3_path = os.path.join(VOICE_OUTPUT_DIR, f"{filename}.mp3")
-                    audio = MP3(mp3_path)
+                    audio = MP3(path)
                     duration_seconds = round(audio.info.length, 2)
                 except Exception:
                     pass
                 
+                # Build download URL with session prefix if applicable
+                dl_prefix = f"/api/voice/download/{request.session_id}/" if request.session_id else "/api/voice/download/"
+                
                 results.append({
                     "scene_id": scene_id,
                     "filename": f"{filename}.mp3",
-                    "download_url": f"/api/voice/download/{filename}.mp3",
+                    "download_url": f"{dl_prefix}{filename}.mp3",
                     "success": True,
                     "duration_seconds": duration_seconds,
                 })
@@ -179,7 +190,7 @@ async def generate_batch_voice(request: BatchGenerateRequest):
                     "type": "scene_done",
                     "scene_id": scene_id,
                     "filename": f"{filename}.mp3",
-                    "download_url": f"/api/voice/download/{filename}.mp3",
+                    "download_url": f"{dl_prefix}{filename}.mp3",
                     "duration_seconds": duration_seconds,
                     "success": True,
                 }
@@ -205,6 +216,7 @@ async def generate_batch_voice(request: BatchGenerateRequest):
             "total_generated": sum(1 for r in results if r["success"]),
             "total_failed": sum(1 for r in results if not r["success"]),
             "total_duration_seconds": round(total_duration, 2),
+            "session_id": request.session_id,
         }
         yield f"event: result\ndata: {json.dumps(result_data, ensure_ascii=False)}\n\n"
 
@@ -221,11 +233,26 @@ async def generate_batch_voice(request: BatchGenerateRequest):
 
 @router.get("/download/{filename}")
 async def download_voice_file(filename: str):
-    """Download 1 file audio."""
+    """Download 1 file audio (backward compatible, no session)."""
     filepath = os.path.join(VOICE_OUTPUT_DIR, filename)
 
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail=f"File '{filename}' không tồn tại")
+
+    return FileResponse(
+        path=filepath,
+        media_type="audio/mpeg",
+        filename=filename,
+    )
+
+
+@router.get("/download/{session_id}/{filename}")
+async def download_voice_file_session(session_id: str, filename: str):
+    """Download 1 file audio from a session subfolder."""
+    filepath = os.path.join(VOICE_OUTPUT_DIR, session_id, filename)
+
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail=f"File '{session_id}/{filename}' không tồn tại")
 
     return FileResponse(
         path=filepath,
@@ -286,9 +313,24 @@ async def list_voice_files():
     }
 
 
+@router.delete("/session/{session_id}")
+async def delete_voice_session(session_id: str):
+    """Delete all voice files for a specific session."""
+    import shutil
+    session_dir = os.path.join(VOICE_OUTPUT_DIR, session_id)
+    if not os.path.isdir(session_dir):
+        return {"success": True, "deleted": 0, "message": f"Session '{session_id}' not found (already clean)"}
+
+    file_count = sum(1 for f in os.listdir(session_dir) if os.path.isfile(os.path.join(session_dir, f)))
+    shutil.rmtree(session_dir, ignore_errors=True)
+    print(f"[Voice Cleanup] Deleted session folder: {session_dir} ({file_count} files)")
+    return {"success": True, "deleted": file_count, "message": f"Deleted session '{session_id}' ({file_count} files)"}
+
+
 @router.post("/cleanup")
 async def cleanup_voice_files(request: CleanupRequest):
-    """Xóa voice files đã tạo."""
+    """Xóa voice files đã tạo (including session subfolders)."""
+    import shutil
     deleted = 0
 
     if request.filenames:
@@ -299,13 +341,17 @@ async def cleanup_voice_files(request: CleanupRequest):
                 os.remove(filepath)
                 deleted += 1
     else:
-        # Delete all files
+        # Delete all files AND session subfolders
         if os.path.exists(VOICE_OUTPUT_DIR):
             for f in os.listdir(VOICE_OUTPUT_DIR):
                 filepath = os.path.join(VOICE_OUTPUT_DIR, f)
                 if os.path.isfile(filepath):
                     os.remove(filepath)
                     deleted += 1
+                elif os.path.isdir(filepath):
+                    sub_count = sum(1 for sf in os.listdir(filepath) if os.path.isfile(os.path.join(filepath, sf)))
+                    shutil.rmtree(filepath, ignore_errors=True)
+                    deleted += sub_count
 
     return {
         "success": True,

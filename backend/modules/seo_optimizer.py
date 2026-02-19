@@ -214,7 +214,13 @@ class SEOOptimizer:
             )
         except Exception as e:
             logger.error(f"[SEO] AI generation failed: {e}")
-            return SEOData()
+            # Return partial data (not empty) so callers can detect the failure
+            first_line = script_content.strip().split("\n")[0][:50].replace("\n", " ")
+            return SEOData(
+                main_keyword=first_line if first_line else "",
+                seo_title=first_line if first_line else "",
+                seo_filename=self._text_to_slug(first_line[:60]) if first_line else "",
+            )
 
     # ── 2. SEO File Naming ────────────────────────────────────────────────────
 
@@ -496,7 +502,7 @@ class SEOOptimizer:
                 text=True,
                 timeout=30,
             )
-            if result.returncode == 0:
+            if result.returncode == 0 and result.stdout and result.stdout.strip():
                 data = json.loads(result.stdout)
                 fmt = data.get("format", {})
                 return {
@@ -506,7 +512,9 @@ class SEOOptimizer:
                     "format": fmt.get("format_name", ""),
                     "tags": fmt.get("tags", {}),
                 }
-            return {"error": f"ffprobe failed: {result.stderr[:200]}"}
+            return {"error": f"ffprobe failed: {(result.stderr or '')[:200]}"}
+        except json.JSONDecodeError as e:
+            return {"error": f"ffprobe output parse error: {e}"}
         except Exception as e:
             return {"error": str(e)}
 

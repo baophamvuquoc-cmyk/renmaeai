@@ -12,7 +12,8 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-const WS_URL = 'ws://localhost:8000/ws';
+const _apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_URL = _apiBase.replace(/^http/, 'ws') + '/ws';
 const HEARTBEAT_INTERVAL = 30_000; // 30s
 const RECONNECT_BASE_DELAY = 1_000; // 1s
 const RECONNECT_MAX_DELAY = 30_000; // 30s

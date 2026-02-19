@@ -138,6 +138,7 @@ async def generate_edge_tts(
     voice: str = "vi-VN-HoaiMyNeural",
     speed: float = 1.0,
     output_filename: Optional[str] = None,
+    output_dir: Optional[str] = None,
 ) -> str:
     """
     Generate speech using Microsoft Edge TTS.
@@ -147,6 +148,7 @@ async def generate_edge_tts(
         voice: Edge voice ID (e.g., 'vi-VN-HoaiMyNeural')
         speed: Speech speed multiplier (0.5 - 2.0)
         output_filename: Optional custom filename (without extension)
+        output_dir: Optional output directory (default: VOICE_OUTPUT_DIR)
     
     Returns:
         Path to the generated audio file
@@ -155,7 +157,9 @@ async def generate_edge_tts(
         import time
         output_filename = f"voice_{int(time.time() * 1000)}"
     
-    output_path = os.path.join(VOICE_OUTPUT_DIR, f"{output_filename}.mp3")
+    target_dir = output_dir or VOICE_OUTPUT_DIR
+    os.makedirs(target_dir, exist_ok=True)
+    output_path = os.path.join(target_dir, f"{output_filename}.mp3")
     
     # Build rate string: +0% is normal, +50% is 1.5x, -50% is 0.5x
     rate_percent = int((speed - 1.0) * 100)
@@ -173,6 +177,7 @@ async def generate_batch_edge_tts(
     voice: str = "vi-VN-HoaiMyNeural",
     speed: float = 1.0,
     progress_callback=None,
+    output_dir: Optional[str] = None,
 ) -> list:
     """
     Generate speech for multiple scenes.
@@ -182,6 +187,7 @@ async def generate_batch_edge_tts(
         voice: Edge voice ID
         speed: Speech speed
         progress_callback: Optional callback(current, total, scene_id)
+        output_dir: Optional output directory for session isolation
     
     Returns:
         List of {scene_id, filename, path, success, error}
@@ -201,6 +207,7 @@ async def generate_batch_edge_tts(
                 voice=voice,
                 speed=speed,
                 output_filename=filename,
+                output_dir=output_dir,
             )
             results.append({
                 "scene_id": scene_id,

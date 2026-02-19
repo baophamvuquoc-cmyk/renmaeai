@@ -117,6 +117,14 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
         setChannelName,
 
+        topic,
+
+        setTopic,
+
+        language,
+
+        setLanguage,
+
         setTemplates,
 
         setError,
@@ -1645,7 +1653,7 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
 
 
-    // Project loading disabled
+    // Project loading: restore data when opening an existing project
     useEffect(() => {
         if (!activeProjectId) return;
         if (justCreatedRef.current) {
@@ -1653,13 +1661,80 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
             return;
         }
         setShowEntrySection(false);
+        // Load project data from backend
+        projectApi.getProject(Number(activeProjectId))
+            .then(result => {
+                if (result?.project?.data && typeof result.project.data === 'object') {
+                    const d = result.project.data;
+                    console.log('[Project] Loading data for project', activeProjectId, Object.keys(d));
+                    // Restore workflow state
+                    if (d.styleA) setStyleA(d.styleA);
+                    if (d.advancedFinalScript) setAdvancedFinalScript(d.advancedFinalScript);
+                    if (d.scenes && Array.isArray(d.scenes)) setScenes(d.scenes);
+                    if (d.detectedLanguage) setDetectedLanguage(d.detectedLanguage);
+                    if (d.selectedVoice) setSelectedVoice(d.selectedVoice);
+                    if (d.voiceSpeed) setVoiceSpeed(d.voiceSpeed);
+                    if (d.voiceLanguage) setVoiceLanguage(d.voiceLanguage);
+                    if (d.splitMode) setSplitMode(d.splitMode);
+                    if (d.sceneMode) setSceneMode(d.sceneMode);
+                    if (d.originalAnalysis) setOriginalAnalysis(d.originalAnalysis);
+                    if (d.syncAnalysisResult) setSyncAnalysisResult(d.syncAnalysisResult);
+                    if (d.sceneContext) setSceneContext(d.sceneContext);
+                    if (d.conceptAnalysis) setConceptAnalysis(d.conceptAnalysis);
+                    if (d.promptStyle) setPromptStyle(d.promptStyle);
+                    if (d.mainCharacter) setMainCharacter(d.mainCharacter);
+                    if (d.contextDescription) setContextDescription(d.contextDescription);
+                    if (d.advancedStep) setAdvancedStep(d.advancedStep);
+                    // Restore store state
+                    if (d.referenceScripts) setReferenceScripts(d.referenceScripts);
+                    if (d.topic) setTopic(d.topic);
+                    if (d.channelName) setChannelName(d.channelName);
+                    if (d.language) setLanguage(d.language);
+                }
+            })
+            .catch(err => console.error('[Project] Failed to load data:', err));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeProjectId]);
 
 
 
-    // Auto-save disabled
-    const autoSaveProject = async (_data: Record<string, any>) => { };
+    // Auto-save project data to backend
+    const autoSaveProject = async (extra?: Record<string, any>) => {
+        if (!activeProjectId) return;
+        try {
+            const data: Record<string, any> = {
+                // Workflow state from store
+                styleA,
+                referenceScripts,
+                topic,
+                channelName,
+                language,
+                // Local component state
+                advancedFinalScript,
+                scenes,
+                detectedLanguage,
+                selectedVoice,
+                voiceSpeed,
+                voiceLanguage,
+                splitMode,
+                sceneMode,
+                originalAnalysis,
+                syncAnalysisResult,
+                sceneContext,
+                conceptAnalysis,
+                promptStyle,
+                mainCharacter,
+                contextDescription,
+                advancedStep,
+                // Merge any extra data from caller
+                ...extra,
+            };
+            await projectApi.saveProjectData(Number(activeProjectId), data);
+            console.log('[Project] Auto-saved data for project', activeProjectId);
+        } catch (err) {
+            console.error('[Project] Auto-save failed:', err);
+        }
+    };
 
     // Reset all workflow state for a fresh start
     const resetWorkflowState = () => {
@@ -3372,19 +3447,27 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
 
 
-    // Update selected voice when language changes
+    // Update selected voice when language changes — only if current voice isn't valid for new language
 
     useEffect(() => {
 
         if (voicesByLanguage[voiceLanguage]) {
 
-            const firstVoice = voicesByLanguage[voiceLanguage].voices?.[0];
+            const voicesInLang = voicesByLanguage[voiceLanguage].voices || [];
 
-            if (firstVoice) setSelectedVoice(firstVoice.id);
+            // Only auto-select first voice if current selectedVoice is NOT in the new language's list
+            const currentVoiceValid = voicesInLang.some((v: any) => v.id === selectedVoice);
+            if (!currentVoiceValid) {
+                const firstVoice = voicesInLang[0];
+                if (firstVoice) {
+                    console.log(`[Voice] Language changed to ${voiceLanguage}, auto-selecting: ${firstVoice.id}`);
+                    setSelectedVoice(firstVoice.id);
+                }
+            }
 
         }
 
-    }, [voiceLanguage, voicesByLanguage]);
+    }, [voiceLanguage, voicesByLanguage, selectedVoice]);
 
 
 
@@ -4266,13 +4349,21 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                                     setAdvancedStep(2);
 
-                                                    // Load linked style if available
+                                                    // Load linked style if available (only if no data.styleA from project)
 
-                                                    if (proj.style_id) {
+                                                    if (proj.style_id && (!proj.data || !proj.data.styleA)) {
 
                                                         handleLoadStyle(proj.style_id);
 
                                                         setPipelineSelection(prev => ({ ...prev, styleAnalysis: { voiceStyle: false, title: false, thumbnail: false, description: false, syncCharacter: false, syncStyle: false, syncContext: false } }));
+
+                                                        setIsAnalysisLocked(true);
+
+                                                    }
+
+                                                    // If project has saved data, lock analysis
+
+                                                    if (proj.data && proj.data.styleA) {
 
                                                         setIsAnalysisLocked(true);
 
@@ -5710,7 +5801,7 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                     <div className="project-name-overlay" onClick={() => setShowProjectNameDialog(false)}>
 
-                        <div className="project-name-dialog" onClick={e => e.stopPropagation()}>
+                        <div className="project-name-dialog" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
 
                             <h3>Đặt tên Project</h3>
 
@@ -8465,19 +8556,30 @@ function QueueView({
 
             // ── Production Hub: Create record early (or reuse existing) ──
             let productionId: number | undefined = item.productionId;
+            let productionSeqNum: number | undefined;
+            // Fetch actual project name from activeProjectId
+            let actualProjectName = activePresetName || '';
+            if (activeProjectId) {
+                try {
+                    const proj = await projectApi.getProject(Number(activeProjectId));
+                    if (proj?.project?.name) actualProjectName = proj.project.name;
+                } catch (e) { /* fallback to preset name */ }
+            }
             if (!productionId) {
                 try {
                     const prodTitle = item.generatedTitle || item.originalTitle || `Project ${new Date().toLocaleDateString('vi-VN')} ${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
-                    const prodProjectName = activePresetName || item.presetName || '';
                     const csvContent = scenesArray.length > 0
                         ? scenesArray.map((s: any) => `Scene ${s.scene_id}: ${(s.content || '').replace(/\n/g, ' ').substring(0, 200)}`).join('\n')
                         : '';
                     const createResult = await productionApi.create({
-                        project_name: prodProjectName,
+                        project_name: actualProjectName,
                         original_link: (item as any).originalLink || '',
-                        title: prodTitle,
-                        description: item.generatedDescription || item.originalDescription || '',
-                        thumbnail: item.thumbnailUrl || '',
+                        title: item.originalTitle || prodTitle,
+                        description: item.originalDescription || '',
+                        thumbnail: '',
+                        original_title: item.originalTitle || '',
+                        original_description: item.originalDescription || '',
+                        thumbnail_url: item.thumbnailUrl || '',
                         script_full: finalScript || '',
                         script_split: csvContent,
                         video_status: 'draft',
@@ -8500,78 +8602,37 @@ function QueueView({
                         },
                     });
                     productionId = createResult?.production?.id;
+                    productionSeqNum = createResult?.production?.sequence_number;
                     if (productionId) {
                         queueStore.updateItem(item.id, { productionId });
-                        console.log(`[Queue][Production] Created early record #${productionId} for: ${prodTitle}`);
+                        console.log(`[Queue][Production] Created early record #${productionId} (seq ${productionSeqNum}) for: ${prodTitle}`);
                     }
                 } catch (prodErr: any) {
                     console.error('[Queue][Production] Failed to create early record (non-blocking):', prodErr);
                 }
             }
 
-            // ── Step 2.5: Generate YouTube Metadata (38-45%) — skip on retry from voice+ ──
+            // ── Production Hub: Sync script after retry (script may have changed) ──
+            if (productionId && finalScript) {
+                try {
+                    const csvContent = scenesArray.length > 0
+                        ? scenesArray.map((s: any) => `Scene ${s.scene_id}: ${(s.content || '').replace(/\n/g, ' ').substring(0, 200)}`).join('\n')
+                        : '';
+                    const scriptUpdate: Record<string, string> = { script_full: finalScript };
+                    if (csvContent) scriptUpdate.script_split = csvContent;
+                    await productionApi.update(productionId, scriptUpdate);
+                    console.log(`[Queue][Production] Synced script to #${productionId} (${finalScript.length} chars, ${scenesArray.length} scenes)`);
+                } catch (e) { console.error('[Queue][Production] script sync failed:', e); }
+            }
+
+            // ── Metadata options (used later after voice) ──
             const queueAnalysisOpts = normalizeAnalysis(pipelineSelection?.styleAnalysis);
             const analysisHasTitle = queueAnalysisOpts.title;
             const analysisHasDescription = queueAnalysisOpts.description;
             const analysisHasThumbnail = queueAnalysisOpts.thumbnail;
+            let metadataResult: any = null;
 
-            if (startIdx <= 2 && (analysisHasTitle || analysisHasDescription || analysisHasThumbnail)) {
-                queueStore.updateItem(item.id, {
-                    progress: 38,
-                    currentStep: 'Tạo metadata...',
-                });
-
-                try {
-                    const metadataResult = await workflowApi.advancedRemake.generateYoutubeMetadata({
-                        script: finalScript,
-                        style_profile: styleA || originalAnalysis || undefined,
-                        title_samples: titleSamples.length > 0 ? titleSamples : undefined,
-                        description_samples: descriptionSamples.length > 0 ? descriptionSamples : undefined,
-                        title_style_analysis: analysisHasTitle ? titleStyleAnalysis : undefined,
-                        description_style_analysis: analysisHasDescription ? descriptionStyleAnalysis : undefined,
-                        thumbnail_style_analysis: analysisHasThumbnail ? thumbnailStyleAnalysis : undefined,
-                        generate_title: analysisHasTitle,
-                        generate_description: analysisHasDescription,
-                        generate_thumbnail_prompt: analysisHasThumbnail,
-                        model: selectedModel,
-                        custom_cta: queueAnalysisOpts.customCta || undefined,
-                        sync_analysis: syncAnalysisResult || undefined,
-                    });
-
-                    if (metadataResult?.success) {
-                        queueStore.updateItem(item.id, {
-                            generatedTitle: metadataResult.title || undefined,
-                            generatedDescription: metadataResult.description || undefined,
-                            generatedThumbnailPrompt: metadataResult.thumbnail_prompt || undefined,
-                        });
-                        completedSteps.push('metadata');
-                        console.log('[Queue] YouTube metadata generated:', {
-                            title: metadataResult.title?.slice(0, 60),
-                            descLen: metadataResult.description?.length,
-                            thumbLen: metadataResult.thumbnail_prompt?.length,
-                        });
-                    }
-                } catch (metaErr: any) {
-                    console.error('[Queue] YouTube metadata generation failed:', metaErr);
-                    // Don't fail the whole pipeline for metadata errors
-                }
-
-                queueStore.updateItem(item.id, { progress: 45, currentStep: 'Metadata xong' });
-
-                // ── Production Hub: Update metadata ──
-                if (productionId) {
-                    try {
-                        await productionApi.update(productionId, {
-                            title: item.generatedTitle || item.originalTitle || '',
-                            description: item.generatedDescription || item.originalDescription || '',
-                            thumbnail: item.generatedThumbnailPrompt || item.thumbnailUrl || '',
-                        });
-                        console.log(`[Queue][Production] Updated #${productionId} with metadata (thumb=${item.generatedThumbnailPrompt ? 'prompt' : 'url'})`);
-                    } catch (e) { console.error('[Queue][Production] metadata update failed:', e); }
-                }
-            }
-
-            // ── Step 3: Generate Voice (45-62%) — capture filenames ──
+            // ── Step 3: Generate Voice (38-55%) — capture filenames ──
             const voiceResults: Record<number, { filename: string; duration: number }> = {};
 
             if (startIdx <= 3) {
@@ -8609,6 +8670,7 @@ function QueueView({
                             voice: selectedVoice,
                             language: voiceLanguage,
                             speed: voiceSpeed,
+                            session_id: item.id,
                         },
                         (current: number, total: number, _sceneId: number, _percentage: number) => {
                             const voiceProgress = 45 + Math.round((current / total) * 17);
@@ -8643,58 +8705,99 @@ function QueueView({
                 completedSteps.push('voice');
             }
 
-            // ── Step 3.5: Inject accurate timestamps into description ──
-            if (Object.keys(voiceResults).length > 0 && item.generatedDescription) {
-                try {
+            // ── Step 3.5: Generate YouTube Metadata (with voice timestamps) ──
+            if (analysisHasTitle || analysisHasDescription || analysisHasThumbnail) {
+                queueStore.updateItem(item.id, {
+                    progress: 55,
+                    currentStep: 'Tạo metadata (title/desc/thumbnail)...',
+                });
+
+                // Build timestamps from voice results
+                const voiceTimestamps: Array<{ scene_id: number; timestamp: string; content: string; duration: number }> = [];
+                let totalSeconds = 0;
+
+                if (Object.keys(voiceResults).length > 0) {
                     const sortedSceneIds = Object.keys(voiceResults).map(Number).sort((a, b) => a - b);
                     let cumulativeSeconds = 0;
-                    const timestampLines: string[] = [];
 
                     for (const sceneId of sortedSceneIds) {
                         const minutes = Math.floor(cumulativeSeconds / 60);
                         const seconds = Math.floor(cumulativeSeconds % 60);
                         const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-                        // Get scene label from scenesArray content (first ~8 words)
                         const scene = scenesArray.find((s: any) => s.scene_id === sceneId);
-                        const sceneContent = scene?.content || scene?.title || `Phần ${sceneId}`;
-                        const label = sceneContent.split(/\s+/).slice(0, 8).join(' ').replace(/[.\n\r]+$/, '');
-                        const shortLabel = label.length > 50 ? label.substring(0, 47) + '...' : label;
+                        const sceneContent = scene?.content || scene?.title || '';
 
-                        timestampLines.push(`${timeStr} - ${shortLabel}`);
+                        voiceTimestamps.push({
+                            scene_id: sceneId,
+                            timestamp: timeStr,
+                            content: sceneContent,
+                            duration: voiceResults[sceneId]?.duration || 0,
+                        });
+
                         cumulativeSeconds += voiceResults[sceneId]?.duration || 0;
                     }
+                    totalSeconds = cumulativeSeconds;
+                }
 
-                    if (timestampLines.length > 0) {
-                        const timestampBlock = '\n📌 Timestamps:\n' + timestampLines.join('\n') + '\n';
-                        let updatedDesc = item.generatedDescription;
+                const totalMinutes = Math.floor(totalSeconds / 60);
+                const totalSecs = Math.floor(totalSeconds % 60);
+                const totalDuration = `${String(totalMinutes).padStart(2, '0')}:${String(totalSecs).padStart(2, '0')}`;
 
-                        // Replace [TIMESTAMPS_PLACEHOLDER] if AI included it, otherwise inject after Mini Blog section
-                        if (updatedDesc.includes('[TIMESTAMPS_PLACEHOLDER]')) {
-                            updatedDesc = updatedDesc.replace(/\[TIMESTAMPS_PLACEHOLDER\][^\n]*\n?/g, timestampBlock);
-                        } else {
-                            // Find the CTA/Links section and inject before it
-                            const ctaMarkers = ['━━', '🔔', '📌 Follow', '👉', '💬', '🔗', '#'];
-                            let insertPos = -1;
-                            for (const marker of ctaMarkers) {
-                                const idx = updatedDesc.indexOf(marker);
-                                if (idx > 0 && (insertPos === -1 || idx < insertPos)) {
-                                    insertPos = idx;
-                                }
-                            }
-                            if (insertPos > 0) {
-                                updatedDesc = updatedDesc.slice(0, insertPos) + timestampBlock + '\n' + updatedDesc.slice(insertPos);
-                            } else {
-                                // Fallback: append before last section
-                                updatedDesc += '\n' + timestampBlock;
-                            }
-                        }
+                try {
+                    metadataResult = await workflowApi.advancedRemake.generateYoutubeMetadata({
+                        script: finalScript,
+                        style_profile: styleA || originalAnalysis || undefined,
+                        title_samples: titleSamples.length > 0 ? titleSamples : undefined,
+                        description_samples: descriptionSamples.length > 0 ? descriptionSamples : undefined,
+                        title_style_analysis: analysisHasTitle ? titleStyleAnalysis : undefined,
+                        description_style_analysis: analysisHasDescription ? descriptionStyleAnalysis : undefined,
+                        thumbnail_style_analysis: analysisHasThumbnail ? thumbnailStyleAnalysis : undefined,
+                        generate_title: analysisHasTitle,
+                        generate_description: analysisHasDescription,
+                        generate_thumbnail_prompt: analysisHasThumbnail,
+                        model: selectedModel,
+                        custom_cta: queueAnalysisOpts.customCta || undefined,
+                        sync_analysis: syncAnalysisResult || undefined,
+                        voice_timestamps: voiceTimestamps.length > 0 ? voiceTimestamps : undefined,
+                        total_duration: totalSeconds > 0 ? totalDuration : undefined,
+                        language: advancedSettings.language || 'vi',
+                    });
 
-                        queueStore.updateItem(item.id, { generatedDescription: updatedDesc });
-                        console.log(`[Queue] Injected ${timestampLines.length} timestamps into description`);
+                    if (metadataResult?.success) {
+                        queueStore.updateItem(item.id, {
+                            generatedTitle: metadataResult.title || undefined,
+                            generatedDescription: metadataResult.description || undefined,
+                            generatedThumbnailPrompt: metadataResult.thumbnail_prompt || undefined,
+                        });
+                        completedSteps.push('metadata');
+                        console.log('[Queue] YouTube metadata generated (post-voice):', {
+                            title: metadataResult.title?.slice(0, 60),
+                            descLen: metadataResult.description?.length,
+                            thumbLen: metadataResult.thumbnail_prompt?.length,
+                            timestampCount: voiceTimestamps.length,
+                        });
                     }
-                } catch (tsErr) {
-                    console.error('[Queue] Timestamp injection failed:', tsErr);
+                } catch (metaErr: any) {
+                    console.error('[Queue] YouTube metadata generation failed:', metaErr);
+                }
+
+                queueStore.updateItem(item.id, { progress: 62, currentStep: 'Metadata xong' });
+
+                // ── Production Hub: Update metadata ──
+                if (productionId) {
+                    try {
+                        const updatedTitle = metadataResult?.title || item.originalTitle || '';
+                        await productionApi.update(productionId, {
+                            title: updatedTitle,
+                            description: metadataResult?.description || item.originalDescription || '',
+                            thumbnail: metadataResult?.thumbnail_prompt || '',
+                            generated_title: metadataResult?.title || '',
+                            generated_description: metadataResult?.description || '',
+                            generated_thumbnail_prompt: metadataResult?.thumbnail_prompt || '',
+                        });
+                        console.log(`[Queue][Production] Updated #${productionId} with metadata (title="${updatedTitle.slice(0, 40)}", timestamps=${voiceTimestamps.length})`);
+                    } catch (e) { console.error('[Queue][Production] metadata update failed:', e); }
                 }
             }
 
@@ -8716,14 +8819,16 @@ function QueueView({
                             if (target) {
                                 target.keyword = kwScene.keyword || target.keyword;
                                 target.keywords = kwScene.keywords || target.keywords;
+                                if (kwScene.image_prompt) target.image_prompt = kwScene.image_prompt;
                             }
                         }
                     }
                 } else {
                     const vp = pipelineSelection?.videoProduction;
                     const shouldGenerateKeywords = vp?.keywords === true;
+                    const isConceptMode = vp?.image_prompts === true && vp?.image_prompt_mode === 'concept';
 
-                    if (shouldGenerateKeywords) {
+                    if (shouldGenerateKeywords || isConceptMode) {
                         queueStore.updateItem(item.id, { progress: 62, currentStep: 'Tạo keywords...' });
                         const keywordScenes = scenesArray.map((s: any) => ({
                             scene_id: s.scene_id,
@@ -8736,10 +8841,10 @@ function QueueView({
                                 scenes: keywordScenes,
                                 language: advancedSettings.language || 'vi',
                                 model: selectedModel,
-                                mode: 'custom',
+                                mode: isConceptMode ? 'concept' : 'custom',
                                 generate_video_prompt: false,
-                                generate_image_prompt: false,
-                                generate_keywords: true,
+                                generate_image_prompt: isConceptMode,
+                                generate_keywords: shouldGenerateKeywords,
                             },
                             (message: string, percentage: number) => {
                                 const kwProgress = Math.min(70, 62 + Math.round(percentage * 0.08));
@@ -8759,6 +8864,7 @@ function QueueView({
                                     target.keyword = kwScene.keyword || target.keyword;
                                     target.keywords = kwScene.keywords || target.keywords;
                                     target.target_clip_duration = kwScene.target_clip_duration || target.target_clip_duration;
+                                    if (isConceptMode && kwScene.image_prompt) target.image_prompt = kwScene.image_prompt;
                                 }
                             }
                         }
@@ -8767,10 +8873,11 @@ function QueueView({
 
                         completedSteps.push('keywords');
 
-                        // ── Production Hub: Save keywords immediately ──
+                        // ── Production Hub: Save keywords immediately (use keywordResult directly for all scenes) ──
                         if (productionId) {
                             try {
-                                const kwText = scenesArray
+                                const allKwScenes = keywordResult?.keywords || keywordResult?.scenes || [];
+                                const kwText = allKwScenes
                                     .map((s: any) => {
                                         const kws = s.keywords || (s.keyword ? [s.keyword] : []);
                                         return kws.length > 0 ? `Scene ${s.scene_id}: ${kws.join(', ')}` : '';
@@ -8779,7 +8886,9 @@ function QueueView({
                                     .join('\n');
                                 if (kwText) {
                                     await productionApi.update(productionId, { keywords: kwText });
-                                    console.log(`[Queue][Production] Updated #${productionId} with keywords`);
+                                    console.log(`[Queue][Production] Updated #${productionId} with keywords (${allKwScenes.length} scenes from API, ${kwText.split('\n').length} non-empty)`);
+                                } else {
+                                    console.warn(`[Queue][Production] No keyword text generated from ${allKwScenes.length} scenes`);
                                 }
                             } catch (e) { console.error('[Queue][Production] keywords update failed:', e); }
                         }
@@ -8796,6 +8905,7 @@ function QueueView({
                         if (target) {
                             target.keyword = kwScene.keyword || target.keyword;
                             target.keywords = kwScene.keywords || target.keywords;
+                            if (kwScene.image_prompt) target.image_prompt = kwScene.image_prompt;
                         }
                     }
                 }
@@ -8863,64 +8973,56 @@ function QueueView({
                 completedSteps.push('video_direction');
             }
 
-            // ── Step 6: Generate Video/Image Prompts (77-82%) ──
+            // ── Step 6: Generate Video Prompts (77-82%) ──
             // stepOrder index: 6 (video_prompts) — uses direction notes from step 5
+            const wantsVideoPrompts = vp?.video_prompts === true;
 
-            if (wantsPrompts && startIdx <= 6) {
-                const hasCachedPrompts = scenesArray.some((s: any) => s.video_prompt);
-                if (startIdx < 6 && hasCachedPrompts) {
-                    // Prompts already generated (cached from keywords or previous run)
-                    console.log('[Queue][Pipeline] Using cached video/image prompts');
+            if (wantsVideoPrompts && startIdx <= 6) {
+                const hasCachedVideoPrompts = scenesArray.some((s: any) => s.video_prompt);
+                if (startIdx < 6 && hasCachedVideoPrompts) {
+                    console.log('[Queue][Pipeline] Using cached video prompts');
                     completedSteps.push('video_prompts');
                 } else if (startIdx <= 6) {
-                    queueStore.updateItem(item.id, { progress: 77, currentStep: 'Tạo prompts...' });
-                    const promptScenes = scenesArray.map((s: any) => ({
-                        scene_id: s.scene_id,
-                        content: s.content,
-                        audio_duration: voiceResults[s.scene_id]?.duration || s.audio_duration || s.est_duration || 5,
-                    }));
+                    queueStore.updateItem(item.id, { progress: 77, currentStep: 'Tạo video prompts...' });
 
                     try {
-                        const promptResult = await workflowApi.advancedRemake.generateSceneKeywords(
+                        const vpResult = await workflowApi.advancedRemake.generateVideoPrompts(
                             {
-                                scenes: promptScenes,
+                                scenes: scenesArray.map((s: any) => ({
+                                    scene_id: s.scene_id,
+                                    content: s.content,
+                                    direction_notes: s.direction_notes || pipelineDirections.find((d: any) => d.scene_id === s.scene_id)?.direction_notes || '',
+                                    audio_duration: voiceResults[s.scene_id]?.duration || s.audio_duration || s.est_duration || 5,
+                                })),
                                 language: advancedSettings.language || 'vi',
                                 model: selectedModel,
-                                mode: 'custom',
-                                generate_video_prompt: vp?.video_prompts === true,
-                                generate_image_prompt: vp?.image_prompts === true && (vp as any)?.image_prompt_mode === 'concept',
-                                generate_keywords: false,
                                 prompt_style: promptStyle || undefined,
                                 main_character: mainCharacter || undefined,
                                 context_description: contextDescription || undefined,
-                                image_prompt_mode: (vp as any)?.image_prompt_mode || undefined,
                                 video_prompt_mode: (vp as any)?.video_prompt_mode || undefined,
-                                directions: pipelineDirections.length > 0
-                                    ? pipelineDirections.map((d: any) => ({ scene_id: d.scene_id, direction_notes: d.direction_notes || '' }))
-                                    : undefined,
                                 sync_analysis: syncAnalysisResult || undefined,
                             },
                             (message: string, percentage: number) => {
                                 const pProgress = Math.min(82, 77 + Math.round(percentage * 0.05));
                                 queueStore.updateItem(item.id, {
                                     progress: pProgress,
-                                    currentStep: message || 'Tạo prompts...',
+                                    currentStep: message || 'Tạo video prompts...',
                                 });
                             },
                             controller.signal
                         );
 
-                        const promptSceneResults = promptResult?.keywords || promptResult?.scenes || [];
-                        if (promptSceneResults.length > 0) {
-                            for (const ps of promptSceneResults) {
-                                const target = scenesArray.find((s: any) => s.scene_id === ps.scene_id);
+                        const vpScenes = vpResult?.video_prompts || [];
+                        if (vpScenes.length > 0) {
+                            for (const vps of vpScenes) {
+                                const target = scenesArray.find((s: any) => s.scene_id === vps.scene_id);
                                 if (target) {
-                                    target.video_prompt = ps.video_prompt || target.video_prompt;
-                                    target.image_prompt = ps.image_prompt || target.image_prompt;
+                                    target.video_prompt = vps.video_prompt || target.video_prompt;
                                 }
                             }
                         }
-                        // Update cached keyword result with prompts
+
+                        // Update cached result with video prompts
                         queueStore.updateItem(item.id, {
                             cachedKeywordResult: {
                                 ...item.cachedKeywordResult,
@@ -8935,42 +9037,35 @@ function QueueView({
                         });
                         completedSteps.push('video_prompts');
 
-                        // ── Production Hub: Update prompts_video + keywords ──
+                        // ── Production Hub: Update prompts_video ──
                         if (productionId) {
                             try {
                                 const updatedVideoPrompts = scenesArray.map((s: any) => s.video_prompt || '').filter(Boolean).join('\n');
-                                const updatedKeywords = scenesArray
-                                    .map((s: any) => {
-                                        const kws = s.keywords || (s.keyword ? [s.keyword] : []);
-                                        return kws.length > 0 ? `Scene ${s.scene_id}: ${kws.join(', ')}` : '';
-                                    })
-                                    .filter(Boolean)
-                                    .join('\n');
                                 await productionApi.update(productionId, {
                                     prompts_video: updatedVideoPrompts,
-                                    keywords: updatedKeywords,
                                 });
                                 console.log(`[Queue][Production] Updated #${productionId} with ${updatedVideoPrompts.split('\n').length} video prompts`);
-                            } catch (e) { console.error('[Queue][Production] prompts update failed:', e); }
+                            } catch (e) { console.error('[Queue][Production] video prompts update failed:', e); }
                         }
-                    } catch (promptErr: any) {
-                        console.error('[Queue][Pipeline] Prompt generation error:', promptErr.message);
+                    } catch (vpErr: any) {
+                        console.error('[Queue][Pipeline] Video prompt generation error:', vpErr.message);
                         queueStore.updateItem(item.id, { failedStep: 'video_prompts' });
-                        throw new Error(`Lỗi tạo prompts: ${promptErr.message}`);
+                        throw new Error(`Lỗi tạo video prompts: ${vpErr.message}`);
                     }
                 }
-            } else if (startIdx > 6) {
-                // Retry from later step — reuse cached prompts
-                const retryPromptScenes = item.cachedKeywordResult?.keywords || item.cachedKeywordResult?.scenes || [];
-                if (retryPromptScenes.length > 0) {
-                    for (const ps of retryPromptScenes) {
-                        const target = scenesArray.find((s: any) => s.scene_id === ps.scene_id);
+            } else if (wantsVideoPrompts && startIdx > 6) {
+                // Retry from later step — reuse cached video prompts
+                const retryVpScenes = item.cachedKeywordResult?.keywords || item.cachedKeywordResult?.scenes || [];
+                if (retryVpScenes.length > 0) {
+                    for (const vps of retryVpScenes) {
+                        const target = scenesArray.find((s: any) => s.scene_id === vps.scene_id);
                         if (target) {
-                            target.video_prompt = ps.video_prompt || target.video_prompt;
-                            target.image_prompt = ps.image_prompt || target.image_prompt;
+                            target.video_prompt = vps.video_prompt || target.video_prompt;
                         }
                     }
                 }
+                completedSteps.push('video_prompts');
+            } else if (!wantsVideoPrompts) {
                 completedSteps.push('video_prompts');
             }
 
@@ -9209,6 +9304,7 @@ function QueueView({
                                 orientation: footageOrientation,
                                 video_quality: videoQuality,
                                 enable_subtitles: enableSubtitles,
+                                session_id: item.id,
                             },
                             (msg: string, pct: number) => {
                                 console.log(`[Queue][Assembly DEBUG] SSE progress: ${pct}% — ${msg}`);
@@ -9269,13 +9365,15 @@ function QueueView({
                             target_platform: 'youtube',
                         });
 
-                        if (seoResult?.success && seoResult.seo_data) {
+                        if (seoResult?.success && seoResult.seo_data && seoResult.seo_data.main_keyword) {
                             seoData = seoResult.seo_data;
                             queueStore.updateItem(item.id, {
                                 seoData: seoResult.seo_data,
                                 currentStep: `SEO: ${seoResult.seo_data.main_keyword}`,
                             });
                             console.log('[Queue][SEO] Generated SEO data:', seoResult.seo_data.main_keyword);
+                        } else {
+                            console.warn('[Queue][SEO] SEO returned empty/invalid data, skipping:', seoResult);
                         }
                     } catch (seoErr: any) {
                         console.error('[Queue][SEO] SEO generation failed (non-blocking):', seoErr);
@@ -9321,9 +9419,15 @@ function QueueView({
                         .map((s: any) => s.scene_video_path)
                         .filter(Boolean);
 
+                    // Build folder path: [project_name]/[sequence_number] when available
+                    const exportFolderName = (actualProjectName && productionSeqNum)
+                        ? `${actualProjectName}/${productionSeqNum}`
+                        : undefined; // fallback to default timestamp-based name
+
                     const exportResult = await exportApi.packageResults({
                         output_dir: queueOutputPath,
                         item_id: item.id,
+                        folder_name: exportFolderName || '',
                         export_options: {
                             full_script: queueExportOptions.fullScript && completedSteps.includes('script'),
                             split_csv: queueExportOptions.splitCsv && completedSteps.includes('scenes'),
@@ -9332,6 +9436,7 @@ function QueueView({
                             footage_zip: queueExportOptions.footageZip && completedSteps.includes('assembly'),
                             keywords_txt: queueExportOptions.keywordsTxt && completedSteps.includes('keywords'),
                             prompts_txt: queueExportOptions.promptsTxt && (completedSteps.includes('video_prompts') || completedSteps.includes('keywords')),
+                            seo_optimize: completedSteps.includes('seo') && !!seoData,
                         },
                         full_script: finalScript,
                         scenes: exportScenes,
@@ -9397,7 +9502,9 @@ function QueueView({
             // ── Final Production Hub sync — safety net: persist ALL data ──
             if (productionId) {
                 try {
-                    const finalDesc = item.generatedDescription || item.originalDescription || '';
+                    // Re-read fresh item from store — item closure may be stale
+                    const freshItem = queueStore.getState().items.find((i: any) => i.id === item.id) || item;
+                    const finalDesc = freshItem.generatedDescription || freshItem.originalDescription || '';
                     const finalVideoPromptsText = scenesArray.map((s: any) => s.video_prompt || '').filter(Boolean).join('\n');
                     const finalKeywordsText = scenesArray
                         .map((s: any) => {
@@ -9408,24 +9515,51 @@ function QueueView({
                         .join('\n');
 
                     // Build final update — only include non-empty values to avoid overwriting with blanks
-                    const finalUpdate: Record<string, string> = {
-                        title: item.generatedTitle || item.originalTitle || '',
-                        description: finalDesc,
-                        thumbnail: item.generatedThumbnailPrompt || item.thumbnailUrl || '',
-                        video_final: finalVideoPath || '',
-                        export_dir: exportDir || '',
-                    };
+                    const finalUpdate: Record<string, string> = {};
+                    const finalTitle = freshItem.generatedTitle || freshItem.originalTitle || '';
+                    const finalThumbnail = freshItem.generatedThumbnailPrompt || '';
+                    if (finalTitle) finalUpdate.title = finalTitle;
+                    if (finalDesc) finalUpdate.description = finalDesc;
+                    if (finalThumbnail) finalUpdate.thumbnail = finalThumbnail;
+                    if (finalVideoPath) finalUpdate.video_final = finalVideoPath;
+                    if (exportDir) finalUpdate.export_dir = exportDir;
+                    if (finalScript) finalUpdate.script_full = finalScript;
                     if (finalVideoPromptsText) finalUpdate.prompts_video = finalVideoPromptsText;
                     if (pipelineRefPromptsText) finalUpdate.prompts_reference = pipelineRefPromptsText;
                     if (pipelineSbPromptsText) finalUpdate.prompts_scene_builder = pipelineSbPromptsText;
                     if (finalKeywordsText) finalUpdate.keywords = finalKeywordsText;
+                    // Concept image prompts
+                    const finalConceptPrompts = scenesArray.map((s: any) => s.image_prompt || '').filter(Boolean).join('\n');
+                    if (finalConceptPrompts && pipelineSelection?.videoProduction?.image_prompt_mode === 'concept') finalUpdate.prompts_concept = finalConceptPrompts;
+                    // Original + generated metadata fields
+                    if (freshItem.generatedTitle) finalUpdate.generated_title = freshItem.generatedTitle;
+                    if (freshItem.generatedDescription) finalUpdate.generated_description = freshItem.generatedDescription;
+                    if (freshItem.generatedThumbnailPrompt) finalUpdate.generated_thumbnail_prompt = freshItem.generatedThumbnailPrompt;
+                    if (freshItem.originalTitle) finalUpdate.original_title = freshItem.originalTitle;
+                    if (freshItem.originalDescription) finalUpdate.original_description = freshItem.originalDescription;
+                    if (freshItem.thumbnailUrl) finalUpdate.thumbnail_url = freshItem.thumbnailUrl;
 
-                    await productionApi.update(productionId, finalUpdate);
-                    console.log(`[Queue][Production] Final sync #${productionId} — prompts_video=${finalVideoPromptsText ? 'yes' : 'no'}, ref=${pipelineRefPromptsText ? 'yes' : 'no'}, sb=${pipelineSbPromptsText ? 'yes' : 'no'}`);
+                    // Only call API if there's something to update
+                    if (Object.keys(finalUpdate).length > 0) {
+                        await productionApi.update(productionId, finalUpdate);
+                    }
+                    console.log(`[Queue][Production] Final sync #${productionId} — fields=${Object.keys(finalUpdate).join(',')}, prompts_video=${finalVideoPromptsText ? 'yes' : 'no'}, ref=${pipelineRefPromptsText ? 'yes' : 'no'}, sb=${pipelineSbPromptsText ? 'yes' : 'no'}`);
                 } catch (prodErr: any) {
                     console.error('[Queue][Production] Final sync failed (non-blocking):', prodErr);
                 }
             }
+
+            // ── Cleanup session cache (non-blocking) ──
+            try {
+                const cleanupPromises: Promise<any>[] = [];
+                cleanupPromises.push(voiceApi.cleanupSession(item.id));
+                if (shouldAssembleVideo) {
+                    cleanupPromises.push(footageApi.cleanupSession(item.id));
+                }
+                Promise.all(cleanupPromises).then((results) => {
+                    console.log(`[Queue][Cleanup] Session ${item.id} cleaned:`, results);
+                }).catch(() => { /* non-blocking */ });
+            } catch { /* non-blocking */ }
 
             // ── Done — detect missing output ──
             const hasVoice = Object.keys(voiceResults).length > 0;
@@ -9470,6 +9604,31 @@ function QueueView({
                     completedSteps,
                     failedStep: derivedFailedStep,
                 });
+            }
+
+            // ── Sync any generated data to production even on stop/error ──
+            if (productionId) {
+                try {
+                    const currentItem = useQueueStore.getState().items.find(i => i.id === item.id);
+                    const errUpdate: Record<string, string> = {};
+                    if (currentItem?.generatedTitle) {
+                        errUpdate.title = currentItem.generatedTitle;
+                        errUpdate.generated_title = currentItem.generatedTitle;
+                    }
+                    if (currentItem?.generatedDescription) {
+                        errUpdate.description = currentItem.generatedDescription;
+                        errUpdate.generated_description = currentItem.generatedDescription;
+                    }
+                    if (currentItem?.generatedThumbnailPrompt) {
+                        errUpdate.thumbnail = currentItem.generatedThumbnailPrompt;
+                        errUpdate.generated_thumbnail_prompt = currentItem.generatedThumbnailPrompt;
+                    }
+                    if (finalScript) errUpdate.script_full = finalScript;
+                    if (Object.keys(errUpdate).length > 0) {
+                        await productionApi.update(productionId, errUpdate);
+                        console.log(`[Queue][Production] Error-sync #${productionId} — saved: ${Object.keys(errUpdate).join(',')}`);
+                    }
+                } catch { /* non-blocking */ }
             }
         } finally {
             abortControllersRef.current.delete(item.id);
@@ -9520,14 +9679,14 @@ function QueueView({
             executingItemsRef.current.add(next.id);
 
             // Delay between thread starts
-
-            if (queueStore.delayBetweenMs > 0 && runningCount > 0) {
-
+            if (queueStore.delayBetweenMs > 0) {
                 await new Promise(r => setTimeout(r, queueStore.delayBetweenMs));
-
+                // Re-check concurrency after delay (another thread may have started)
+                if (queueStore.getRunningCount() >= queueStore.maxConcurrent) {
+                    executingItemsRef.current.delete(next.id);
+                    return;
+                }
             }
-
-
 
             executeQueueItem(next);
 
@@ -9605,10 +9764,15 @@ function QueueView({
 
     const handleSelectOutputPath = async () => {
         try {
+            let dir: string | null = null;
             if (window.electron?.selectDirectory) {
-                const dir = await window.electron.selectDirectory();
-                if (dir) queueStore.setOutputPath(dir);
+                // Electron mode: native dialog
+                dir = await window.electron.selectDirectory();
+            } else {
+                // Web mode: prompt for path
+                dir = prompt('Nhập đường dẫn thư mục xuất (ví dụ: C:\\Users\\Output)');
             }
+            if (dir) queueStore.setOutputPath(dir);
         } catch (err) {
             console.error('[Queue] Failed to select folder:', err);
         }

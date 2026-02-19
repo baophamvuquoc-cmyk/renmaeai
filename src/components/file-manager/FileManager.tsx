@@ -75,16 +75,16 @@ export default function FileManager() {
             console.log('Attempting to open directory dialog...');
             setError(null);
 
-            // Check if electron API is available
-            if (!window.electron || !window.electron.selectDirectory) {
-                console.error('Electron API not available');
-                const errorMsg = 'Electron API không khả dụng. Vui lòng khởi động lại ứng dụng.';
-                setError(errorMsg);
-                alert(errorMsg);
-                return;
+            let path: string | null = null;
+
+            if (window.electron?.selectDirectory) {
+                // Electron mode: use native dialog
+                path = await window.electron.selectDirectory();
+            } else {
+                // Web mode: prompt for path
+                path = prompt('Nhập đường dẫn thư mục (ví dụ: C:\\Users\\Videos)');
             }
 
-            const path = await window.electron.selectDirectory();
             console.log('Selected path:', path);
 
             if (path) {

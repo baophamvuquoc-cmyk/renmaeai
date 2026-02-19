@@ -128,6 +128,14 @@ class ProductionStore:
                     prompts_concept TEXT DEFAULT '',
                     prompts_video TEXT DEFAULT '',
 
+                    -- Original vs Generated metadata
+                    original_title TEXT DEFAULT '',
+                    original_description TEXT DEFAULT '',
+                    thumbnail_url TEXT DEFAULT '',
+                    generated_title TEXT DEFAULT '',
+                    generated_description TEXT DEFAULT '',
+                    generated_thumbnail_prompt TEXT DEFAULT '',
+
                     -- Internal / System
                     export_dir TEXT DEFAULT '',
                     preset_name TEXT DEFAULT '',
@@ -158,6 +166,12 @@ class ProductionStore:
                 "prompts_scene_builder": "TEXT DEFAULT ''",
                 "prompts_concept": "TEXT DEFAULT ''",
                 "prompts_video": "TEXT DEFAULT ''",
+                "original_title": "TEXT DEFAULT ''",
+                "original_description": "TEXT DEFAULT ''",
+                "thumbnail_url": "TEXT DEFAULT ''",
+                "generated_title": "TEXT DEFAULT ''",
+                "generated_description": "TEXT DEFAULT ''",
+                "generated_thumbnail_prompt": "TEXT DEFAULT ''",
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in existing_cols:
@@ -195,6 +209,12 @@ class ProductionStore:
         preset_name: str = "",
         voice_id: str = "",
         settings_snapshot: Optional[Dict] = None,
+        original_title: str = "",
+        original_description: str = "",
+        thumbnail_url: str = "",
+        generated_title: str = "",
+        generated_description: str = "",
+        generated_thumbnail_prompt: str = "",
     ) -> int:
         """Create a new production record. Returns production ID."""
         now = datetime.now().isoformat()
@@ -209,15 +229,19 @@ class ProductionStore:
                     script_full, script_split, voiceover, video_footage, video_final,
                     upload_platform, channel_name, video_status,
                     prompts_reference, prompts_scene_builder, prompts_concept, prompts_video,
+                    original_title, original_description, thumbnail_url,
+                    generated_title, generated_description, generated_thumbnail_prompt,
                     export_dir, preset_name, voice_id, settings_snapshot,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     project_name, seq, original_link, title, description, thumbnail, keywords,
                     script_full, script_split, voiceover, video_footage, video_final,
                     upload_platform, channel_name, video_status,
                     prompts_reference, prompts_scene_builder, prompts_concept, prompts_video,
+                    original_title, original_description, thumbnail_url,
+                    generated_title, generated_description, generated_thumbnail_prompt,
                     export_dir, preset_name, voice_id, snapshot_json,
                     now, now,
                 ),
@@ -254,6 +278,8 @@ class ProductionStore:
             "script_full", "script_split", "voiceover", "video_footage", "video_final",
             "upload_platform", "channel_name", "video_status",
             "prompts_reference", "prompts_scene_builder", "prompts_concept", "prompts_video",
+            "original_title", "original_description", "thumbnail_url",
+            "generated_title", "generated_description", "generated_thumbnail_prompt",
             "export_dir", "preset_name", "voice_id",
         }
         filtered = {k: v for k, v in updates.items() if k in allowed_fields}

@@ -11,6 +11,7 @@ import { BeeFile, BeeSparkle, BeeGear, BeeSleep, BeeSmall, BeeHero } from './com
 import { RealtimeSyncProvider } from './contexts/RealtimeSyncContext';
 
 const queryClient = new QueryClient();
+const isElectron = typeof window !== 'undefined' && !!window.electron;
 
 type Tab = 'landing' | 'files' | 'workflow' | 'ai-settings' | 'productions';
 
@@ -357,7 +358,7 @@ function App() {
             align-items: center;
             justify-content: space-between;
             padding: 16px 28px 8px;
-            -webkit-app-region: drag;
+            ${isElectron ? '-webkit-app-region: drag;' : ''}
           }
 
           .statusbar-left {
@@ -796,7 +797,7 @@ function App() {
           background: rgba(14, 14, 14, 0.8);
           backdrop-filter: blur(10px);
           border-bottom: 1px solid var(--border-color);
-          -webkit-app-region: drag;
+          ${isElectron ? '-webkit-app-region: drag;' : ''}
           flex-shrink: 0;
         }
 

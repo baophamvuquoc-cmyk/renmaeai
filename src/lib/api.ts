@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -931,6 +931,25 @@ export const workflowApi = {
             return this._sseCall('analyze-video-direction', params, onProgress, signal);
         },
 
+        // Step 2: Generate video prompts (direction notes → video generation prompts)
+        async generateVideoPrompts(
+            params: {
+                scenes: { scene_id: number; content: string; direction_notes?: string; audio_duration?: number }[];
+                language?: string;
+                model?: string;
+                prompt_style?: string;
+                main_character?: string;
+                context_description?: string;
+                video_prompt_mode?: string;
+                sync_analysis?: any;
+            },
+            onProgress: (message: string, percentage: number) => void,
+            signal?: AbortSignal
+        ): Promise<any> {
+            return this._sseCall('generate-video-prompts', params, onProgress, signal);
+        },
+
+
         // Step 3: Extract recurring entities (characters, environments, props ≥2 appearances)
         async extractEntities(
             params: {
@@ -990,6 +1009,9 @@ export const workflowApi = {
             model?: string;
             custom_cta?: string;
             sync_analysis?: any;
+            voice_timestamps?: Array<{ scene_id: number; timestamp: string; content: string; duration: number }>;
+            total_duration?: string;
+            language?: string;
         }): Promise<{
             success: boolean;
             title: string;
@@ -1039,6 +1061,7 @@ export const voiceApi = {
             voice?: string;
             language?: string;
             speed?: number;
+            session_id?: string;
         },
         onProgress: (current: number, total: number, sceneId: number, percentage: number, durationSeconds?: number) => void,
         signal?: AbortSignal,
@@ -1052,6 +1075,7 @@ export const voiceApi = {
                 voice: params.voice || 'vi-VN-HoaiMyNeural',
                 language: params.language || 'vi',
                 speed: params.speed || 1.0,
+                session_id: params.session_id || null,
             }),
             signal,
         });
@@ -1119,7 +1143,10 @@ export const voiceApi = {
     },
 
     // Get audio file URL for playback
-    getAudioUrl(filename: string): string {
+    getAudioUrl(filename: string, sessionId?: string): string {
+        if (sessionId) {
+            return `${API_BASE_URL}/api/voice/download/${sessionId}/${filename}`;
+        }
         return `${API_BASE_URL}/api/voice/download/${filename}`;
     },
 
@@ -1155,6 +1182,17 @@ export const voiceApi = {
     async cleanup(filenames?: string[]) {
         const response = await api.post('/api/voice/cleanup', { filenames: filenames || null });
         return response.data;
+    },
+
+    // Delete session folder (voice_output/<sessionId>/)
+    async cleanupSession(sessionId: string) {
+        try {
+            const response = await api.delete(`/api/voice/session/${sessionId}`);
+            return response.data;
+        } catch (e) {
+            console.warn('[voiceApi] cleanupSession failed (non-blocking):', e);
+            return null;
+        }
     },
 };
 
@@ -1286,6 +1324,7 @@ export const footageApi = {
             bgm_volume?: number;
             video_quality?: string;
             enable_subtitles?: boolean;
+            session_id?: string;
         },
         onProgress: (message: string, percentage: number, sceneId?: number) => void,
         onSceneComplete?: (sceneId: number, videoPath: string) => void,
@@ -1400,6 +1439,17 @@ export const footageApi = {
         const params = new URLSearchParams({ source, api_key: apiKey });
         const response = await api.post(`/api/footage/test-key?${params.toString()}`);
         return response.data;
+    },
+
+    // Delete session folder (video_output/<sessionId>/)
+    async cleanupSession(sessionId: string) {
+        try {
+            const response = await api.delete(`/api/footage/session/${sessionId}`);
+            return response.data;
+        } catch (e) {
+            console.warn('[footageApi] cleanupSession failed (non-blocking):', e);
+            return null;
+        }
     },
 };
 
@@ -1630,10 +1680,11 @@ export const freeFootageApi = {
 // 
 
 export const projectApi = {
-    async createProject(name: string, styleId?: number | null) {
+    async createProject(name: string, styleId?: number | null, data?: Record<string, any>) {
         const response = await api.post('/api/projects', {
             name,
             style_id: styleId || null,
+            data: data || null,
         });
         return response.data;
     },
@@ -1648,14 +1699,19 @@ export const projectApi = {
         return response.data;
     },
 
-    async updateProject(projectId: number, data: { name?: string; status?: string; style_id?: number }) {
-        const response = await api.put(`/api/projects/${projectId}`, data);
+    async updateProject(projectId: number, updates: { name?: string; status?: string; style_id?: number; data?: Record<string, any> }) {
+        const response = await api.put(`/api/projects/${projectId}`, updates);
         return response.data;
     },
 
     async deleteProject(projectId: number) {
         const response = await api.delete(`/api/projects/${projectId}`);
         return response.data;
+    },
+
+    /** Save full workflow data to an existing project */
+    async saveProjectData(projectId: number, data: Record<string, any>) {
+        return projectApi.updateProject(projectId, { data });
     },
 };
 
@@ -1676,6 +1732,7 @@ export interface ExportPackageParams {
         footage_zip: boolean;
         keywords_txt?: boolean;
         prompts_txt?: boolean;
+        seo_optimize?: boolean;
     };
     full_script: string;
     scenes: { scene_id: number; content: string; keywords?: string[]; image_prompt: string; video_prompt: string }[];
@@ -1809,6 +1866,13 @@ export interface Production {
     prompts_scene_builder: string;
     prompts_concept: string;
     prompts_video: string;
+    // Original vs Generated metadata
+    original_title: string;
+    original_description: string;
+    thumbnail_url: string;
+    generated_title: string;
+    generated_description: string;
+    generated_thumbnail_prompt: string;
     // Internal
     export_dir: string;
     preset_name: string;
@@ -1854,7 +1918,7 @@ export const productionApi = {
         return response.data;
     },
 
-    async update(id: number, data: Partial<Pick<Production, 'project_name' | 'original_link' | 'title' | 'description' | 'thumbnail' | 'upload_platform' | 'channel_name' | 'video_status' | 'prompts_reference' | 'prompts_scene_builder' | 'prompts_concept' | 'prompts_video' | 'script_full' | 'script_split' | 'voiceover' | 'keywords' | 'video_footage' | 'video_final' | 'export_dir' | 'preset_name' | 'voice_id'>>): Promise<{ success: boolean }> {
+    async update(id: number, data: Partial<Pick<Production, 'project_name' | 'original_link' | 'title' | 'description' | 'thumbnail' | 'upload_platform' | 'channel_name' | 'video_status' | 'prompts_reference' | 'prompts_scene_builder' | 'prompts_concept' | 'prompts_video' | 'script_full' | 'script_split' | 'voiceover' | 'keywords' | 'video_footage' | 'video_final' | 'export_dir' | 'preset_name' | 'voice_id' | 'original_title' | 'original_description' | 'thumbnail_url' | 'generated_title' | 'generated_description' | 'generated_thumbnail_prompt'>>): Promise<{ success: boolean }> {
         const response = await api.put(`/api/productions/${id}`, data);
         return response.data;
     },

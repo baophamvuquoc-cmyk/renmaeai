@@ -6,7 +6,7 @@ CRUD endpoints for managing projects in the Podcast Remake workflow.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 import asyncio
 
 from modules.projects_db import get_projects_db
@@ -18,12 +18,14 @@ router = APIRouter()
 class CreateProjectRequest(BaseModel):
     name: str
     style_id: Optional[int] = None
+    data: Optional[Dict[str, Any]] = None
 
 
 class UpdateProjectRequest(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
     style_id: Optional[int] = None
+    data: Optional[Dict[str, Any]] = None
 
 
 @router.post("")
@@ -36,7 +38,8 @@ async def create_project(request: CreateProjectRequest):
         db = get_projects_db()
         project_id = db.create_project(
             name=request.name.strip(),
-            style_id=request.style_id
+            style_id=request.style_id,
+            data=request.data,
         )
 
         project = db.get_project(project_id)
@@ -101,6 +104,8 @@ async def update_project(project_id: int, request: UpdateProjectRequest):
             updates['status'] = request.status
         if request.style_id is not None:
             updates['style_id'] = request.style_id
+        if request.data is not None:
+            updates['data'] = request.data
 
         if not updates:
             raise HTTPException(status_code=400, detail="Không có thông tin cập nhật")

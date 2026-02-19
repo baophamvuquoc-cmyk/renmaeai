@@ -372,7 +372,8 @@ class VideoAssembler:
         speed/freeze issues from mixed-source footage.
         """
         quality = QUALITY_PRESETS.get(video_quality, QUALITY_PRESETS["720p"])
-        concat_list_path = str(self.output_dir / "_concat_list.txt")
+        import threading
+        concat_list_path = str(self.output_dir / f"_concat_list_{threading.current_thread().ident}.txt")
 
         try:
             # Write concat list file

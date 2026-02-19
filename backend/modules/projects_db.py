@@ -3,8 +3,15 @@ Projects Database Module
 
 Stores and manages saved projects for the Podcast Remake workflow.
 Uses SQLite for persistence. Follows the same pattern as style_profiles_db.py.
+
+The `data` column stores a JSON blob with full workflow state:
+  styleA, referenceScripts, topic, targetDuration, channelName, language,
+  outline, draftSections, finalScript, remakeMode, remakeScript,
+  voiceAnalysis, thumbnailAnalysis, titleAnalysis, descriptionAnalysis,
+  syncAnalysis, and any other workflow-specific data.
 """
 
+import json
 import os
 import sqlite3
 from datetime import datetime
@@ -37,7 +44,7 @@ class ProjectsDB:
             conn.close()
 
     def _init_db(self):
-        """Initialize database tables"""
+        """Initialize database tables and run migrations"""
         with self._get_connection() as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS projects (
@@ -45,30 +52,45 @@ class ProjectsDB:
                     name TEXT NOT NULL,
                     status TEXT NOT NULL DEFAULT 'draft',
                     style_id INTEGER,
+                    data TEXT DEFAULT '{}',
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )
             """)
 
-    def create_project(self, name: str, style_id: Optional[int] = None) -> int:
+            # Migration: add `data` column if missing (existing DBs)
+            cursor = conn.execute("PRAGMA table_info(projects)")
+            columns = [row[1] for row in cursor.fetchall()]
+            if 'data' not in columns:
+                conn.execute("ALTER TABLE projects ADD COLUMN data TEXT DEFAULT '{}'")
+                print("[ProjectsDB] Migrated: added 'data' column")
+
+    def create_project(
+        self,
+        name: str,
+        style_id: Optional[int] = None,
+        data: Optional[Dict[str, Any]] = None,
+    ) -> int:
         """
         Create a new project.
 
         Args:
             name: Project name
             style_id: Optional linked style profile ID
+            data: Optional workflow data dict (stored as JSON)
 
         Returns:
             Project ID
         """
         now = datetime.now().isoformat()
+        data_json = json.dumps(data or {}, ensure_ascii=False)
         with self._get_connection() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO projects (name, status, style_id, created_at, updated_at)
-                VALUES (?, 'draft', ?, ?, ?)
+                INSERT INTO projects (name, status, style_id, data, created_at, updated_at)
+                VALUES (?, 'draft', ?, ?, ?, ?)
                 """,
-                (name, style_id, now, now)
+                (name, style_id, data_json, now, now)
             )
             return cursor.lastrowid
 
@@ -78,7 +100,7 @@ class ProjectsDB:
             rows = conn.execute(
                 "SELECT * FROM projects ORDER BY updated_at DESC"
             ).fetchall()
-            return [dict(row) for row in rows]
+            return [self._row_to_dict(row) for row in rows]
 
     def get_project(self, project_id: int) -> Optional[Dict[str, Any]]:
         """Get a specific project by ID"""
@@ -87,12 +109,19 @@ class ProjectsDB:
                 "SELECT * FROM projects WHERE id = ?",
                 (project_id,)
             ).fetchone()
-            return dict(row) if row else None
+            return self._row_to_dict(row) if row else None
 
     def update_project(self, project_id: int, updates: Dict[str, Any]) -> bool:
         """Update a project"""
-        allowed_fields = {'name', 'status', 'style_id'}
-        filtered = {k: v for k, v in updates.items() if k in allowed_fields}
+        allowed_fields = {'name', 'status', 'style_id', 'data'}
+        filtered = {}
+        for k, v in updates.items():
+            if k not in allowed_fields:
+                continue
+            if k == 'data' and isinstance(v, dict):
+                filtered[k] = json.dumps(v, ensure_ascii=False)
+            else:
+                filtered[k] = v
 
         if not filtered:
             return False
@@ -117,6 +146,20 @@ class ProjectsDB:
                 (project_id,)
             )
             return cursor.rowcount > 0
+
+    @staticmethod
+    def _row_to_dict(row: sqlite3.Row) -> Dict[str, Any]:
+        """Convert a Row to dict, deserializing JSON data"""
+        d = dict(row)
+        raw = d.get('data')
+        if raw and isinstance(raw, str):
+            try:
+                d['data'] = json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                d['data'] = {}
+        elif raw is None:
+            d['data'] = {}
+        return d
 
 
 # Singleton instance

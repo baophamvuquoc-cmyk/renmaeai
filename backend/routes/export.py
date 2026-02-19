@@ -194,36 +194,41 @@ async def package_results(request: PackageRequest):
             seo = SEOOptimizer()
             seo_data = SEOData.from_dict(request.seo_data)
 
-            # Find the exported video file
-            video_file = None
-            for f in export_dir.iterdir():
-                if f.suffix.lower() in (".mp4", ".mkv", ".webm"):
-                    video_file = f
-                    break
-
-            if video_file:
-                # Generate SEO filename
-                seo_filename = seo.get_seo_filename(seo_data, video_file.suffix)
-                seo_output = export_dir / f"_seo_temp{video_file.suffix}"
-
-                # Inject metadata
-                seo.inject_metadata(
-                    input_path=str(video_file),
-                    output_path=str(seo_output),
-                    seo_data=seo_data,
-                )
-
-                # Replace original with SEO version
-                video_file.unlink()
-                seo_final = export_dir / seo_filename
-                seo_output.rename(seo_final)
-
-                results["seo_applied"] = True
-                results["seo_filename"] = seo_filename
-                results["exported"].append(f"SEO: {seo_filename}")
-                print(f"[Export] SEO Thô applied → {seo_final}")
+            # Safety: skip SEO if critical fields are empty (prevents wiping metadata)
+            if not seo_data.main_keyword and not seo_data.seo_title:
+                results["errors"].append("seo: skipped — empty SEO data (no keyword/title)")
+                print("[Export] SEO skipped: empty seo_data (main_keyword and seo_title both empty)")
             else:
-                results["errors"].append("seo: no video file found to optimize")
+                # Find the exported video file
+                video_file = None
+                for f in export_dir.iterdir():
+                    if f.suffix.lower() in (".mp4", ".mkv", ".webm"):
+                        video_file = f
+                        break
+
+                if video_file:
+                    # Generate SEO filename
+                    seo_filename = seo.get_seo_filename(seo_data, video_file.suffix)
+                    seo_output = export_dir / f"_seo_temp{video_file.suffix}"
+
+                    # Inject metadata
+                    seo.inject_metadata(
+                        input_path=str(video_file),
+                        output_path=str(seo_output),
+                        seo_data=seo_data,
+                    )
+
+                    # Replace original with SEO version
+                    video_file.unlink()
+                    seo_final = export_dir / seo_filename
+                    seo_output.rename(seo_final)
+
+                    results["seo_applied"] = True
+                    results["seo_filename"] = seo_filename
+                    results["exported"].append(f"SEO: {seo_filename}")
+                    print(f"[Export] SEO Thô applied → {seo_final}")
+                else:
+                    results["errors"].append("seo: no video file found to optimize")
         except Exception as e:
             results["errors"].append(f"seo: {e}")
             print(f"[Export] SEO processing error: {e}")

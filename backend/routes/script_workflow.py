@@ -33,6 +33,23 @@ from modules.websocket_hub import manager as ws_manager
 
 router = APIRouter()
 
+# ── Unified Language Maps ─────────────────────────────────────────────────────
+# English names — used in AI prompt instructions (e.g., "The script is in Vietnamese")
+LANG_NAME_MAP = {
+    'vi': 'Vietnamese', 'en': 'English', 'zh': 'Chinese',
+    'ja': 'Japanese', 'ko': 'Korean', 'es': 'Spanish',
+    'fr': 'French', 'th': 'Thai', 'de': 'German',
+    'pt': 'Portuguese', 'ru': 'Russian'
+}
+
+# Native names — used when telling AI to produce output in a specific language
+LANG_NATIVE_MAP = {
+    'vi': 'tiếng Việt', 'en': 'English', 'zh': '中文',
+    'ja': '日本語', 'ko': '한국어', 'es': 'español',
+    'fr': 'français', 'th': 'ภาษาไทย', 'de': 'Deutsch',
+    'pt': 'português', 'ru': 'русский'
+}
+
 
 def get_configured_ai_client(model: Optional[str] = None) -> HybridAIClient:
     """
@@ -548,20 +565,16 @@ async def clean_scenes(request: CleanScenesRequest):
     cleaned_scenes = []
     changed_count = 0
 
+    # Use calibrated speech rate from _get_language_params for accurate duration
+    lang_params = _get_language_params(language, "voiceover")
+    wps = lang_params.get('speech_rate', 2.5)
+
     for scene in request.scenes:
         original_content = scene.get('content', '')
         cleaned_content = clean_text(original_content)
         
         # Recount words after cleaning
         word_count = len(cleaned_content.split())
-        
-        # Estimate duration (same logic as split)
-        if language == 'vi':
-            wps = 2.0  # Vietnamese ~2 words/sec
-        elif language == 'zh':
-            wps = 2.5  # Chinese ~2.5 chars/sec
-        else:
-            wps = 2.5  # Other languages ~2.5 words/sec
         
         est_duration = round(word_count / wps, 1)
         
@@ -842,11 +855,60 @@ def _split_script_algorithmically(
         ' that ', ' which ', ' where ', ' after ', ' before ',
         ' since ', ' for ', ' yet ', ' thus ', ' therefore '
     ]
+    # CJK languages use different delimiters (no spaces around conjunctions)
+    zh_conjunctions = [
+        '但是', '而且', '因为', '所以', '虽然', '或者', '如果', '不过',
+        '然后', '接着', '于是', '尽管', '可是', '并且', '即使', '除非'
+    ]
+    ja_conjunctions = [
+        'しかし', 'そして', 'だから', 'それで', 'または', 'けれども',
+        'ところが', 'それから', 'つまり', 'なぜなら', 'もし', 'ただし'
+    ]
+    ko_conjunctions = [
+        '그리고', '하지만', '그래서', '또는', '그러나', '왜냐하면',
+        '그런데', '따라서', '만약', '비록', '그러므로', '게다가'
+    ]
+    es_conjunctions = [
+        ' y ', ' pero ', ' o ', ' porque ', ' sin embargo ', ' aunque ',
+        ' entonces ', ' después ', ' si ', ' cuando ', ' mientras ',
+        ' por lo tanto ', ' además ', ' también ', ' sino '
+    ]
+    fr_conjunctions = [
+        ' et ', ' mais ', ' ou ', ' parce que ', ' cependant ', ' bien que ',
+        ' alors ', ' ensuite ', ' si ', ' quand ', ' pendant que ',
+        ' donc ', ' aussi ', ' puis ', ' pourtant '
+    ]
+    th_conjunctions = [
+        'และ', 'แต่', 'หรือ', 'เพราะ', 'ถ้า', 'เมื่อ', 'ดังนั้น',
+        'อย่างไรก็ตาม', 'แม้ว่า', 'จากนั้น', 'แล้ว', 'จึง'
+    ]
+    de_conjunctions = [
+        ' und ', ' aber ', ' oder ', ' weil ', ' obwohl ', ' wenn ',
+        ' dann ', ' deshalb ', ' jedoch ', ' trotzdem ', ' damit ',
+        ' denn ', ' also ', ' sondern ', ' außerdem '
+    ]
+    pt_conjunctions = [
+        ' e ', ' mas ', ' ou ', ' porque ', ' embora ', ' se ',
+        ' então ', ' depois ', ' portanto ', ' contudo ', ' além disso ',
+        ' porém ', ' quando ', ' enquanto '
+    ]
+    ru_conjunctions = [
+        ' и ', ' но ', ' или ', ' потому что ', ' однако ', ' если ',
+        ' тогда ', ' потом ', ' поэтому ', ' хотя ', ' также ',
+        ' кроме того ', ' когда ', ' пока '
+    ]
+    
+    # Map language code to conjunction list
+    conjunction_map = {
+        'vi': vi_conjunctions, 'en': en_conjunctions,
+        'zh': zh_conjunctions, 'ja': ja_conjunctions, 'ko': ko_conjunctions,
+        'es': es_conjunctions, 'fr': fr_conjunctions, 'th': th_conjunctions,
+        'de': de_conjunctions, 'pt': pt_conjunctions, 'ru': ru_conjunctions
+    }
     
     def _split_at_conjunctions(text: str) -> List[str]:
         """Split text at natural break points (conjunctions)."""
-        # Try Vietnamese first, then English
-        conjunctions = vi_conjunctions if language == 'vi' else en_conjunctions
+        conjunctions = conjunction_map.get(language, en_conjunctions)
         
         best_split = None
         best_balance = float('inf')  # Lower is better (more balanced split)
@@ -1350,11 +1412,7 @@ async def generate_scene_keywords(request: GenerateSceneKeywordsRequest):
             import re as re_mod
 
             loop = asyncio.get_event_loop()
-            lang_name = {
-                'vi': 'Vietnamese', 'en': 'English', 'zh': 'Chinese',
-                'ja': 'Japanese', 'ko': 'Korean', 'es': 'Spanish',
-                'fr': 'French', 'th': 'Thai', 'pt': 'Portuguese'
-            }.get(request.language, 'the same language as the scenes')
+            lang_name = LANG_NAME_MAP.get(request.language, 'the same language as the scenes')
 
             total_scenes = len(request.scenes)
             result_map = {}
@@ -1362,9 +1420,23 @@ async def generate_scene_keywords(request: GenerateSceneKeywordsRequest):
             mode_label = request.mode or 'footage'
             print(f"[SceneKeywords] Mode={mode_label} | {total_scenes} scenes | image={gen_image} video={gen_video} chars={use_chars} settings={use_settings}")
 
-            BATCH_SIZE = 50  # Max scenes per AI call
-            scene_batches = [request.scenes[i:i + BATCH_SIZE] for i in range(0, total_scenes, BATCH_SIZE)]
-            num_batches = len(scene_batches)
+            # Dynamic batch size based on what's being generated:
+            # - Keywords only (~10 words/scene) → no batch needed
+            # - Keywords + image prompts (~70 words/scene) → batch 20
+            # - Keywords + image + video prompts (~190 words/scene) → batch 10
+            if gen_image and gen_video:
+                BATCH_SIZE = 10
+            elif gen_image or gen_video:
+                BATCH_SIZE = 20
+            else:
+                BATCH_SIZE = total_scenes  # keywords only → no batching
+
+            if total_scenes <= BATCH_SIZE:
+                scene_batches = [request.scenes]
+                num_batches = 1
+            else:
+                scene_batches = [request.scenes[i:i + BATCH_SIZE] for i in range(0, total_scenes, BATCH_SIZE)]
+                num_batches = len(scene_batches)
             batch_label = f'{num_batches} batch' if num_batches > 1 else '1 lần'
 
             yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Keywords: {total_scenes} scenes ({batch_label})', 'current': 0, 'total': total_scenes, 'percentage': 2}, ensure_ascii=False)}\n\n"
@@ -1435,7 +1507,7 @@ async def generate_scene_keywords(request: GenerateSceneKeywordsRequest):
             scene_meta = {}
             for scene in request.scenes:
                 import math
-                if request.mode == 'footage' and scene.audio_duration and scene.audio_duration > 0:
+                if gen_keywords and scene.audio_duration and scene.audio_duration > 0:
                     keyword_count = max(1, math.ceil(scene.audio_duration / 4))
                     target_clip_duration = round(scene.audio_duration / keyword_count, 1)
                 else:
@@ -1670,16 +1742,30 @@ Return ONLY the scene blocks, no other text."""
 
                 yield f"data: {json_module.dumps({'type': 'progress', 'message': progress_msg, 'current': sum(len(b) for b in scene_batches[:batch_idx]), 'total': total_scenes, 'percentage': batch_start_pct + 10}, ensure_ascii=False)}\n\n"
 
+                def _sanitize_prompt(text: str) -> str:
+                    """Strip null bytes and problematic control chars that cause [Errno 22] on Windows"""
+                    import unicodedata
+                    # Remove null bytes
+                    text = text.replace('\x00', '')
+                    # Remove other control characters except newline/tab/carriage-return
+                    text = ''.join(
+                        ch for ch in text
+                        if ch in ('\n', '\r', '\t') or not unicodedata.category(ch).startswith('C')
+                    )
+                    return text
+
                 def call_ai(p=prompt):
-                    return ai_client.generate(p, temperature=0.3)
+                    return ai_client.generate(_sanitize_prompt(p), temperature=0.3)
 
                 try:
                     with concurrent.futures.ThreadPoolExecutor() as pool:
                         result_text = await loop.run_in_executor(pool, call_ai)
 
-                    print(f"[SceneKeywords] AI response length: {len(result_text)} chars")
+                    print(f"[SceneKeywords] Prompt length: {len(prompt)} chars | AI response length: {len(result_text)} chars")
+                    print(f"[SceneKeywords] AI response LAST 200 chars: ...{result_text[-200:]}")
                     scene_blocks = re_mod.split(r'===SCENE\s+(\d+)===', result_text)
-                    print(f"[SceneKeywords] re.split produced {len(scene_blocks)} parts (expect {batch_scene_count * 2 + 1} for {batch_scene_count} scenes)")
+                    expected_parts = batch_scene_count * 2 + 1
+                    print(f"[SceneKeywords] re.split produced {len(scene_blocks)} parts (expect {expected_parts} for {batch_scene_count} scenes)")
                     parsed_count = 0
                     if len(scene_blocks) >= 3:
                         for i in range(1, len(scene_blocks), 2):
@@ -1781,15 +1867,159 @@ Return ONLY the scene blocks, no other text."""
                             except json_module.JSONDecodeError:
                                 pass
 
+                    # ── Retry missing scenes from this batch ──
+                    missing_scenes = [s for s in batch_scenes if s.scene_id not in result_map]
+                    if missing_scenes and len(missing_scenes) < len(batch_scenes):
+                        print(f"[SceneKeywords] Batch {batch_num}: {len(missing_scenes)} scenes missing, retrying...")
+                        yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Retry {len(missing_scenes)} missing scenes', 'current': sum(len(b) for b in scene_batches[:batch_idx + 1]) - len(missing_scenes), 'total': total_scenes, 'percentage': batch_end_pct - 5}, ensure_ascii=False)}\n\n"
+                        retry_block_parts = []
+                        for scene in missing_scenes:
+                            meta = scene_meta[scene.scene_id]
+                            base = f"Scene {scene.scene_id} ({meta['keyword_count']} keywords needed, ~{meta['target_clip_duration']}s each): {scene.content}"
+                            d = dir_map.get(scene.scene_id)
+                            if d and d.get('direction_notes'):
+                                base += f"\n  [DIRECTION]: {d['direction_notes']}"
+                            retry_block_parts.append(base)
+                        retry_scenes_block = "\n".join(retry_block_parts)
+                        retry_prompt = f"""You are a visual STORYBOARD director. Generate {task_desc} for ALL {len(missing_scenes)} scenes.
+The script is in {lang_name}.
+{concept_anchor_block if has_anchor else ''}{consistency_block}{prompt_framework_block}
+══ SCENES ({len(missing_scenes)} scenes) ══
+{retry_scenes_block}
+{anchor_rules}
+
+Return EXACTLY {len(missing_scenes)} scene blocks in this format (NO JSON, plain text only):
+
+{example_output}
+===SCENE 2===
+...
+
+Return ONLY the scene blocks, no other text."""
+                        try:
+                            def call_retry(p=retry_prompt):
+                                return ai_client.generate(_sanitize_prompt(p), temperature=0.3)
+                            with concurrent.futures.ThreadPoolExecutor() as pool:
+                                retry_text = await loop.run_in_executor(pool, call_retry)
+                            retry_blocks = re_mod.split(r'===SCENE\s+(\d+)===', retry_text)
+                            retry_parsed = 0
+                            for ri in range(1, len(retry_blocks), 2):
+                                try:
+                                    rsid = int(retry_blocks[ri])
+                                    rblock = retry_blocks[ri + 1] if ri + 1 < len(retry_blocks) else ''
+                                    rentry = {'scene_id': rsid}
+                                    rkw = re_mod.search(r'KEYWORDS?:\s*(.+)', rblock)
+                                    if rkw:
+                                        rkw_text = rkw.group(1).strip()
+                                        if '|' in rkw_text:
+                                            rraw_kws = [k.strip() for k in rkw_text.split('|') if k.strip()]
+                                        else:
+                                            rraw_kws = [rkw_text]
+                                        if len(rraw_kws) > 1:
+                                            rentry['keywords'] = rraw_kws
+                                            rmeta = scene_meta.get(rsid, {'target_clip_duration': 4.0})
+                                            rentry['target_clip_duration'] = rmeta['target_clip_duration']
+                                        rentry['keyword'] = rraw_kws[0] if rraw_kws else ''
+                                    else:
+                                        rentry['keyword'] = ''
+                                    if gen_image:
+                                        rimg = re_mod.search(r'IMAGE_PROMPT:\s*(.+?)(?=\n(?:VIDEO_PROMPT:|KEYWORD|===SCENE)|$)', rblock, re_mod.DOTALL)
+                                        rentry['image_prompt'] = rimg.group(1).strip() if rimg else ''
+                                    if gen_video:
+                                        rvid = re_mod.search(r'VIDEO_PROMPT:\s*(.+?)(?=\n(?:IMAGE_PROMPT:|KEYWORD|===SCENE)|$)', rblock, re_mod.DOTALL)
+                                        rentry['video_prompt'] = rvid.group(1).strip() if rvid else ''
+                                    result_map[rsid] = rentry
+                                    retry_parsed += 1
+                                except (ValueError, IndexError):
+                                    pass
+                            print(f"[SceneKeywords] Retry recovered {retry_parsed}/{len(missing_scenes)} scenes")
+                        except Exception as retry_err:
+                            print(f"[SceneKeywords] Retry failed: {retry_err}")
+
+                    # Fill any still-missing scenes after retry
                     for scene in batch_scenes:
                         if scene.scene_id not in result_map:
-                            print(f"[SceneKeywords] Scene {scene.scene_id} missing from AI response, using empty")
+                            print(f"[SceneKeywords] Scene {scene.scene_id} still missing after retry, using empty")
                             result_map[scene.scene_id] = _empty_result(scene.scene_id, gen_image, gen_video)
 
                     # Summary stats
+                    batch_parsed = sum(1 for s in batch_scenes if s.scene_id in result_map and result_map[s.scene_id].get('keyword', ''))
                     vp_count = sum(1 for v in result_map.values() if v.get('video_prompt', '').strip())
                     ip_count = sum(1 for v in result_map.values() if v.get('image_prompt', '').strip())
-                    print(f"[SceneKeywords] {'Batch ' + str(batch_num) + ': ' if num_batches > 1 else ''}parsed {parsed_count} scenes (total: {len(result_map)}/{total_scenes}, with video_prompt: {vp_count}, with image_prompt: {ip_count})")
+                    print(f"[SceneKeywords] Batch {batch_num}/{num_batches}: {batch_parsed}/{batch_scene_count} scenes OK (total: {len(result_map)}/{total_scenes}, video_prompt: {vp_count}, image_prompt: {ip_count})")
+
+                except OSError as os_err:
+                    # Retry once with smaller sub-batches on Windows Errno 22
+                    print(f"[SceneKeywords] OSError in batch {batch_num}, retrying with smaller batches: {os_err}")
+                    import traceback
+                    print(traceback.format_exc())
+                    half = len(batch_scenes) // 2 or 1
+                    for sub_start in range(0, len(batch_scenes), half):
+                        sub_scenes = batch_scenes[sub_start:sub_start + half]
+                        sub_block_parts = []
+                        for scene in sub_scenes:
+                            meta = scene_meta[scene.scene_id]
+                            base = f"Scene {scene.scene_id} ({meta['keyword_count']} keywords needed, ~{meta['target_clip_duration']}s each): {scene.content}"
+                            d = dir_map.get(scene.scene_id)
+                            if d and d.get('direction_notes'):
+                                base += f"\n  [DIRECTION]: {d['direction_notes']}"
+                            sub_block_parts.append(base)
+                        sub_scenes_block = "\n".join(sub_block_parts)
+                        sub_prompt = f"""You are a visual STORYBOARD director. Generate {task_desc} for ALL {len(sub_scenes)} scenes.
+The script is in {lang_name}.
+{concept_anchor_block if has_anchor else ''}{consistency_block}{prompt_framework_block}
+══ SCENES ({len(sub_scenes)} scenes) ══
+{sub_scenes_block}
+{anchor_rules}
+
+Return EXACTLY {len(sub_scenes)} scene blocks in this format (NO JSON, plain text only):
+
+{example_output}
+===SCENE 2===
+...
+
+Return ONLY the scene blocks, no other text."""
+                        try:
+                            def call_sub(p=sub_prompt):
+                                return ai_client.generate(_sanitize_prompt(p), temperature=0.3)
+                            with concurrent.futures.ThreadPoolExecutor() as pool:
+                                sub_text = await loop.run_in_executor(pool, call_sub)
+                            # Parse sub-batch result (same as main parsing)
+                            import re as re_sub
+                            sub_blocks = re_sub.split(r'===\s*SCENE\s+(\d+)\s*===', sub_text)
+                            for j in range(1, len(sub_blocks), 2):
+                                try:
+                                    sid = int(sub_blocks[j])
+                                    content = sub_blocks[j + 1].strip() if j + 1 < len(sub_blocks) else ''
+                                    entry = {'scene_id': sid}
+                                    for line in content.split('\n'):
+                                        line = line.strip()
+                                        if line.upper().startswith('KEYWORD:') or line.upper().startswith('KEYWORDS:'):
+                                            kw = line.split(':', 1)[1].strip()
+                                            entry['keyword'] = kw.split('|')[0].strip() if '|' in kw else kw
+                                            if '|' in kw:
+                                                entry['keywords'] = [k.strip() for k in kw.split('|')]
+                                        elif line.upper().startswith('IMAGE_PROMPT:'):
+                                            entry['image_prompt'] = line.split(':', 1)[1].strip()
+                                        elif line.upper().startswith('VIDEO_PROMPT:'):
+                                            entry['video_prompt'] = line.split(':', 1)[1].strip()
+                                    if entry.get('keyword') or entry.get('image_prompt') or entry.get('video_prompt'):
+                                        result_map[sid] = entry
+                                except (ValueError, IndexError):
+                                    pass
+                            print(f"[SceneKeywords] Sub-batch retry OK: {len(sub_scenes)} scenes")
+                        except Exception as sub_err:
+                            print(f"[SceneKeywords] Sub-batch retry also failed: {sub_err}")
+                            for scene in sub_scenes:
+                                if scene.scene_id not in result_map:
+                                    entry = _empty_result(scene.scene_id, gen_image, gen_video)
+                                    entry['keyword'] = f'(error: {str(sub_err)[:40]})'
+                                    result_map[scene.scene_id] = entry
+                    # Fill any still-missing scenes
+                    for scene in batch_scenes:
+                        if scene.scene_id not in result_map:
+                            entry = _empty_result(scene.scene_id, gen_image, gen_video)
+                            entry['keyword'] = f'(error: {str(os_err)[:40]})'
+                            result_map[scene.scene_id] = entry
 
                 except Exception as ai_err:
                     print(f"[SceneKeywords] Batch AI error: {ai_err}")
@@ -1878,11 +2108,7 @@ async def analyze_video_direction(request: AnalyzeVideoDirectionRequest):
             import concurrent.futures
             import re as re_mod
 
-            lang_name = {
-                'vi': 'Vietnamese', 'en': 'English', 'zh': 'Chinese',
-                'ja': 'Japanese', 'ko': 'Korean', 'es': 'Spanish',
-                'fr': 'French', 'th': 'Thai', 'pt': 'Portuguese'
-            }.get(request.language, 'the same language as the scenes')
+            lang_name = LANG_NAME_MAP.get(request.language, 'the same language as the scenes')
 
             total = len(request.scenes)
 
@@ -2009,6 +2235,273 @@ Return ONLY the scene blocks with ===SCENE N=== separators, no other text."""
         except Exception as e:
             import traceback
             print(f"[VideoDirection] Error: {e}")
+            print(traceback.format_exc())
+            yield f"event: error\ndata: {json_module.dumps({'success': False, 'error': str(e)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"}
+    )
+
+
+# ── Generate Video Prompts (dedicated endpoint) ──
+
+class VideoPromptSceneItem(BaseModel):
+    scene_id: int
+    content: str
+    direction_notes: Optional[str] = None
+    audio_duration: Optional[float] = None
+
+class GenerateVideoPromptsRequest(BaseModel):
+    scenes: List[VideoPromptSceneItem]
+    language: Optional[str] = 'vi'
+    model: Optional[str] = None
+    prompt_style: Optional[str] = None
+    main_character: Optional[str] = None
+    context_description: Optional[str] = None
+    video_prompt_mode: Optional[str] = None
+    sync_analysis: Optional[Dict[str, Any]] = None
+
+
+@router.post("/generate-video-prompts")
+async def generate_video_prompts_endpoint(request: GenerateVideoPromptsRequest):
+    """
+    Generate video prompts for each scene using the 7-component framework.
+    Input: scenes with direction notes from analyze-video-direction.
+    Output: per-scene video prompts (80-120 words each).
+    """
+    if not request.scenes:
+        raise HTTPException(status_code=400, detail="No scenes provided")
+
+    BATCH_SIZE = 20
+
+    async def event_generator():
+        try:
+            ai_client = get_configured_ai_client(model=request.model)
+            loop = asyncio.get_event_loop()
+            import concurrent.futures
+            import re as re_mod
+
+            lang_name = LANG_NAME_MAP.get(request.language, 'the same language as the scenes')
+
+            total = len(request.scenes)
+            batches = [request.scenes[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
+            num_batches = len(batches)
+
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Video prompts: {total} scenes', 'percentage': 5}, ensure_ascii=False)}\n\n"
+
+            # Build style/consistency block
+            style_block = ""
+            if request.prompt_style:
+                style_block += f"\n== VISUAL STYLE DIRECTION ==\n{request.prompt_style}\n"
+            if request.main_character:
+                style_block += f"\n== MAIN CHARACTER (consistent in ALL scenes) ==\n{request.main_character}\n"
+            if request.context_description:
+                style_block += f"\n== ENVIRONMENT/CONTEXT ==\n{request.context_description}\n"
+            if request.sync_analysis:
+                sa = request.sync_analysis
+                sync_parts = []
+                if sa.get('characters'):
+                    chars = "\n".join([f"  - {c.get('name', '')}: {c.get('visual_description', c.get('description', ''))}" for c in sa['characters'][:5]])
+                    sync_parts.append(f"SYNC CHARACTERS:\n{chars}")
+                if sa.get('settings'):
+                    sets = "\n".join([f"  - {s.get('name', '')}: {s.get('visual_description', s.get('description', ''))}" for s in sa['settings'][:5]])
+                    sync_parts.append(f"SYNC SETTINGS:\n{sets}")
+                if sa.get('visual_style'):
+                    sync_parts.append(f"SYNC VISUAL STYLE: {sa['visual_style']}")
+                if sync_parts:
+                    style_block += "\n== SYNC ANALYSIS ==\n" + "\n".join(sync_parts) + "\n"
+
+            mode_block = ""
+            if request.video_prompt_mode == 'character_sync':
+                mode_block = "\n== MODE: CHARACTER SYNC ==\nRepeat full character description in EVERY prompt.\n"
+            elif request.video_prompt_mode == 'scene_sync':
+                mode_block = "\n== MODE: STYLE SYNC ==\nMaintain identical color grading, lighting, camera language across ALL scenes.\n"
+            elif request.video_prompt_mode == 'full_sync':
+                mode_block = "\n== MODE: FULL SYNC ==\nCharacter identity + Visual style + Environment must ALL remain consistent.\n"
+
+            all_results = {}
+
+            for batch_idx, batch_scenes in enumerate(batches):
+                batch_num = batch_idx + 1
+                batch_total = len(batch_scenes)
+                batch_start_pct = 10 + int((batch_idx / num_batches) * 75)
+                batch_end_pct = 10 + int(((batch_idx + 1) / num_batches) * 75)
+
+                if num_batches > 1:
+                    yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: {batch_total} scenes', 'percentage': batch_start_pct}, ensure_ascii=False)}\n\n"
+
+                scenes_block_parts = []
+                for s in batch_scenes:
+                    line = f"Scene {s.scene_id}: {s.content}"
+                    if s.direction_notes:
+                        line += f"\n  [DIRECTION]: {s.direction_notes}"
+                    scenes_block_parts.append(line)
+                scenes_block = "\n".join(scenes_block_parts)
+
+                prompt = f"""You are an expert VIDEO PROMPT WRITER for Veo 3.1 — a reasoning-based generative AI that understands physics, cinematography, and narrative logic. Generate a video generation prompt for each scene.
+The script is in {lang_name}. All prompts must be in ENGLISH.
+
+== UNIVERSAL 7-COMPONENT VIDEO PROMPTING FRAMEWORK ==
+Combine ALL 7 components into ONE FLOWING NARRATIVE PARAGRAPH per scene.
+NEVER use tag-soup, bullet points, or comma-separated keywords — use natural language with cause-and-effect reasoning.
+
+1. SUBJECT (Who/What — the visual anchor):
+   - Identity: name, age, gender, build, ethnicity
+   - Physical details: face shape, eye color, hair (color/length/style/texture), skin tone, distinguishing marks (scars, tattoos)
+   - Wardrobe: specific clothing, color palette, accessories (glasses, jewelry)
+   - Expression/Posture: emotional state that influences body language
+   - For recurring characters: repeat the FULL description in EVERY prompt for identity consistency
+
+2. CONTEXT (Where — environment + light source):
+   - Location: specific setting (not just "a room" but "a Victorian study bathed in afternoon sunlight")
+   - Time of day + weather: affects lighting calculations
+   - Light source: describe WHERE light comes from (window, neon sign, campfire) — Veo uses this to compute shadows and volumetric effects
+   - Spatial relationships: foreground/midground/background layers
+
+3. ACTION (What happens — verbs + physics):
+   - Use movement verbs: "sprints", "stumbles", "lunges", "drifts"
+   - Cause-and-effect interactions: "She flinches as the glass shatters" (triggers temporal reasoning)
+   - Physical interactions: describe material behavior (water splashing, cloth billowing, dust rising)
+
+4. CINEMATOGRAPHY (How — camera as storytelling tool):
+   - Shot type: ECU (extreme detail), CU (emotion), MS (dialogue), WS (environment), Establishing (scale)
+   - Lens: 35mm (natural/human eye), 85mm (portrait/flattened BG), macro (extreme detail), fisheye (dynamic distortion)
+   - Camera movement (pick ONE that serves the narrative):
+     * Dolly in/out: physically moves camera, changes perspective (intimacy/isolation)
+     * Truck/Track left/right: follows subject movement laterally
+     * Pan/Tilt: rotates on fixed axis, reveals environment
+     * Crane up/down: vertical reveal, shows scale
+     * Orbit/Arc: circles subject (hero shot emphasis)
+     * Handheld: simulates realistic camera shake (chaos/urgency)
+   - Advanced: Rack focus (shift focus foreground↔background), Bullet time (slow-mo + camera movement)
+
+5. AESTHETICS (Feel — render engine + mood):
+   - Style: photorealistic, cinematic, 3D render, anime (specify studio), oil painting
+   - Lighting technique: golden hour, blue hour, noir (high contrast), softbox, volumetric/god rays, Rembrandt, rim light
+   - Color palette: specific tones (warm amber, desaturated teal, neon cyan-magenta)
+   - Mood/atmosphere: tension, serenity, melancholy, wonder
+
+6. AUDIO (Soundscape — describe QUALITY not just names):
+   - Dialogue: use direct quotes with emotional tone ("he whispers 'We need to leave, now'" — triggers lip-sync)
+   - SFX: describe texture and quality ("the sharp crack of a branch snapping", "the wet slap of footsteps on marble")
+   - Ambience: layered background ("distant traffic hum beneath the patter of rain on tin roofing")
+
+7. CONSTRAINTS (Guardrails):
+   - Aspect ratio: 16:9 for cinematic, 9:16 for social
+   - Negative: "no text overlays, no watermarks, no extra limbs, no floating objects, no blurry faces"
+
+CRITICAL RULES:
+- Output as ONE FLOWING NARRATIVE PARAGRAPH — weave all 7 components naturally
+- Each prompt: 80-120 words STRICTLY
+- Use the [DIRECTION] notes to guide your visual decisions for each scene
+- Maintain CHARACTER identity and SETTING consistency across ALL scenes
+- Describe light SOURCES (not just "good lighting") so Veo can compute shadows
+- Use cause-and-effect language to trigger Veo's temporal reasoning engine
+{style_block}{mode_block}
+== SCENES ({batch_total} scenes) ==
+{scenes_block}
+
+Return EXACTLY {batch_total} scene blocks:
+
+===SCENE 1===
+VIDEO_PROMPT: A cinematic medium shot of...
+
+===SCENE 2===
+VIDEO_PROMPT: ...
+
+Return ONLY the scene blocks, no other text."""
+
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI generating video prompts...', 'percentage': batch_start_pct + 5}, ensure_ascii=False)}\n\n"
+
+                try:
+                    def call_ai(p=prompt):
+                        return ai_client.generate(p, temperature=0.3)
+
+                    with concurrent.futures.ThreadPoolExecutor() as pool:
+                        result_text = await loop.run_in_executor(pool, call_ai)
+
+                    print(f"[VideoPrompts] Batch {batch_num}/{num_batches}: AI response {len(result_text)} chars")
+
+                    scene_blocks = re_mod.split(r'===SCENE\s+(\d+)===', result_text)
+                    parsed_count = 0
+                    if len(scene_blocks) >= 3:
+                        for i in range(1, len(scene_blocks), 2):
+                            try:
+                                scene_id = int(scene_blocks[i])
+                            except (ValueError, IndexError):
+                                continue
+                            block = scene_blocks[i + 1] if i + 1 < len(scene_blocks) else ''
+                            vp_match = re_mod.search(r'VIDEO_PROMPT:\s*(.+?)(?=\n(?:===SCENE)|$)', block, re_mod.DOTALL)
+                            video_prompt = vp_match.group(1).strip() if vp_match else block.strip()
+                            if video_prompt:
+                                all_results[scene_id] = {'scene_id': scene_id, 'video_prompt': video_prompt}
+                                parsed_count += 1
+
+                    print(f"[VideoPrompts] Batch {batch_num}/{num_batches}: parsed {parsed_count}/{batch_total} (total: {len(all_results)}/{total})")
+
+                    # Retry missing scenes
+                    missing = [s for s in batch_scenes if s.scene_id not in all_results]
+                    if missing and len(missing) < batch_total:
+                        print(f"[VideoPrompts] Retrying {len(missing)} missing scenes...")
+                        retry_scenes = "\n".join([
+                            f"Scene {s.scene_id}: {s.content}" + (f"\n  [DIRECTION]: {s.direction_notes}" if s.direction_notes else "")
+                            for s in missing
+                        ])
+                        retry_prompt = f"""Generate video prompts for these {len(missing)} scenes. 80-120 words each, ONE FLOWING PARAGRAPH in English.
+{style_block}
+{retry_scenes}
+
+===SCENE N===
+VIDEO_PROMPT: ..."""
+                        try:
+                            def call_retry(p=retry_prompt):
+                                return ai_client.generate(p, temperature=0.3)
+                            with concurrent.futures.ThreadPoolExecutor() as pool:
+                                retry_text = await loop.run_in_executor(pool, call_retry)
+                            retry_blocks = re_mod.split(r'===SCENE\s+(\d+)===', retry_text)
+                            retry_ok = 0
+                            for ri in range(1, len(retry_blocks), 2):
+                                try:
+                                    rsid = int(retry_blocks[ri])
+                                    rblock = retry_blocks[ri + 1] if ri + 1 < len(retry_blocks) else ''
+                                    rvp = re_mod.search(r'VIDEO_PROMPT:\s*(.+?)(?=\n(?:===SCENE)|$)', rblock, re_mod.DOTALL)
+                                    rvideo = rvp.group(1).strip() if rvp else rblock.strip()
+                                    if rvideo:
+                                        all_results[rsid] = {'scene_id': rsid, 'video_prompt': rvideo}
+                                        retry_ok += 1
+                                except (ValueError, IndexError):
+                                    pass
+                            print(f"[VideoPrompts] Retry recovered {retry_ok}/{len(missing)}")
+                        except Exception as retry_err:
+                            print(f"[VideoPrompts] Retry failed: {retry_err}")
+
+                except Exception as ai_err:
+                    print(f"[VideoPrompts] Batch {batch_num} error: {ai_err}")
+
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: done', 'percentage': batch_end_pct}, ensure_ascii=False)}\n\n"
+
+            # Fill missing with empty
+            for s in request.scenes:
+                if s.scene_id not in all_results:
+                    all_results[s.scene_id] = {'scene_id': s.scene_id, 'video_prompt': ''}
+
+            result_list = sorted(all_results.values(), key=lambda x: x['scene_id'])
+            ok_count = sum(1 for r in result_list if r['video_prompt'])
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Done: {ok_count}/{total} prompts', 'percentage': 95}, ensure_ascii=False)}\n\n"
+
+            result_data = {
+                "type": "result",
+                "success": True,
+                "video_prompts": result_list,
+                "total": len(result_list),
+            }
+            yield f"event: result\ndata: {json_module.dumps(result_data, ensure_ascii=False)}\n\n"
+
+        except Exception as e:
+            import traceback
+            print(f"[VideoPrompts] Error: {e}")
             print(traceback.format_exc())
             yield f"event: error\ndata: {json_module.dumps({'success': False, 'error': str(e)}, ensure_ascii=False)}\n\n"
 
@@ -2751,12 +3244,18 @@ class GenerateYoutubeMetadataRequest(BaseModel):
     style_profile: Optional[Dict[str, Any]] = None
     title_samples: List[str] = []
     description_samples: List[str] = []
+    title_style_analysis: Optional[Dict[str, Any]] = None  # Analyzed title style patterns
+    description_style_analysis: Optional[Dict[str, Any]] = None  # Analyzed description style patterns
+    thumbnail_style_analysis: Optional[Dict[str, Any]] = None  # Analyzed thumbnail style patterns
     generate_title: bool = True
     generate_description: bool = True
     generate_thumbnail_prompt: bool = True
     model: Optional[str] = None
     custom_cta: Optional[str] = None  # User's custom CTA template for descriptions
     sync_analysis: Optional[Dict[str, Any]] = None  # Sync analysis data for thumbnail
+    voice_timestamps: Optional[List[Dict[str, Any]]] = None  # [{scene_id, timestamp, content, duration}]
+    total_duration: Optional[str] = None  # e.g. "12:34"
+    language: Optional[str] = None  # Content language e.g. "vi", "en", "ja"
 
 
 @router.post("/generate-youtube-metadata")
@@ -2786,8 +3285,24 @@ async def generate_youtube_metadata(request: GenerateYoutubeMetadataRequest):
             if tone:
                 style_context += f"\nTone: {tone}"
 
-        # Script preview (first 2000 chars to save tokens)
-        script_preview = request.script.strip()[:2000]
+        # Script preview (first 3000 chars for better context with timestamps)
+        script_preview = request.script.strip()[:3000]
+        
+        # Detect content language
+        content_lang = request.language or 'vi'
+        lang_name = LANG_NATIVE_MAP.get(content_lang, content_lang)
+        lang_name_en = LANG_NAME_MAP.get(content_lang, 'the detected language')
+        
+        # Build timestamps text from voice data
+        timestamps_text = ""
+        if request.voice_timestamps and len(request.voice_timestamps) > 0:
+            ts_lines = []
+            for ts in request.voice_timestamps:
+                time_str = ts.get('timestamp', '00:00')
+                content = ts.get('content', '')[:100]  # First 100 chars of scene content
+                ts_lines.append(f"{time_str} — {content}")
+            timestamps_text = "\n".join(ts_lines)
+            logger.info(f"[YT-Meta] Received {len(request.voice_timestamps)} timestamps, total duration: {request.total_duration}")
         
         results = {
             "success": True,
@@ -2804,22 +3319,50 @@ async def generate_youtube_metadata(request: GenerateYoutubeMetadataRequest):
                     f"- {s}" for s in request.title_samples[:10]
                 )
             
-            title_prompt = f"""Bạn là chuyên gia YouTube SEO. Hãy tạo 1 title tối ưu cho video YouTube dựa trên kịch bản sau.
+            # Inject analyzed title style patterns
+            title_style_text = ""
+            if request.title_style_analysis:
+                tsa = request.title_style_analysis
+                parts = []
+                if tsa.get("style_summary"):
+                    parts.append(f"Tóm tắt phong cách: {tsa['style_summary']}")
+                if tsa.get("title_formulas"):
+                    formulas = "; ".join(tsa["title_formulas"][:5])
+                    parts.append(f"Signature title formulas: {formulas}")
+                if tsa.get("dominant_hooks"):
+                    hooks = ", ".join(tsa["dominant_hooks"][:5])
+                    parts.append(f"Dominant hooks: {hooks}")
+                if tsa.get("power_words"):
+                    pw = ", ".join(tsa["power_words"][:10])
+                    parts.append(f"Power words: {pw}")
+                if tsa.get("emotional_tone"):
+                    parts.append(f"Emotional tone: {tsa['emotional_tone']}")
+                # NOTE: Separator deliberately NOT injected — let AI decide naturally
+                if tsa.get("avg_length"):
+                    parts.append(f"Average length: ~{tsa['avg_length']} characters")
+                if parts:
+                    title_style_text = "\n\n📊 ANALYZED TITLE STYLE (apply this style):\n" + "\n".join(f"- {p}" for p in parts)
+            
+            title_prompt = f"""You are a YouTube content creator. Generate 1 natural, compelling VIDEO TITLE.
 
-YÊU CẦU TITLE:
-- Tối đa 60 ký tự (quan trọng cho SEO)
-- Sử dụng hook formula: [Power Word] + [Chủ đề] + [Curiosity Gap/Number]
-- Tạo sự tò mò, khiến người xem PHẢI click
-- Không clickbait quá mức, phải phản ánh đúng nội dung
-- Dùng power words: Bí mật, Sự thật, Không ngờ, Cách, Tại sao, Top...
-- Viết bằng tiếng Việt (trừ khi kịch bản bằng ngôn ngữ khác)
+IMPORTANT RULES:
+- Write as a native {lang_name_en} speaker would naturally SAY it, not like an SEO formula
+- Maximum 60 characters
+- Create natural curiosity — viewers click because they're CURIOUS, not because they feel baited
+- Do NOT use "|" or "—" to split the title
+- Do NOT force numbers (e.g., "3 layers", "5 steps", "7 things") unless the content truly revolves around that number
+- Do NOT start with clichés like "The Truth", "Secret", "Top" unless truly appropriate
+- Accurately reflect the script content, no clickbait
+- Write the title in {lang_name} (match the script language)
+- Prioritize a natural, approachable voice: title should feel like you're telling a friend
 {style_context}
+{title_style_text}
 {title_samples_text}
 
-KỊ̣CH BẢN:
+SCRIPT:
 {script_preview}
 
-CHỈ TRẢ VỀ ĐÚNG 1 TITLE, KHÔNG giải thích, KHÔNG đánh số, KHÔNG thêm dấu ngoặc kép."""
+Return EXACTLY 1 TITLE, no explanation, no numbering, no quotes."""
 
             try:
                 title_result = await asyncio.to_thread(
@@ -2829,58 +3372,116 @@ CHỈ TRẢ VỀ ĐÚNG 1 TITLE, KHÔNG giải thích, KHÔNG đánh số, KHÔN
                 logger.info(f"[YT-Meta] Title generated: {results['title']}")
             except Exception as e:
                 logger.error(f"[YT-Meta] Title generation failed: {e}")
-                results["title"] = f"[Lỗi tạo title: {str(e)[:100]}]"
+                results["title"] = f"[Error generating title: {str(e)[:100]}]"
         
         # ── Generate Description ──
         if request.generate_description:
             desc_samples_text = ""
             if request.description_samples:
-                desc_samples_text = "\n\nMẫu description tham khảo từ kênh:\n" + "\n".join(
+                desc_samples_text = "\n\nReference description samples from the channel:\n" + "\n".join(
                     f"---\n{s}" for s in request.description_samples[:5]
                 )
             
-            desc_prompt = f"""Bạn là chuyên gia YouTube SEO. Hãy tạo description tối ưu cho video YouTube dựa trên kịch bản sau.
+            # Inject analyzed description style patterns
+            desc_style_text = ""
+            if request.description_style_analysis:
+                dsa = request.description_style_analysis
+                parts = []
+                if dsa.get("style_summary"):
+                    parts.append(f"Style summary: {dsa['style_summary']}")
+                if dsa.get("hook_style"):
+                    parts.append(f"Hook style: {dsa['hook_style']}")
+                if dsa.get("body_style"):
+                    bs = dsa["body_style"]
+                    if bs.get("writing_approach"):
+                        parts.append(f"Writing approach: {bs['writing_approach']}")
+                if dsa.get("cta_patterns"):
+                    cta = "; ".join(dsa["cta_patterns"][:3])
+                    parts.append(f"CTA patterns: {cta}")
+                if dsa.get("brand_voice"):
+                    bv = dsa["brand_voice"]
+                    if bv.get("tone"):
+                        parts.append(f"Tone: {bv['tone']}")
+                    if bv.get("addressing"):
+                        parts.append(f"Audience addressing: {bv['addressing']}")
+                if dsa.get("hashtag_strategy"):
+                    hs = dsa["hashtag_strategy"]
+                    if hs.get("avg_count"):
+                        parts.append(f"Hashtags: ~{hs['avg_count']} tags")
+                if dsa.get("structure_template"):
+                    parts.append(f"Structure template: {dsa['structure_template']}")
+                if parts:
+                    desc_style_text = "\n\n📊 ANALYZED DESCRIPTION STYLE (apply this style):\n" + "\n".join(f"- {p}" for p in parts)
+            
+            # Build timestamps block for description
+            timestamps_block = ""
+            if timestamps_text:
+                timestamps_block = f"""
 
-⚠️ QUY TẮC QUAN TRỌNG VỀ CTA/CÁ NHÂN HÓA:
-- Phân tích các mẫu description bên dưới (nếu có)
-- PHÁT HIỆN và LOẠI BỎ tất cả nội dung CÁ NHÂN/TỔ CHỨC từ mẫu gốc:
-  + Tên kênh cụ thể, link YouTube/social media cụ thể
-  + Handle (@username), email liên hệ
-  + Tagline/slogan đặc trưng của kênh gốc
-  + Disclaimer, lời cảm ơn sponsor cụ thể
-  + Bất kỳ thông tin nhận diện thương hiệu nào
-- KHÔNG COPY nội dung cá nhân hóa từ mẫu vào description mới
+LAYER 2.5 — TIMESTAMPS/CHAPTERS (required if video has multiple sections):
+Below are scenes with exact timestamps from voice generation.
+READ each scene's content and CREATE short, engaging chapter titles that accurately reflect the content.
 
-KIẾN TRÚC DESCRIPTION 4 TẦNG (Timestamps sẽ được tính chính xác từ voice duration và inject sau):
+TIMESTAMP DATA (time — scene content):
+{timestamps_text}
 
-TẦNG 1 — THE HOOK (1-2 dòng đầu — "Khu Vực Vàng"):
-- Phần DUY NHẤT hiển thị trước nút "Xem thêm"
-- Chứa từ khóa chính trong 150 ký tự đầu
-- Đi thẳng vào vấn đề, KHÔNG viết "Chào các bạn, hôm nay mình sẽ..."
-- Câu hook gây tò mò + lời kêu gọi hấp dẫn
+CHAPTER TITLE RULES:
+- Write chapter titles in {lang_name} (SAME language as the script)
+- Each chapter title 3-8 words, intriguing but accurate
+- Do NOT copy scene content verbatim — SUMMARIZE into an engaging title
+- Do NOT use ordinal numbers (1., 2., 3.) — just timestamp + title
+- Group consecutive scenes into larger chapters if they share a topic (do NOT list every scene)
+- Example format:
+  00:00 Opening — The 3AM Fear
+  02:15 Childhood Fears
+  05:30 Growing Up and Real Fears
+  08:12 "The Elephant in the Room"
+Total video duration: {request.total_duration or 'N/A'}
+"""
+            else:
+                timestamps_block = """
 
-TẦNG 2 — NỘI DUNG CHI TIẾT (Mini Blog):
-- 150-300 từ tóm tắt các điểm chính của video
-- Ngôn ngữ tự nhiên, lồng ghép LSI keywords khéo léo
-- KHÔNG nhồi nhết từ khóa, KHÔNG liệt kê từ khóa vô nghĩa
+(No voice data available — skip timestamps section)
+"""
+            
+            desc_prompt = f"""You are a YouTube content creator. Write a natural, compelling video description.
 
-[TIMESTAMPS_PLACEHOLDER]
-(Phần timestamps sẽ được hệ thống tự động tính toán và chèn vào đây sau khi voice được tạo xong)
+⚠️ IMPORTANT RULES ABOUT CTA/PERSONALIZATION:
+- Analyze the sample descriptions below (if provided)
+- DETECT and REMOVE all PERSONAL/ORGANIZATIONAL content from original samples:
+  + Specific channel names, specific YouTube/social media links
+  + Handles (@username), contact emails
+  + Channel-specific taglines/slogans
+  + Specific disclaimers, sponsor acknowledgments
+- Do NOT COPY personalized content from samples into the new description
 
-TẦNG 3 — CTA & LINKS:
-{f"SỬ DỤNG CHÍNH XÁC phần CTA sau đây do user cung cấp (KHÔNG thay đổi nội dung, chỉ format phù hợp):{chr(10)}{request.custom_cta}" if request.custom_cta else "- Đăng ký kênh: [Link đăng ký]{chr(10)}- Video liên quan / Playlist cùng chủ đề{chr(10)}- Link tài nguyên nếu phù hợp"}
+DESCRIPTION ARCHITECTURE:
 
-TẦNG 4 — HASHTAGS:
-- Chính xác 3-5 hashtags, đặt ở cuối cùng
-- Cấu trúc: 1 hashtag thương hiệu + 1 hashtag chủ đề rộng + 1-3 hashtag ngách hẹp
-- KHÔNG dùng quá 15 hashtags (YouTube sẽ vô hiệu hóa tất cả)
+LAYER 1 — THE HOOK (first 1-2 lines — "Golden Zone"):
+- The ONLY part visible before the "Show more" button
+- Include main keywords in the first 150 characters
+- Get straight to the point, do NOT write "Hey everyone, today I will..."
+- Natural curiosity-inducing hook line
+
+LAYER 2 — DETAILED CONTENT (Mini Blog):
+- 150-300 words summarizing the video's key points
+- Write as if telling a story to friends, naturally
+- Weave in keywords naturally, do NOT stuff them
+{timestamps_block}
+LAYER 3 — CTA & LINKS:
+{f"USE EXACTLY the following CTA provided by the user (do NOT modify content, only format appropriately):{chr(10)}{request.custom_cta}" if request.custom_cta else f"- Subscribe: [Subscribe link]{chr(10)}- Related videos / Playlists on the same topic{chr(10)}- Resource links if appropriate"}
+
+LAYER 4 — HASHTAGS:
+- Exactly 3-5 hashtags, placed at the very end
+- 1 brand hashtag + 1 broad topic hashtag + 1-3 niche hashtags
 {style_context}
+{desc_style_text}
 {desc_samples_text}
 
-KỊCH BẢN:
+SCRIPT:
 {script_preview}
 
-TRẢ VỀ DESCRIPTION HOÀN CHỈNH theo đúng 4 tầng trên (BỎ QUA [TIMESTAMPS_PLACEHOLDER] — hệ thống sẽ tự chèn timestamps). Viết bằng tiếng Việt (trừ khi kịch bản bằng ngôn ngữ khác)."""
+Return a COMPLETE DESCRIPTION. Write in {lang_name}."""
 
             try:
                 desc_result = await asyncio.to_thread(
@@ -2890,48 +3491,100 @@ TRẢ VỀ DESCRIPTION HOÀN CHỈNH theo đúng 4 tầng trên (BỎ QUA [TIMES
                 logger.info(f"[YT-Meta] Description generated: {len(results['description'])} chars")
             except Exception as e:
                 logger.error(f"[YT-Meta] Description generation failed: {e}")
-                results["description"] = f"[Lỗi tạo description: {str(e)[:100]}]"
+                results["description"] = f"[Error generating description: {str(e)[:100]}]"
         
         # ── Generate Thumbnail Prompt ──
         if request.generate_thumbnail_prompt:
-            thumb_prompt = f"""Bạn là chuyên gia thiết kế thumbnail YouTube. Hãy tạo 1 prompt chi tiết để AI tạo thumbnail hấp dẫn cho video.
+            # Inject analyzed thumbnail style patterns
+            thumb_style_text = ""
+            if request.thumbnail_style_analysis:
+                tsa = request.thumbnail_style_analysis
+                parts = []
+                if tsa.get("style_summary"):
+                    parts.append(f"Overall style: {tsa['style_summary']}")
+                if tsa.get("composition"):
+                    comp = tsa["composition"]
+                    if comp.get("layout"):
+                        parts.append(f"Layout: {comp['layout']}")
+                    if comp.get("subject_position"):
+                        parts.append(f"Subject position: {comp['subject_position']}")
+                if tsa.get("color_scheme"):
+                    cs = tsa["color_scheme"]
+                    if cs.get("dominant_colors"):
+                        colors = ", ".join(cs["dominant_colors"][:5])
+                        parts.append(f"Dominant colors: {colors}")
+                    if cs.get("contrast_style"):
+                        parts.append(f"Contrast: {cs['contrast_style']}")
+                if tsa.get("typography"):
+                    typo = tsa["typography"]
+                    if typo.get("font_style"):
+                        parts.append(f"Font style: {typo['font_style']}")
+                    if typo.get("effects"):
+                        effects = ", ".join(typo["effects"][:3])
+                        parts.append(f"Text effects: {effects}")
+                if tsa.get("emotional_signals"):
+                    es = tsa["emotional_signals"]
+                    if es.get("dominant_emotion"):
+                        parts.append(f"Dominant emotion: {es['dominant_emotion']}")
+                if tsa.get("thumbnail_formula"):
+                    parts.append(f"Thumbnail formula: {tsa['thumbnail_formula']}")
+                if parts:
+                    thumb_style_text = "\n\n📊 ANALYZED THUMBNAIL STYLE (apply this visual style):\n" + "\n".join(f"- {p}" for p in parts)
+            
+            thumb_prompt = f"""You are a YouTube thumbnail design expert. Create 1 detailed prompt for AI to generate a compelling thumbnail for this video.
 
-CÔNG THỨC 7 THÀNH PHẦN THUMBNAIL:
-1. Subject/Focal Point — nhân vật hoặc đối tượng chính
-2. Expression/Emotion — biểu cảm mạnh (shock, vui, sợ...)
-3. Background/Setting — bối cảnh phù hợp nội dung
-4. Color Scheme — màu sắc tương phản cao (complementary colors)
-5. Text Overlay — 2-4 từ lớn, bold, dễ đọc trên mobile
-6. Composition — Rule of thirds, focal point rõ ràng
+7-COMPONENT THUMBNAIL FORMULA:
+1. Subject/Focal Point — main character or object, based on script content
+2. Expression/Emotion — strong expression, matching the theme
+3. Background/Setting — setting appropriate to video content
+4. Color Scheme — high contrast colors (complementary colors)
+5. Text Overlay — 2-4 large, bold words, readable on mobile, MUST BE WRITTEN IN {lang_name.upper()}
+6. Composition — Rule of thirds, clear focal point
 7. Style — Professional, cinematic, high contrast
 
-YÊU CẦU:
-- Prompt bằng tiếng Anh (để dùng với AI image generator)
-- Mô tả chi tiết, cụ thể
-- Tối ưu cho 1280x720 (16:9)
-- Phải bắt mắt ở kích thước nhỏ (mobile)
-- Include text overlay suggestion
+IMPORTANT LANGUAGE RULES:
+- Visual description prompt should be in English (for AI image generator compatibility)
+- BUT the TEXT OVERLAY on the thumbnail MUST be in {lang_name} (because the audience reads {lang_name})
+- Example: if the script is in Vietnamese → text overlay must be Vietnamese like "NỖI SỢ?" not "ADULT FEAR?"
+
+REQUIREMENTS:
+- Write the prompt in English (visual description part)
+- Text overlay content in {lang_name} (text shown on thumbnail)
+- Detailed, specific description
+- Optimized for 1280x720 (16:9)
+- Must be eye-catching at small sizes (mobile)
 {style_context}
+{thumb_style_text}
 """
-            # Inject sync analysis into thumbnail prompt
+            # Inject sync analysis into thumbnail prompt (full descriptions for visual consistency)
             if request.sync_analysis:
                 sa = request.sync_analysis
                 sync_thumb_parts = []
                 if sa.get('characters'):
-                    chars = ", ".join([c.get('name', '') for c in sa['characters'][:3]])
-                    sync_thumb_parts.append(f"Key characters to feature: {chars}")
+                    for c in sa['characters'][:2]:  # Top 2 characters with full detail
+                        name = c.get('name', 'Unknown')
+                        desc = c.get('description', '')
+                        if desc:
+                            sync_thumb_parts.append(f"CHARACTER — {name}: {desc}")
+                        else:
+                            sync_thumb_parts.append(f"CHARACTER — {name}")
                 if sa.get('visual_style'):
-                    sync_thumb_parts.append(f"Visual style reference: {sa['visual_style']}")
+                    sync_thumb_parts.append(f"VISUAL STYLE: {sa['visual_style']}")
                 if sa.get('settings'):
-                    sets = ", ".join([s.get('name', '') for s in sa['settings'][:3]])
-                    sync_thumb_parts.append(f"Setting references: {sets}")
+                    for s in sa['settings'][:2]:  # Top 2 settings with full detail
+                        name = s.get('name', 'Unknown')
+                        desc = s.get('description', '')
+                        if desc:
+                            sync_thumb_parts.append(f"SETTING — {name}: {desc}")
+                        else:
+                            sync_thumb_parts.append(f"SETTING — {name}")
                 if sync_thumb_parts:
-                    thumb_prompt += "\n\nSYNC ANALYSIS CONTEXT (use for visual consistency):\n" + "\n".join([f"- {p}" for p in sync_thumb_parts]) + "\n"
+                    thumb_prompt += "\n\nSYNC ANALYSIS CONTEXT (use these exact visual details for consistency):\n" + "\n".join([f"- {p}" for p in sync_thumb_parts]) + "\n"
 
-            thumb_prompt += f"""KỊ̣CH BẢN:
+            thumb_prompt += f"""SCRIPT:
 {script_preview}
 
-TRẢ VỀ ĐÚNG 1 THUMBNAIL PROMPT bằng tiếng Anh, KHÔNG giải thích thêm."""
+Return EXACTLY 1 THUMBNAIL PROMPT in English (visual description), with TEXT OVERLAY in {lang_name}. No additional explanation."""
 
             try:
                 thumb_result = await asyncio.to_thread(
@@ -2941,7 +3594,7 @@ TRẢ VỀ ĐÚNG 1 THUMBNAIL PROMPT bằng tiếng Anh, KHÔNG giải thích th
                 logger.info(f"[YT-Meta] Thumbnail prompt generated: {len(results['thumbnail_prompt'])} chars")
             except Exception as e:
                 logger.error(f"[YT-Meta] Thumbnail prompt generation failed: {e}")
-                results["thumbnail_prompt"] = f"[Lỗi tạo thumbnail prompt: {str(e)[:100]}]"
+                results["thumbnail_prompt"] = f"[Error generating thumbnail prompt: {str(e)[:100]}]"
 
         return results
 

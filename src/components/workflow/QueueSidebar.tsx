@@ -887,8 +887,14 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
             {/* Queue Control Buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button
-                    onClick={() => setIsQueueRunning(!isQueueRunning)}
-                    disabled={queuedCount === 0 && !isQueueRunning}
+                    onClick={() => {
+                        if (!isQueueRunning && !outputPath) {
+                            setIsSettingsOpen(true);
+                            return;
+                        }
+                        setIsQueueRunning(!isQueueRunning);
+                    }}
+                    disabled={!isQueueRunning && (queuedCount === 0 || !outputPath)}
                     style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -899,13 +905,13 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         border: 'none',
                         background: isQueueRunning
                             ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                            : (queuedCount > 0
+                            : (queuedCount > 0 && outputPath
                                 ? 'linear-gradient(135deg, #22c55e, #16a34a)'
                                 : 'var(--bg-tertiary)'),
-                        color: (queuedCount === 0 && !isQueueRunning) ? 'var(--text-secondary)' : 'white',
+                        color: (!isQueueRunning && (queuedCount === 0 || !outputPath)) ? 'var(--text-secondary)' : 'white',
                         fontWeight: 700,
                         fontSize: '0.9rem',
-                        cursor: (queuedCount === 0 && !isQueueRunning) ? 'not-allowed' : 'pointer',
+                        cursor: (!isQueueRunning && (queuedCount === 0 || !outputPath)) ? 'not-allowed' : 'pointer',
                         transition: 'all 0.3s',
                     }}
                 >
@@ -915,6 +921,19 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         <><Play size={16} /> Chạy hàng đợi ({queuedCount})</>
                     )}
                 </button>
+                {!isQueueRunning && queuedCount > 0 && !outputPath && (
+                    <span style={{
+                        fontSize: '0.72rem',
+                        color: '#FBBF24',
+                        textAlign: 'center',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.3rem',
+                    }}>
+                        <FolderOpen size={11} /> Chọn thư mục lưu kết quả trước khi chạy
+                    </span>
+                )}
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button
                         onClick={clearCompleted}
@@ -961,6 +980,6 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

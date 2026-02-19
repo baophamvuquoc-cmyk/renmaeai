@@ -32,7 +32,6 @@ interface PipelineSelection {
 interface ColumnDef {
     key: string;
     label: string;
-    icon: string;
     width: string;
     format: 'text' | 'number' | 'url' | 'filepath' | 'image' | 'status';
     alwaysShow?: boolean;
@@ -47,59 +46,71 @@ const PIPELINE_STORAGE_KEY = 'renmae_pipeline_selection';
 const POLL_INTERVAL_MS = 5000;
 
 const ALL_COLUMNS: ColumnDef[] = [
-    { key: 'project_name', label: 'Project', icon: '📁', width: '120px', format: 'text', alwaysShow: true },
-    { key: 'sequence_number', label: 'STT', icon: '#', width: '55px', format: 'number', alwaysShow: true },
+    { key: 'project_name', label: 'Project', width: '120px', format: 'text', alwaysShow: true },
+    { key: 'sequence_number', label: 'STT', width: '55px', format: 'number', alwaysShow: true },
     {
-        key: 'original_link', label: 'Link gốc', icon: '🔗', width: '140px', format: 'url',
+        key: 'original_link', label: 'Link gốc', width: '140px', format: 'url',
         showWhen: (p) => {
             if (typeof p.styleAnalysis === 'object') return p.styleAnalysis.enabled;
             return !!p.styleAnalysis;
         }
     },
-    { key: 'title', label: 'Title', icon: '📝', width: '200px', format: 'text', alwaysShow: true },
-    { key: 'description', label: 'Description', icon: '📄', width: '200px', format: 'text', alwaysShow: true },
-    { key: 'thumbnail', label: 'Thumbnail', icon: '🖼️', width: '200px', format: 'text', alwaysShow: true },
+    { key: 'title', label: 'Title', width: '200px', format: 'text', alwaysShow: true },
+    { key: 'description', label: 'Description', width: '200px', format: 'text', alwaysShow: true },
+    { key: 'thumbnail', label: 'Thumb Prompt', width: '200px', format: 'text', alwaysShow: true },
     {
-        key: 'keywords', label: 'Keywords', icon: '🔑', width: '180px', format: 'text',
+        key: 'original_title', label: 'Title gốc', width: '180px', format: 'text',
+        showWhen: (p) => { if (typeof p.styleAnalysis === 'object') return !!p.styleAnalysis?.title; return !!p.styleAnalysis; }
+    },
+    {
+        key: 'original_description', label: 'Desc gốc', width: '180px', format: 'text',
+        showWhen: (p) => { if (typeof p.styleAnalysis === 'object') return !!p.styleAnalysis?.description; return !!p.styleAnalysis; }
+    },
+    {
+        key: 'thumbnail_url', label: 'Thumbnail', width: '80px', format: 'image',
+        showWhen: (p) => { if (typeof p.styleAnalysis === 'object') return !!p.styleAnalysis?.thumbnail; return !!p.styleAnalysis; }
+    },
+    {
+        key: 'keywords', label: 'Keywords', width: '180px', format: 'text',
         showWhen: (p) => !!(p.videoProduction?.keywords)
     },
     {
-        key: 'script_full', label: 'Script', icon: '📜', width: '200px', format: 'text',
+        key: 'script_full', label: 'Script', width: '200px', format: 'text',
         showWhen: (p) => !!p.scriptGeneration
     },
     {
-        key: 'script_split', label: 'Split CSV', icon: '📊', width: '140px', format: 'filepath',
+        key: 'script_split', label: 'Split CSV', width: '140px', format: 'filepath',
         showWhen: (p) => !!p.scriptGeneration
     },
     {
-        key: 'voiceover', label: 'Voice', icon: '🎙️', width: '140px', format: 'filepath',
+        key: 'voiceover', label: 'Voice', width: '140px', format: 'filepath',
         showWhen: (p) => !!p.voiceGeneration
     },
     {
-        key: 'video_footage', label: 'Footage', icon: '🎬', width: '140px', format: 'filepath',
+        key: 'video_footage', label: 'Footage', width: '140px', format: 'filepath',
         showWhen: (p) => !!(p.videoProduction?.footage || p.videoProduction?.Footage)
     },
     {
-        key: 'video_final', label: 'Video', icon: '🎥', width: '140px', format: 'filepath',
+        key: 'video_final', label: 'Video', width: '140px', format: 'filepath',
         showWhen: (p) => !!(p.videoProduction?.footage || p.videoProduction?.Footage)
     },
     {
-        key: 'prompts_reference', label: 'Prompts Ref', icon: '🖼️', width: '200px', format: 'text',
+        key: 'prompts_reference', label: 'Prompts Ref', width: '200px', format: 'text',
         showWhen: (p) => !!(p.videoProduction?.image_prompts)
     },
     {
-        key: 'prompts_scene_builder', label: 'Prompts Scene', icon: '🏗️', width: '200px', format: 'text',
+        key: 'prompts_scene_builder', label: 'Prompts Scene', width: '200px', format: 'text',
         showWhen: (p) => !!(p.videoProduction?.image_prompts)
     },
     {
-        key: 'prompts_concept', label: 'Prompts Concept', icon: '🎨', width: '200px', format: 'text',
+        key: 'prompts_concept', label: 'Prompts Concept', width: '200px', format: 'text',
         showWhen: (p) => !!(p.videoProduction?.image_prompts)
     },
     {
-        key: 'prompts_video', label: 'Prompts Video', icon: '🎬', width: '200px', format: 'text',
+        key: 'prompts_video', label: 'Prompts Video', width: '200px', format: 'text',
         showWhen: (p) => !!(p.videoProduction?.video_prompts)
     },
-    { key: 'video_status', label: 'Status', icon: '🚦', width: '90px', format: 'status', alwaysShow: true },
+    { key: 'video_status', label: 'Status', width: '90px', format: 'status', alwaysShow: true },
 ];
 
 function loadPipelineSelection(): PipelineSelection | null {
@@ -314,7 +325,7 @@ function renderCellContent(col: ColumnDef, production: Production): React.ReactN
 
         case 'text':
         default: {
-            const isLongContent = ['script_full', 'description', 'thumbnail', 'keywords', 'prompts_reference', 'prompts_scene_builder', 'prompts_concept', 'prompts_video'].includes(col.key);
+            const isLongContent = ['script_full', 'description', 'thumbnail', 'keywords', 'original_title', 'original_description', 'prompts_reference', 'prompts_scene_builder', 'prompts_concept', 'prompts_video'].includes(col.key);
             const maxLen = isLongContent ? 80 : 35;
             return (
                 <CopyCell
@@ -336,25 +347,28 @@ function renderCellContent(col: ColumnDef, production: Production): React.ReactN
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const SCHEMA_ROWS = [
-    { name: 'project_name', type: 'TEXT', desc: 'Tên project (nhóm productions)', icon: '📁' },
-    { name: 'sequence_number', type: 'INTEGER', desc: 'Số thứ tự (tự tăng theo project)', icon: '#' },
-    { name: 'original_link', type: 'TEXT', desc: 'Link YouTube gốc', icon: '🔗' },
-    { name: 'title', type: 'TEXT', desc: 'Tên production', icon: '📝' },
-    { name: 'description', type: 'TEXT', desc: 'Mô tả video', icon: '📄' },
-    { name: 'thumbnail', type: 'TEXT', desc: 'Thumbnail prompt (mô tả ảnh bìa)', icon: '🖼️' },
-    { name: 'keywords', type: 'TEXT', desc: 'Search keywords cho footage', icon: '🔑' },
-    { name: 'script_full', type: 'TEXT', desc: 'Kịch bản remake (chưa split)', icon: '📜' },
-    { name: 'script_split', type: 'TEXT', desc: 'Kịch bản đã split (CSV)', icon: '📊' },
-    { name: 'voiceover', type: 'TEXT', desc: 'File voiceover', icon: '🎙️' },
-    { name: 'video_footage', type: 'TEXT', desc: 'Video footage', icon: '🎬' },
-    { name: 'video_final', type: 'TEXT', desc: 'Video hoàn chỉnh', icon: '🎥' },
-    { name: 'prompts_reference', type: 'TEXT', desc: 'Prompts ảnh tham chiếu (1 dòng/scene)', icon: '🖼️' },
-    { name: 'prompts_scene_builder', type: 'TEXT', desc: 'Prompts scene builder (1 dòng/scene)', icon: '🏗️' },
-    { name: 'prompts_concept', type: 'TEXT', desc: 'Prompts ảnh theo concept (1 dòng/scene)', icon: '🎨' },
-    { name: 'prompts_video', type: 'TEXT', desc: 'Prompts video (1 dòng/scene)', icon: '🎬' },
-    { name: 'upload_platform', type: 'TEXT', desc: 'Nền tảng upload (YouTube, TikTok...)', icon: '🌐' },
-    { name: 'channel_name', type: 'TEXT', desc: 'Tên kênh', icon: '📺' },
-    { name: 'video_status', type: 'TEXT', desc: 'Trạng thái (draft / uploaded / published)', icon: '🚦' },
+    { name: 'project_name', type: 'TEXT', desc: 'Tên project (nhóm productions)' },
+    { name: 'sequence_number', type: 'INTEGER', desc: 'Số thứ tự (tự tăng theo project)' },
+    { name: 'original_link', type: 'TEXT', desc: 'Link YouTube gốc' },
+    { name: 'title', type: 'TEXT', desc: 'Title (generated)' },
+    { name: 'description', type: 'TEXT', desc: 'Description (generated)' },
+    { name: 'thumbnail', type: 'TEXT', desc: 'Thumbnail prompt (generated)' },
+    { name: 'original_title', type: 'TEXT', desc: 'Title gốc từ YouTube' },
+    { name: 'original_description', type: 'TEXT', desc: 'Description gốc từ YouTube' },
+    { name: 'thumbnail_url', type: 'TEXT', desc: 'URL thumbnail gốc từ YouTube' },
+    { name: 'keywords', type: 'TEXT', desc: 'Search keywords cho footage' },
+    { name: 'script_full', type: 'TEXT', desc: 'Kịch bản remake (chưa split)' },
+    { name: 'script_split', type: 'TEXT', desc: 'Kịch bản đã split (CSV)' },
+    { name: 'voiceover', type: 'TEXT', desc: 'File voiceover' },
+    { name: 'video_footage', type: 'TEXT', desc: 'Video footage' },
+    { name: 'video_final', type: 'TEXT', desc: 'Video hoàn chỉnh' },
+    { name: 'prompts_reference', type: 'TEXT', desc: 'Prompts ảnh tham chiếu (1 dòng/scene)' },
+    { name: 'prompts_scene_builder', type: 'TEXT', desc: 'Prompts scene builder (1 dòng/scene)' },
+    { name: 'prompts_concept', type: 'TEXT', desc: 'Prompts ảnh theo concept (1 dòng/scene)' },
+    { name: 'prompts_video', type: 'TEXT', desc: 'Prompts video (1 dòng/scene)' },
+    { name: 'upload_platform', type: 'TEXT', desc: 'Nền tảng upload (YouTube, TikTok...)' },
+    { name: 'channel_name', type: 'TEXT', desc: 'Tên kênh' },
+    { name: 'video_status', type: 'TEXT', desc: 'Trạng thái (draft / uploaded / published)' },
 ];
 
 function SchemaTable() {
@@ -413,12 +427,18 @@ function SchemaTable() {
 // Main Component
 // ═══════════════════════════════════════════════════════════════════════════════
 
+interface ProjectGroup {
+    projectName: string;
+    items: Production[];
+}
+
 export function ProductionHub() {
     const [productions, setProductions] = useState<Production[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [stats, setStats] = useState<{ total: number; with_video: number } | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const mountedRef = useRef(true);
 
@@ -433,6 +453,32 @@ export function ProductionHub() {
             return false;
         });
     }, [pipeline]);
+
+    // ── Group productions by project_name ──
+    const { groups, ungrouped } = useMemo(() => {
+        const map = new Map<string, Production[]>();
+        const noProject: Production[] = [];
+        for (const prod of productions) {
+            const name = (prod as any).project_name || '';
+            if (!name) {
+                noProject.push(prod);
+            } else {
+                if (!map.has(name)) map.set(name, []);
+                map.get(name)!.push(prod);
+            }
+        }
+        const grouped: ProjectGroup[] = Array.from(map.entries()).map(([projectName, items]) => ({ projectName, items }));
+        return { groups: grouped, ungrouped: noProject };
+    }, [productions]);
+
+    const toggleGroup = useCallback((projectName: string) => {
+        setCollapsedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(projectName)) next.delete(projectName);
+            else next.add(projectName);
+            return next;
+        });
+    }, []);
 
     // ── Fetch data ──
     const fetchProductions = useCallback(async (searchTerm = '') => {
@@ -626,7 +672,112 @@ export function ProductionHub() {
                             </tr>
                         </thead>
                         <tbody>
-                            {productions.map((prod) => (
+                            {/* ── Grouped productions ── */}
+                            {groups.map((group) => {
+                                const isCollapsed = collapsedGroups.has(group.projectName);
+                                const totalCols = visibleColumns.length + 1; // +1 for action col
+                                return (
+                                    <>
+                                        {/* Group header row */}
+                                        <tr
+                                            key={`group-${group.projectName}`}
+                                            onClick={() => toggleGroup(group.projectName)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                background: 'rgba(255, 215, 0, 0.04)',
+                                                borderBottom: '1px solid rgba(255, 215, 0, 0.12)',
+                                                borderLeft: '3px solid rgba(255, 215, 0, 0.5)',
+                                                transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(255, 215, 0, 0.08)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(255, 215, 0, 0.04)';
+                                            }}
+                                        >
+                                            <td colSpan={totalCols} style={{ padding: '8px 12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{
+                                                        fontSize: '12px',
+                                                        color: '#FFD700',
+                                                        transition: 'transform 0.2s',
+                                                        transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                                                        display: 'inline-block',
+                                                    }}>▼</span>
+                                                    <span style={{ fontWeight: 700, color: '#FFD700', fontSize: '0.85rem' }}>
+                                                        {group.projectName}
+                                                    </span>
+                                                    <span style={{
+                                                        fontSize: '0.68rem',
+                                                        background: 'rgba(255, 215, 0, 0.15)',
+                                                        color: '#FFD700',
+                                                        padding: '1px 8px',
+                                                        borderRadius: '10px',
+                                                        fontWeight: 600,
+                                                    }}>
+                                                        {group.items.length}
+                                                    </span>
+                                                    <div style={{ flex: 1 }} />
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleOpenFolder(group.items[0].id); }}
+                                                        style={{ ...styles.actionBtn, fontSize: '13px' }}
+                                                        title="Mở thư mục project"
+                                                    >📂</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/* Child rows */}
+                                        {!isCollapsed && group.items.map((prod) => (
+                                            <tr
+                                                key={prod.id}
+                                                style={{ ...styles.tr, borderLeft: '3px solid rgba(255, 215, 0, 0.15)' }}
+                                                onMouseEnter={(e) => {
+                                                    (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(99, 102, 241, 0.06)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
+                                                }}
+                                            >
+                                                {visibleColumns.map(col => (
+                                                    <td key={col.key} style={{ ...styles.td, width: col.width, maxWidth: col.width }}>
+                                                        {col.key === 'project_name' ? (
+                                                            <span style={{ color: '#475569' }}>—</span>
+                                                        ) : (
+                                                            renderCellContent(col, prod)
+                                                        )}
+                                                    </td>
+                                                ))}
+                                                <td style={{ ...styles.td, width: '80px', textAlign: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                                        <button
+                                                            onClick={() => handleOpenFolder(prod.id)}
+                                                            style={styles.actionBtn}
+                                                            title="Mở thư mục"
+                                                        >
+                                                            📂
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(prod.id)}
+                                                            disabled={deletingId === prod.id}
+                                                            style={{
+                                                                ...styles.actionBtn,
+                                                                opacity: deletingId === prod.id ? 0.4 : 1,
+                                                            }}
+                                                            title="Xóa"
+                                                        >
+                                                            {deletingId === prod.id ? '⏳' : '🗑️'}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </>
+                                );
+                            })}
+
+                            {/* ── Ungrouped productions (no project name) ── */}
+                            {ungrouped.map((prod) => (
                                 <tr
                                     key={prod.id}
                                     style={styles.tr}

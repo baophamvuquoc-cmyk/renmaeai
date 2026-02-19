@@ -89,6 +89,15 @@ async def generate_seo(request: GenerateSEORequest):
             channel_name=request.channel_name,
         )
         seo_data.target_platform = request.target_platform
+
+        # Validate: SEO data must have at least main_keyword and seo_title
+        if not seo_data.main_keyword or not seo_data.seo_title:
+            return {
+                "success": False,
+                "error": "AI failed to generate valid SEO data (empty keyword/title)",
+                "seo_data": seo_data.to_dict(),
+            }
+
         return {
             "success": True,
             "seo_data": seo_data.to_dict(),

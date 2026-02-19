@@ -806,6 +806,7 @@ class AssembleRequest(BaseModel):
     bgm_volume: Optional[float] = 0.15  # Background music volume (0.0-1.0)
     video_quality: Optional[str] = "720p"  # 480p / 720p / 1080p
     enable_subtitles: Optional[bool] = True  # Burn subtitles on video
+    session_id: Optional[str] = None  # Queue item ID for file isolation
 
 
 @router.post("/assemble")
@@ -839,7 +840,15 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
     async def event_stream():
         cache = get_video_cache()
-        assembler = VideoAssembler(output_dir="video_output")
+        
+        # Session isolation: use subfolder for video output and voice input
+        video_out_dir = f"video_output/{req.session_id}" if req.session_id else "video_output"
+        voice_in_dir = os.path.join(VOICE_OUTPUT_DIR, req.session_id) if req.session_id else VOICE_OUTPUT_DIR
+        if req.session_id:
+            os.makedirs(video_out_dir, exist_ok=True)
+            print(f"[Assemble] Session isolation: voice={voice_in_dir}, video={video_out_dir}")
+        
+        assembler = VideoAssembler(output_dir=video_out_dir)
 
         total = len(req.scenes)
         scene_videos = []
@@ -859,7 +868,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
             pct_base = int((idx / total) * 85) + 5
 
             # ── Step 1: Get audio path & duration ──
-            audio_path = os.path.join(VOICE_OUTPUT_DIR, scene.audio_filename)
+            audio_path = os.path.join(voice_in_dir, scene.audio_filename)
             if not os.path.exists(audio_path):
                 print(f"[Assemble] Audio not found: {audio_path}")
                 yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Audio không tìm thấy, bỏ qua', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
@@ -1125,3 +1134,24 @@ async def download_assembled_video(filename: str):
         filename=filename,
     )
 
+
+@router.delete("/session/{session_id}")
+async def delete_footage_session(session_id: str):
+    """Delete all video output files for a specific session."""
+    import shutil
+    session_dir = os.path.join("video_output", session_id)
+    if not os.path.isdir(session_dir):
+        return {"success": True, "deleted": 0, "message": f"Session '{session_id}' not found (already clean)"}
+
+    total_size = 0
+    file_count = 0
+    for f in os.listdir(session_dir):
+        fp = os.path.join(session_dir, f)
+        if os.path.isfile(fp):
+            total_size += os.path.getsize(fp)
+            file_count += 1
+
+    shutil.rmtree(session_dir, ignore_errors=True)
+    size_mb = round(total_size / 1024 / 1024, 1)
+    print(f"[Footage Cleanup] Deleted session folder: {session_dir} ({file_count} files, {size_mb} MB)")
+    return {"success": True, "deleted": file_count, "freed_mb": size_mb, "message": f"Deleted session '{session_id}' ({file_count} files, {size_mb} MB)"}
