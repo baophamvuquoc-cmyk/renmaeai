@@ -61,10 +61,8 @@ if defined HAS_ERROR (
 )
 
 :: ═══ GET PROJECT DIRECTORY ═══
-set "PROJECT_DIR=%~dp0.."
-pushd "%PROJECT_DIR%"
-set "PROJECT_DIR=%cd%"
-popd
+set "PROJECT_DIR=%~dp0"
+if "%PROJECT_DIR:~-1%"=="\" set "PROJECT_DIR=%PROJECT_DIR:~0,-1%"
 
 echo Project directory: %PROJECT_DIR%
 echo.
@@ -129,10 +127,10 @@ echo.
 echo [*] Building launcher...
 set "CSC=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 if exist "%CSC%" (
-    if exist "%PROJECT_DIR%\scripts\RenmaeAI-Launcher.cs" (
-        "%CSC%" /nologo /target:exe /out:"%PROJECT_DIR%\scripts\RenmaeAI-Launcher.exe" "%PROJECT_DIR%\scripts\RenmaeAI-Launcher.cs" >nul 2>&1
-        if exist "%PROJECT_DIR%\scripts\RenmaeAI-Launcher.exe" (
-            echo       Built RenmaeAI-Launcher.exe
+    if exist "%PROJECT_DIR%\scripts\launcher\RenmaeAI-Launcher.cs" (
+        "%CSC%" /nologo /target:exe /out:"%PROJECT_DIR%\RenmaeAI Studio.exe" "%PROJECT_DIR%\scripts\launcher\RenmaeAI-Launcher.cs" >nul 2>&1
+        if exist "%PROJECT_DIR%\RenmaeAI Studio.exe" (
+            echo       Built RenmaeAI Studio.exe
         )
     )
 )
@@ -152,8 +150,8 @@ echo      - PEXELS_API_KEY   (https://www.pexels.com/api/)
 echo      - PIXABAY_API_KEY  (https://pixabay.com/api/docs/)
 echo.
 echo   2. Launch the app:
-echo      - Double-click: scripts\RenmaeAI-Launcher.exe
-echo      - Or run:       scripts\launch-renmaeai.bat
+echo      - Double-click: RenmaeAI Studio.exe
+echo      - Or run:       START.bat
 echo      - Or manually:  npm run dev:web
 echo.
 echo ========================================

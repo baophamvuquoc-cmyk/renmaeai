@@ -1,10 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Get the directory where this script lives
-set "SCRIPT_DIR=%~dp0"
-:: Go up one level to project root
-for %%I in ("%SCRIPT_DIR%..") do set "PROJECT_DIR=%%~fI"
+:: Get the project directory (this script lives in root)
+set "PROJECT_DIR=%~dp0"
+if "%PROJECT_DIR:~-1%"=="\" set "PROJECT_DIR=%PROJECT_DIR:~0,-1%"
 
 :: Verify project structure
 if not exist "%PROJECT_DIR%\backend\main.py" (

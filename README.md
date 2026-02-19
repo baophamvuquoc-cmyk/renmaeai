@@ -34,12 +34,12 @@ git clone https://github.com/baophamvuquoc-cmyk/renmaeai.git
 cd renmaeai
 
 # 2. Run the installer (creates venv, installs all dependencies)
-scripts\install.bat
+INSTALL.bat
 
 # 3. Add your API keys to backend\.env (see below)
 
 # 4. Launch the app
-scripts\launch-renmaeai.bat
+START.bat
 ```
 
 ### API Keys (Free)
@@ -88,18 +88,25 @@ App opens at: [http://localhost:5173](http://localhost:5173)
 
 ```
 renmaeai/
-├── electron/              # Electron main process
-├── src/                   # React + TypeScript frontend
-│   ├── components/        # UI components (workflow steps)
-│   ├── stores/            # Zustand state management
-│   ├── contexts/          # React contexts (i18n, sync)
-│   └── lib/               # API client
-├── backend/               # Python FastAPI backend
-│   ├── modules/           # Core logic (NLP, AI, footage, TTS)
-│   ├── routes/            # API endpoints
-│   └── prompts/           # AI prompt templates
-├── scripts/               # Setup & launcher scripts
-└── website/               # Landing page (GitHub Pages)
+├── INSTALL.bat              # One-click setup (run first)
+├── START.bat                # Launch the app
+├── RenmaeAI Studio.exe      # Alternative launcher
+├── electron/                # Electron main process
+├── src/                     # React + TypeScript frontend
+│   ├── components/          # UI components (workflow steps)
+│   ├── stores/              # Zustand state management
+│   ├── contexts/            # React contexts (i18n, sync)
+│   └── lib/                 # API client
+├── backend/                 # Python FastAPI backend
+│   ├── modules/             # Core logic (NLP, AI, footage, TTS)
+│   ├── routes/              # API endpoints
+│   └── prompts/             # AI prompt templates
+├── scripts/
+│   ├── build/               # Build scripts (PyInstaller, Electron)
+│   ├── dev/                 # Dev mode scripts
+│   └── launcher/            # Launcher source files
+├── website/                 # Landing page (GitHub Pages)
+└── docs/                    # Documentation
 ```
 
 ## 🛠️ Tech Stack

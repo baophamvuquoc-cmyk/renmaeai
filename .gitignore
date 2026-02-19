@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 dist/
+
+# Root launcher exe (built by INSTALL.bat)
+/*.exe
 backend/__pycache__/
 backend/**/__pycache__/
 *.pyc
