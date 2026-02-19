@@ -215,6 +215,7 @@ function App() {
                       fontWeight: 700, cursor: 'pointer', border: '1px solid rgba(255,215,0,0.3)',
                       background: 'rgba(255,215,0,0.08)', color: '#FFD700',
                       transition: 'all 0.2s', letterSpacing: '0.5px',
+                      WebkitAppRegion: 'no-drag' as any,
                     }}
                   >
                     {language === 'vi' ? 'EN' : 'VI'}
@@ -398,6 +399,7 @@ function App() {
 
           .cosmo-topbar[data-electron-drag="true"] {
             -webkit-app-region: drag;
+            padding-right: 150px;
           }
 
           .cosmo-grid {
