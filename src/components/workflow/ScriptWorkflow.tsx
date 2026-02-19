@@ -8490,6 +8490,8 @@ function QueueView({
         const startIdx = stepOrder.indexOf(startFrom);
         const completedSteps: PipelineStep[] = [...(item.completedSteps || [])].filter(s => stepOrder.indexOf(s) < startIdx);
 
+        let productionId: number | undefined = item.productionId;
+
         try {
             // Read channelName directly from store to avoid closure/HMR issues
             const channelNameLocal = useScriptWorkflowStore.getState().channelName || '';
@@ -8599,7 +8601,7 @@ function QueueView({
             }
 
             // ── Production Hub: Create record early (or reuse existing) ──
-            let productionId: number | undefined = item.productionId;
+            productionId = item.productionId;
             let productionSeqNum: number | undefined;
             // Fetch actual project name from activeProjectId
             let actualProjectName = activePresetName || '';
