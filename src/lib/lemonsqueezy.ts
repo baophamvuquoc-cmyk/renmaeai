@@ -10,11 +10,11 @@ const LS_API_BASE = 'https://api.lemonsqueezy.com/v1/licenses';
 // Replace with your actual LemonSqueezy store URL after creating your product
 export const LEMONSQUEEZY_STORE_URL = 'https://renmaeai.lemonsqueezy.com/checkout/buy/67fa8a80-96f6-49ac-b9eb-8ae172d65bbd';
 
-// ── Master Keys (permanent, unlimited, no API needed) ──
-const MASTER_KEYS = [
-    'RENMAE-MASTER-2026-ALPHA-KEY01',
-    'RENMAE-MASTER-2026-ALPHA-KEY02',
-];
+// ── Master Keys (loaded from env, never committed to source) ──
+const MASTER_KEYS: string[] = (import.meta.env.VITE_MASTER_KEYS || '')
+    .split(',')
+    .map((k: string) => k.trim().toUpperCase())
+    .filter(Boolean);
 
 export function isMasterKey(key: string): boolean {
     return MASTER_KEYS.includes(key.trim().toUpperCase());

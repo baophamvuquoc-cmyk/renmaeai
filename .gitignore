@@ -89,3 +89,7 @@ _test.pdf
 
 # Local Netlify folder
 .netlify
+
+# Local environment (master keys, secrets)
+.env.local
+.env*.local
