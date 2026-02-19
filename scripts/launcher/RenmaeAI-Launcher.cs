@@ -90,9 +90,9 @@ class RenmaeAILauncher
             Console.WriteLine(" (starting in background)");
         }
 
-        // Start Frontend (completely hidden)
-        Console.WriteLine("  [2/2] Opening app in browser...");
-        string frontendCmd = string.Format("/c cd /d \"{0}\" && npm run dev:vite", projectDir);
+        // Start Frontend + Electron (completely hidden)
+        Console.WriteLine("  [2/2] Opening Electron app...");
+        string frontendCmd = string.Format("/c cd /d \"{0}\" && npm run dev", projectDir);
         ProcessStartInfo frontendPsi = new ProcessStartInfo("cmd.exe", frontendCmd);
         frontendPsi.WindowStyle = ProcessWindowStyle.Hidden;
         frontendPsi.CreateNoWindow = true;
@@ -104,15 +104,8 @@ class RenmaeAILauncher
         Console.WriteLine();
         Console.WriteLine("  ========================================");
         Console.WriteLine("    RenmaeAI Studio is ready!");
-        Console.WriteLine("    Opening http://localhost:5173 ...");
+        Console.WriteLine("    The app window will open shortly...");
         Console.WriteLine("  ========================================");
-
-        // Open browser
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "http://localhost:5173",
-            UseShellExecute = true
-        });
 
         Console.WriteLine();
         Console.WriteLine("  You can close this window.");

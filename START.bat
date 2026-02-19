@@ -33,18 +33,16 @@ if exist "%VENV_ACTIVATE%" (
 :: Wait for backend to initialize
 timeout /t 3 /nobreak >nul
 
-:: Start Frontend only (Vite dev server, hidden)
-echo   [2/2] Starting Frontend...
-start "" /min cmd /c "cd /d "%PROJECT_DIR%" && npm run dev:vite"
+:: Start Frontend + Electron (hidden)
+echo   [2/2] Starting Electron app...
+start "" /min cmd /c "cd /d "%PROJECT_DIR%" && npm run dev"
 
 :: Wait for Vite to start
 timeout /t 3 /nobreak >nul
 
 :: Open browser automatically
 echo.
-echo   Opening http://localhost:5173 ...
-start "" "http://localhost:5173"
-
+echo   The app window will open shortly...
 echo.
 echo   ========================================
 echo     RenmaeAI Studio is ready!
