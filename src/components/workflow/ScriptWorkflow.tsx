@@ -4745,7 +4745,7 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                     <p className="guide-text">
 
-                                        Podcast Remake giúp bạn biến nội dung podcast gốc thành <strong>video hoàn chỉnh</strong>, giữ nguyên phong cách riêng nhờ phân tích AI. Từ một bài podcast, bạn sẽ có kịch bản mới, giọng đọc AI, và video được lồng ghép tự động.
+                                        Podcast Remake giúp bạn biến nội dung gốc (podcast, bài viết, video YouTube) thành <strong>video hoàn chỉnh</strong> với kịch bản mới, giọng đọc AI, footage tự động, phụ đề, và metadata SEO — tất cả chỉ với <strong>một cú click</strong>.
 
                                     </p>
 
@@ -4771,9 +4771,9 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                             <div className="guide-step-content">
 
-                                                <strong>Phân tích giọng văn</strong>
+                                                <strong>Nhập nội dung gốc</strong>
 
-                                                <span>Nhập 5–20 kịch bản mẫu để AI học cách viết, hook, retention engine, CTA của bạn.</span>
+                                                <span>Dán link YouTube để tự động trích xuất transcript, hoặc paste nội dung trực tiếp.</span>
 
                                             </div>
 
@@ -4785,9 +4785,9 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                             <div className="guide-step-content">
 
-                                                <strong>Tạo kịch bản mới</strong>
+                                                <strong>Phân tích phong cách</strong>
 
-                                                <span>AI phân tích nội dung gốc → tạo outline → viết kịch bản hoàn chỉnh theo phong cách đã phân tích.</span>
+                                                <span>AI phân tích giọng văn, title, thumbnail, description từ kịch bản mẫu + đồng bộ nhân vật & bối cảnh.</span>
 
                                             </div>
 
@@ -4799,9 +4799,9 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                             <div className="guide-step-content">
 
-                                                <strong>Chia Scenes</strong>
+                                                <strong>Tạo kịch bản</strong>
 
-                                                <span>Tự chia kịch bản thành từng scene ngắn (3–8 giây) để lồng voice và footage.</span>
+                                                <span>AI remake nội dung gốc theo phong cách đã phân tích, tự động chia scenes và điều chỉnh số từ.</span>
 
                                             </div>
 
@@ -4815,7 +4815,7 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                                 <strong>Tạo Voice AI</strong>
 
-                                                <span>Giọng đọc AI tự động cho từng scene, hỗ trợ 8 ngôn ngữ khác nhau.</span>
+                                                <span>Giọng đọc AI cho từng scene, hỗ trợ 11 ngôn ngữ với nhiều giọng nam/nữ và tùy chỉnh tốc độ.</span>
 
                                             </div>
 
@@ -4827,9 +4827,37 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                             <div className="guide-step-content">
 
+                                                <strong>Tạo Prompts & Keywords</strong>
+
+                                                <span>AI tạo video prompts, image prompts, và keywords cho từng scene với 3 chế độ đồng bộ.</span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div className="guide-step">
+
+                                            <div className="guide-step-num">6</div>
+
+                                            <div className="guide-step-content">
+
                                                 <strong>Dựng Video</strong>
 
-                                                <span>Tạo keywords/prompts → tìm footage Pexels/Pixabay → ghép video hoàn chỉnh với phụ đề.</span>
+                                                <span>Tìm footage Pexels/Pixabay → AI Vision xếp hạng → ghép video với phụ đề và voice.</span>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div className="guide-step">
+
+                                            <div className="guide-step-num">7</div>
+
+                                            <div className="guide-step-content">
+
+                                                <strong>SEO Thô</strong>
+
+                                                <span>Tự động inject metadata SEO (title, tags, hash unique) vào video output.</span>
 
                                             </div>
 
@@ -4855,11 +4883,13 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                         <li>Càng nhiều kịch bản mẫu → AI phân tích phong cách chính xác hơn <em>(tối ưu: 10–15 bài)</em>.</li>
 
-                                        <li>Luôn cấu hình <strong>API key</strong> cho AI và Pexels/Pixabay trước khi bắt đầu.</li>
+                                        <li>Bật <strong>Sync Nhân Vật + Bối Cảnh</strong> trong Phân tích để video prompts giữ nhất quán hình ảnh.</li>
 
-                                        <li>Dùng chế độ <strong>"Footage (3–5s)"</strong> nếu muốn video nhịp nhanh, phù hợp YouTube Shorts.</li>
+                                        <li>Dùng <strong>Queue</strong> để xếp hàng nhiều project chạy pipeline tự động liên tục.</li>
 
                                         <li>Lưu giọng văn sau khi phân tích để <strong>tái sử dụng</strong> cho nhiều project khác nhau.</li>
+
+                                        <li>Video ngang <strong>(16:9)</strong> cho YouTube dài, video dọc <strong>(9:16)</strong> cho Shorts/TikTok.</li>
 
                                     </ul>
 
@@ -4879,15 +4909,23 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                     <div className="guide-features">
 
-                                        <div className="guide-feature-chip">Phân tích Hook & CTA</div>
-
                                         <div className="guide-feature-chip">One-click Pipeline</div>
 
-                                        <div className="guide-feature-chip">8 Ngôn ngữ</div>
+                                        <div className="guide-feature-chip">11 Ngôn ngữ</div>
 
                                         <div className="guide-feature-chip">AI Vision Ranking</div>
 
+                                        <div className="guide-feature-chip">Sync Nhân Vật & Bối Cảnh</div>
+
+                                        <div className="guide-feature-chip">3 Chế độ Prompt</div>
+
                                         <div className="guide-feature-chip">Phụ đề tự động</div>
+
+                                        <div className="guide-feature-chip">SEO Metadata</div>
+
+                                        <div className="guide-feature-chip">Queue & Production Hub</div>
+
+                                        <div className="guide-feature-chip">YouTube Extraction</div>
 
                                         <div className="guide-feature-chip">Pexels & Pixabay</div>
 
@@ -4911,19 +4949,25 @@ export default function ScriptWorkflow({ activeProjectId, setActiveProjectId, on
 
                                         <li>
 
-                                            <span>Cấu hình AI model (GPT, Gemini, Claude...) trong <strong>Cấu Hình AI</strong>.</span>
+                                            <span>Cấu hình AI model (Gemini, GPT, Claude...) trong <strong>Cấu Hình AI</strong>.</span>
 
                                         </li>
 
                                         <li>
 
-                                            <span>API key Pexels hoặc Pixabay (nếu cần footage tự động).</span>
+                                            <span>API key <strong>Pexels</strong> và/hoặc <strong>Pixabay</strong> (cho footage tự động).</span>
 
                                         </li>
 
                                         <li>
 
-                                            <span>Chuẩn bị kịch bản mẫu (5–20 bài) cho bước phân tích giọng văn.</span>
+                                            <span>Chuẩn bị kịch bản mẫu <strong>(5–20 bài)</strong> cho bước phân tích giọng văn.</span>
+
+                                        </li>
+
+                                        <li>
+
+                                            <span>Nội dung gốc: link YouTube hoặc văn bản podcast/bài viết.</span>
 
                                         </li>
 

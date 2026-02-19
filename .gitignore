@@ -85,3 +85,6 @@ _test.pdf
 
 # Gemini agent data
 .gemini/
+
+# Local Netlify folder
+.netlify

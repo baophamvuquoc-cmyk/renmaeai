@@ -1,7 +1,7 @@
 {
-  "name": "bien-sau-studio",
+  "name": "renmaeai-studio",
   "version": "1.0.0",
-  "description": "Biển Sâu Studio - AI-Powered Media Production",
+  "description": "RenmaeAI Studio - AI-Powered Media Production",
   "main": "electron/main.js",
   "type": "module",
   "scripts": {
@@ -53,8 +53,8 @@
     "zustand": "^4.5.2"
   },
   "build": {
-    "appId": "com.biensau.studio",
-    "productName": "Biển Sâu Studio",
+    "appId": "com.renmaeai.studio",
+    "productName": "RenmaeAI Studio",
     "directories": {
       "output": "release"
     },
