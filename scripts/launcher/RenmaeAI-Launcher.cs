@@ -2,131 +2,70 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Net;
 
 class RenmaeAILauncher
 {
     static void Main()
     {
-        // The .exe lives in the project root
         string exeDir = AppDomain.CurrentDomain.BaseDirectory;
         string projectDir = exeDir.TrimEnd(Path.DirectorySeparatorChar);
 
-        // Verify project structure
-        string backendMain = Path.Combine(projectDir, "backend", "main.py");
-        string packageJson = Path.Combine(projectDir, "package.json");
-
-        if (!File.Exists(backendMain) || !File.Exists(packageJson))
+        if (!File.Exists(Path.Combine(projectDir, "backend", "main.py")) ||
+            !File.Exists(Path.Combine(projectDir, "package.json")))
         {
-            Console.WriteLine("[ERROR] Cannot find project files.");
-            Console.WriteLine("Place this .exe in the project root folder.");
-            Console.WriteLine("Looking in: " + projectDir);
+            Console.WriteLine("[ERROR] Place this .exe in the project root folder.");
             Console.ReadKey();
             return;
         }
 
         Console.Title = "RenmaeAI Studio";
         Console.WriteLine();
-        Console.WriteLine("  ========================================");
-        Console.WriteLine("    RenmaeAI Studio is starting...");
-        Console.WriteLine("  ========================================");
+        Console.WriteLine("  RenmaeAI Studio is starting...");
         Console.WriteLine();
 
-        // Check for venv
         string venvActivate = Path.Combine(projectDir, ".venv", "Scripts", "activate.bat");
         string backendDir = Path.Combine(projectDir, "backend");
 
-        // Start Backend (completely hidden)
-        Console.WriteLine("  [1/2] Starting Backend Server...");
+        // Start Backend (hidden)
         string backendCmd;
         if (File.Exists(venvActivate))
-        {
-            backendCmd = string.Format(
-                "/c cd /d \"{0}\" && call \"{1}\" && python -m uvicorn main:app --reload --port 8000",
-                backendDir, venvActivate);
-        }
+            backendCmd = string.Format("/c cd /d \"{0}\" && call \"{1}\" && python -m uvicorn main:app --reload --port 8000", backendDir, venvActivate);
         else
-        {
-            backendCmd = string.Format(
-                "/c cd /d \"{0}\" && python -m uvicorn main:app --reload --port 8000",
-                backendDir);
-        }
+            backendCmd = string.Format("/c cd /d \"{0}\" && python -m uvicorn main:app --reload --port 8000", backendDir);
 
-        ProcessStartInfo backendPsi = new ProcessStartInfo("cmd.exe", backendCmd);
-        backendPsi.WindowStyle = ProcessWindowStyle.Hidden;
-        backendPsi.CreateNoWindow = true;
-        Process.Start(backendPsi);
-
-        // Wait for backend to be ready
-        Console.Write("  Waiting for backend");
-        bool backendReady = false;
-        for (int i = 0; i < 20; i++)
+        Process.Start(new ProcessStartInfo("cmd.exe", backendCmd)
         {
-            Thread.Sleep(500);
-            Console.Write(".");
-            try
-            {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://localhost:8000/api/health");
-                request.Timeout = 1000;
-                request.Method = "GET";
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    backendReady = true;
-                    response.Close();
-                    break;
-                }
-                response.Close();
-            }
-            catch { }
-        }
+            WindowStyle = ProcessWindowStyle.Hidden,
+            CreateNoWindow = true
+        });
 
-        if (backendReady)
-        {
-            Console.WriteLine(" OK!");
-        }
-        else
-        {
-            Console.WriteLine(" (starting in background)");
-        }
-
-        // Start Frontend + Electron (completely hidden)
-        Console.WriteLine("  [2/2] Opening Electron app...");
+        // Start Electron immediately (it has its own wait-on logic)
         string frontendCmd = string.Format("/c cd /d \"{0}\" && npm run dev", projectDir);
-        ProcessStartInfo frontendPsi = new ProcessStartInfo("cmd.exe", frontendCmd);
-        frontendPsi.WindowStyle = ProcessWindowStyle.Hidden;
-        frontendPsi.CreateNoWindow = true;
-        Process.Start(frontendPsi);
+        Process.Start(new ProcessStartInfo("cmd.exe", frontendCmd)
+        {
+            WindowStyle = ProcessWindowStyle.Hidden,
+            CreateNoWindow = true
+        });
 
-        // Wait for Vite to start, then open browser
-        Thread.Sleep(3000);
-
-        Console.WriteLine();
-        Console.WriteLine("  ========================================");
-        Console.WriteLine("    RenmaeAI Studio is ready!");
-        Console.WriteLine("    The app window will open shortly...");
-        Console.WriteLine("  ========================================");
-
-        Console.WriteLine();
-        Console.WriteLine("  You can close this window.");
-        Console.WriteLine("  To stop the app, close this window or");
-        Console.WriteLine("  press any key to exit.");
+        Console.WriteLine("  App is loading... the window will appear shortly.");
+        Console.WriteLine("  Press any key to stop the app.");
         Console.ReadKey();
 
-        // Kill backend and frontend when user closes
-        KillProcessesByPort(8000);
-        KillProcessesByPort(5173);
+        // Cleanup on exit
+        KillPort(8000);
+        KillPort(5173);
     }
 
-    static void KillProcessesByPort(int port)
+    static void KillPort(int port)
     {
         try
         {
-            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe",
-                string.Format("/c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :{0} ^| findstr LISTENING') do taskkill /f /pid %a", port));
-            psi.WindowStyle = ProcessWindowStyle.Hidden;
-            psi.CreateNoWindow = true;
-            Process.Start(psi);
+            Process.Start(new ProcessStartInfo("cmd.exe",
+                string.Format("/c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :{0} ^| findstr LISTENING') do taskkill /f /pid %a", port))
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true
+            });
         }
         catch { }
     }
