@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenmaeAI Studio — AI-Powered Podcast to Video Production</title>
+    <meta name="description"
+        content="Transform podcasts into professional videos with AI. Auto-generate scripts, find footage, add voiceovers, and export — all in one desktop app.">
+    <meta name="keywords"
+        content="AI video production, podcast to video, automated video editing, AI voiceover, stock footage, content creation">
+    <meta property="og:title" content="RenmaeAI Studio — AI-Powered Podcast to Video">
+    <meta property="og:description"
+        content="Transform podcasts into professional videos with AI. Scripts, footage, voiceover, subtitles — fully automated.">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ═══ NAVBAR ═══ -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">RenmaeAI</a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+            </div>
+            <a href="#pricing" class="nav-cta">Get Started</a>
+            <button class="nav-menu-btn" aria-label="Menu"
+                onclick="document.querySelector('.nav-links').classList.toggle('open')">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="hero">
+        <div class="hero-aurora">
+            <div class="hero-orb hero-orb-1"></div>
+            <div class="hero-orb hero-orb-2"></div>
+            <div class="hero-orb hero-orb-3"></div>
+        </div>
+        <div class="hero-particles" id="hero-particles"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge">AI-Powered Video Production</div>
+            <h1 class="hero-title">
+                Turn Podcasts Into
+                <span class="hero-gradient">Professional Videos</span>
+                with AI
+            </h1>
+            <p class="hero-subtitle">
+                RenmaeAI Studio auto-generates scripts, finds stock footage, creates voiceovers,
+                adds subtitles, and exports ready-to-upload videos — all from a single podcast file.
+            </p>
+            <div class="hero-actions">
+                <a href="#pricing" class="btn btn-primary">
+                    <span>Get License Key</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+                <a href="#how-it-works" class="btn btn-outline">See How It Works</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">10x</span>
+                    <span class="hero-stat-label">Faster Production</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">100%</span>
+                    <span class="hero-stat-label">Local Processing</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">$0</span>
+                    <span class="hero-stat-label">Server Cost</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FEATURES ═══ -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Features</span>
+                <h2 class="section-title">Everything You Need to Create Stunning Videos</h2>
+                <p class="section-subtitle">One app. Full pipeline. Zero manual work.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card" style="--accent: #FFD700;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">AI Script Generation</h3>
+                    <p class="feature-desc">Automatically create engaging scripts from podcast content using advanced
+                        AI. Supports multiple languages including Vietnamese and English.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card" style="--accent: #A78BFA;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <rect x="2" y="2" width="20" height="20" rx="2.18" />
+                            <line x1="7" y1="2" x2="7" y2="22" />
+                            <line x1="17" y1="2" x2="17" y2="22" />
+                            <line x1="2" y1="12" x2="22" y2="12" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Smart Footage Finder</h3>
+                    <p class="feature-desc">AI analyzes each scene and auto-selects the best royalty-free footage from
+                        Pexels & Pixabay. No manual searching required.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card" style="--accent: #34D399;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="23" />
+                            <line x1="8" y1="23" x2="16" y2="23" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Multi-Language TTS</h3>
+                    <p class="feature-desc">Professional text-to-speech with 100+ voices across 50+ languages. Neural
+                        voices that sound natural and engaging.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card" style="--accent: #F472B6;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <polygon points="23 7 16 12 23 17 23 7" />
+                            <rect x="1" y="5" width="15" height="14" rx="2" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Auto Video Assembly</h3>
+                    <p class="feature-desc">Intelligent video compilation with scene-synced visuals, smooth transitions,
+                        and auto-generated subtitles. Export-ready in minutes.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card" style="--accent: #60A5FA;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">SEO Optimization</h3>
+                    <p class="feature-desc">AI-powered SEO analysis generates optimized titles, descriptions, tags, and
+                        thumbnails. Maximize your video's reach from day one.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card" style="--accent: #FBBF24;">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" />
+                            <line x1="8" y1="21" x2="16" y2="21" />
+                            <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Desktop App — 100% Local</h3>
+                    <p class="feature-desc">Everything runs on your computer. No cloud processing fees, complete
+                        privacy, and works offline after activation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ HOW IT WORKS ═══ -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">How It Works</span>
+                <h2 class="section-title">From Podcast to Video in 3 Steps</h2>
+                <p class="section-subtitle">No editing skills required. AI handles everything.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Import Your Podcast</h3>
+                        <p class="step-desc">Paste a YouTube URL or drop a local file. RenmaeAI extracts the audio and
+                            prepares it for AI analysis.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-mockup">
+                            <div class="mock-bar"></div>
+                            <div class="mock-input">
+                                <span class="mock-url">https://youtube.com/watch?v=...</span>
+                                <span class="mock-btn">Extract</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-connector">
+                    <svg width="24" height="60" viewBox="0 0 24 60">
+                        <path d="M12 0 L12 60" stroke="rgba(255,215,0,0.3)" stroke-width="2" stroke-dasharray="4 4" />
+                        <path d="M6 50 L12 60 L18 50" stroke="rgba(255,215,0,0.5)" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3 class="step-title">AI Does the Work</h3>
+                        <p class="step-desc">AI generates scripts, finds matching footage, creates voiceovers, builds
+                            subtitles, and assembles the full video — automatically.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-pipeline">
+                            <span class="pipeline-step active">Script</span>
+                            <span class="pipeline-arrow">→</span>
+                            <span class="pipeline-step active">Footage</span>
+                            <span class="pipeline-arrow">→</span>
+                            <span class="pipeline-step active">Voice</span>
+                            <span class="pipeline-arrow">→</span>
+                            <span class="pipeline-step">Video</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-connector">
+                    <svg width="24" height="60" viewBox="0 0 24 60">
+                        <path d="M12 0 L12 60" stroke="rgba(255,215,0,0.3)" stroke-width="2" stroke-dasharray="4 4" />
+                        <path d="M6 50 L12 60 L18 50" stroke="rgba(255,215,0,0.5)" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Export & Upload</h3>
+                        <p class="step-desc">One-click export to MP4 with optimized SEO metadata. Your video is ready to
+                            upload to YouTube, TikTok, or any platform.</p>
+                    </div>
+                    <div class="step-visual">
+                        <div class="step-export">
+                            <span class="export-file">podcast_remake.mp4</span>
+                            <span class="export-badge">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ PRICING ═══ -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Pricing</span>
+                <h2 class="section-title">One Simple Plan. Everything Included.</h2>
+                <p class="section-subtitle">No hidden fees. Cancel anytime.</p>
+            </div>
+
+            <div class="pricing-single">
+                <!-- Monthly Plan -->
+                <div class="price-card price-card--featured">
+                    <div class="price-badge">Full Access</div>
+                    <div class="price-header">
+                        <h3 class="price-name">RenmaeAI Studio</h3>
+                        <p class="price-desc">Everything you need to create stunning videos</p>
+                    </div>
+                    <div class="price-amount">
+                        <span class="price-currency">$</span>
+                        <span class="price-value">5</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <ul class="price-features">
+                        <li><span class="check">✓</span> Unlimited videos</li>
+                        <li><span class="check">✓</span> AI Script Generation</li>
+                        <li><span class="check">✓</span> Auto Footage Search</li>
+                        <li><span class="check">✓</span> Multi-Language TTS (100+ voices)</li>
+                        <li><span class="check">✓</span> Video Assembly + Export</li>
+                        <li><span class="check">✓</span> SEO Optimization</li>
+                        <li><span class="check">✓</span> All future updates</li>
+                        <li><span class="check">✓</span> Email Support</li>
+                    </ul>
+                    <a href="https://renmaeai.lemonsqueezy.com/checkout/buy/67fa8a80-96f6-49ac-b9eb-8ae172d65bbd"
+                        class="btn btn-primary price-btn" target="_blank" rel="noopener">Get Started — $5/month</a>
+                </div>
+            </div>
+
+            <p class="pricing-note">7-day money-back guarantee. Your license key is delivered instantly after payment.
+            </p>
+        </div>
+    </section>
+
+    <!-- ═══ FAQ ═══ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">FAQ</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>How does the license work?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>After purchasing, you'll receive a license key via email. Enter it in the app to activate.
+                            Each key can be activated on 1 computer. You can deactivate and move it to a different
+                            machine anytime.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>Does it work offline?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes! After activation, the app works offline for up to 3 days. An internet connection is
+                            required for AI features (Google Gemini API) and stock footage search, but the core video
+                            assembly works offline.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>What AI model does it use?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>RenmaeAI uses Google Gemini for AI-powered features. You'll need your own Gemini API key
+                            (free tier available from Google). The app guides you through setting this up.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>Is my data private?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Absolutely. Everything runs locally on your computer. Your videos, scripts, and audio files
+                            never leave your machine. The only external calls are to the AI API and stock footage
+                            libraries.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>What languages are supported?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>RenmaeAI supports script generation and voiceover in 50+ languages, with special optimization
+                            for Vietnamese and English. The AI automatically detects and adapts to your content's
+                            language.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                        <span>Can I get a refund?</span>
+                        <span class="faq-toggle">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, we offer a 7-day money-back guarantee on all plans. If you're not satisfied, contact us
+                            within 7 days of purchase for a full refund. No questions asked.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CTA ═══ -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-card">
+                <h2 class="cta-title">Ready to Transform Your Content?</h2>
+                <p class="cta-subtitle">Join creators who save hours every week with AI-powered video production.</p>
+                <a href="#pricing" class="btn btn-primary btn-lg">
+                    <span>Start Creating Today</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <span class="footer-logo">RenmaeAI</span>
+                    <p class="footer-tagline">AI-Powered Video Production Studio</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#faq">FAQ</a>
+                    <a href="mailto:support@renmaeai.com">Support</a>
+                </div>
+                <div class="footer-copy">
+                    <span>© 2026 RenmaeAI. All rights reserved.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ SCRIPTS ═══ -->
+    <script>
+        // Navbar scroll effect
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Smooth scroll for anchors
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Close mobile menu
+                document.querySelector('.nav-links').classList.remove('open');
+            });
+        });
+
+        // Generate hero particles
+        const particleContainer = document.getElementById('hero-particles');
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('div');
+            p.className = 'h-particle';
+            p.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;animation-delay:${Math.random() * 6}s;animation-duration:${5 + Math.random() * 7}s;`;
+            particleContainer.appendChild(p);
+        }
+
+        // Intersection observer for fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .step-card, .price-card, .faq-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+</body>
+
+</html>
