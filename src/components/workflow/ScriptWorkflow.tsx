@@ -8497,7 +8497,7 @@ function QueueView({
             queueStore.updateItem(item.id, {
                 status: 'running',
                 progress: 0,
-                currentStep: startIdx > 0 ? `Retry: ${startFrom}` : 'Tạo kịch bản...',
+                currentStep: startIdx > 0 ? `Retry: ${startFrom}` : 'Generating script',
                 retryFromStep: undefined,
             });
 
@@ -8537,7 +8537,7 @@ function QueueView({
                             const mappedProgress = Math.round(percentage * 0.30);
                             queueStore.updateItem(item.id, {
                                 progress: mappedProgress,
-                                currentStep: message || 'Đang xử lý...',
+                                currentStep: message || 'Processing',
                             });
                         },
                         controller.signal
@@ -8550,7 +8550,7 @@ function QueueView({
                     completedSteps.push('script');
 
                     // ── Step 2: Split to Scenes (30-38%) ──
-                    queueStore.updateItem(item.id, { progress: 30, currentStep: 'Chia scenes...' });
+                    queueStore.updateItem(item.id, { progress: 30, currentStep: 'Splitting scenes' });
                     const scenesResult = await workflowApi.advancedRemake.splitScriptToScenes(
                         finalScript,
                         selectedModel,
@@ -8574,7 +8574,7 @@ function QueueView({
                 // Retry from scenes — reuse cached script, re-split
                 finalScript = item.cachedScript || item.scriptText;
                 completedSteps.push('script');
-                queueStore.updateItem(item.id, { progress: 30, currentStep: 'Chia lại scenes...' });
+                queueStore.updateItem(item.id, { progress: 30, currentStep: 'Re-splitting scenes' });
                 const scenesResult = await workflowApi.advancedRemake.splitScriptToScenes(
                     finalScript,
                     selectedModel,
@@ -8686,7 +8686,7 @@ function QueueView({
                     completedSteps.push('voice');
                     console.log(`[Queue] Using cached voice results: ${Object.keys(voiceResults).length} scenes`);
                 } else if (pipelineSelection?.voiceGeneration === true) {
-                    queueStore.updateItem(item.id, { progress: 45, currentStep: 'Tạo voice...' });
+                    queueStore.updateItem(item.id, { progress: 45, currentStep: 'Generating voice' });
                     const voiceScenes = scenesArray
                         .filter((s: any) => s.content?.trim())
                         .map((s: any) => ({
@@ -8753,7 +8753,7 @@ function QueueView({
             if (analysisHasTitle || analysisHasDescription || analysisHasThumbnail) {
                 queueStore.updateItem(item.id, {
                     progress: 55,
-                    currentStep: 'Tạo metadata (title/desc/thumbnail)...',
+                    currentStep: 'Generating metadata',
                 });
 
                 // Build timestamps from voice results
@@ -8826,7 +8826,7 @@ function QueueView({
                     console.error('[Queue] YouTube metadata generation failed:', metaErr);
                 }
 
-                queueStore.updateItem(item.id, { progress: 62, currentStep: 'Metadata xong' });
+                queueStore.updateItem(item.id, { progress: 62, currentStep: 'Metadata done' });
 
                 // ── Production Hub: Update metadata ──
                 if (productionId) {
@@ -8873,7 +8873,7 @@ function QueueView({
                     const isConceptMode = vp?.image_prompts === true && vp?.image_prompt_mode === 'concept';
 
                     if (shouldGenerateKeywords || isConceptMode) {
-                        queueStore.updateItem(item.id, { progress: 62, currentStep: 'Tạo keywords...' });
+                        queueStore.updateItem(item.id, { progress: 62, currentStep: 'Generating keywords' });
                         const keywordScenes = scenesArray.map((s: any) => ({
                             scene_id: s.scene_id,
                             content: s.content,
@@ -8894,7 +8894,7 @@ function QueueView({
                                 const kwProgress = Math.min(70, 62 + Math.round(percentage * 0.08));
                                 queueStore.updateItem(item.id, {
                                     progress: kwProgress,
-                                    currentStep: message || 'Tạo keywords...',
+                                    currentStep: message || 'Generating keywords',
                                 });
                             },
                             controller.signal
@@ -8976,7 +8976,7 @@ function QueueView({
                     }
                     completedSteps.push('video_direction');
                 } else if (startIdx <= 5) {
-                    queueStore.updateItem(item.id, { progress: 71, currentStep: 'Phân tích đạo diễn...' });
+                    queueStore.updateItem(item.id, { progress: 71, currentStep: 'Analyzing direction' });
                     try {
                         const directionResult = await workflowApi.advancedRemake.analyzeVideoDirection(
                             {
@@ -9027,7 +9027,7 @@ function QueueView({
                     console.log('[Queue][Pipeline] Using cached video prompts');
                     completedSteps.push('video_prompts');
                 } else if (startIdx <= 6) {
-                    queueStore.updateItem(item.id, { progress: 77, currentStep: 'Tạo video prompts...' });
+                    queueStore.updateItem(item.id, { progress: 77, currentStep: 'Generating video prompts' });
 
                     try {
                         const vpResult = await workflowApi.advancedRemake.generateVideoPrompts(
@@ -9050,7 +9050,7 @@ function QueueView({
                                 const pProgress = Math.min(82, 77 + Math.round(percentage * 0.05));
                                 queueStore.updateItem(item.id, {
                                     progress: pProgress,
-                                    currentStep: message || 'Tạo video prompts...',
+                                    currentStep: message || 'Generating video prompts',
                                 });
                             },
                             controller.signal
@@ -9123,7 +9123,7 @@ function QueueView({
                     console.log('[Queue][Pipeline] Using cached entities');
                     completedSteps.push('entity_extraction');
                 } else if (startIdx <= 7) {
-                    queueStore.updateItem(item.id, { progress: 83, currentStep: 'Trích xuất entities...' });
+                    queueStore.updateItem(item.id, { progress: 83, currentStep: 'Extracting entities' });
                     try {
                         const entityResult = await workflowApi.advancedRemake.extractEntities(
                             {
@@ -9162,7 +9162,7 @@ function QueueView({
                     (scenesArray as any).__pipeline_entities = pipelineEntities;
                     completedSteps.push('reference_prompts');
                 } else if (startIdx <= 8) {
-                    queueStore.updateItem(item.id, { progress: 87, currentStep: 'Tạo ảnh tham chiếu...' });
+                    queueStore.updateItem(item.id, { progress: 87, currentStep: 'Reference prompts' });
                     try {
                         const refResult = await workflowApi.advancedRemake.generateReferencePrompts(
                             {
@@ -9221,7 +9221,7 @@ function QueueView({
                     (scenesArray as any).__pipeline_scene_builder_prompts = pipelineSbPromptsText;
                     completedSteps.push('scene_builder');
                 } else if (startIdx <= 9) {
-                    queueStore.updateItem(item.id, { progress: 90, currentStep: 'Tạo scene builder...' });
+                    queueStore.updateItem(item.id, { progress: 90, currentStep: 'Scene builder' });
                     try {
                         const sbResult = await workflowApi.advancedRemake.generateSceneBuilderPrompts(
                             {
@@ -9311,7 +9311,7 @@ function QueueView({
             }
 
             if (shouldAssembleVideo) {
-                queueStore.updateItem(item.id, { progress: 75, currentStep: 'Ghép video...' });
+                queueStore.updateItem(item.id, { progress: 75, currentStep: 'Assembling video' });
 
                 const assembleSceneList = scenesArray
                     .filter((s: any) => voiceResults[s.scene_id])
@@ -9355,7 +9355,7 @@ function QueueView({
                                 const assembleProgress = 75 + Math.round(pct * 0.15);
                                 queueStore.updateItem(item.id, {
                                     progress: assembleProgress,
-                                    currentStep: msg || 'Ghép video...',
+                                    currentStep: msg || 'Assembling video',
                                 });
                             },
                             undefined,
@@ -9397,9 +9397,9 @@ function QueueView({
                 if (seoMode === 'review') {
                     // 'review' mode: skip auto-generation, user reviews manually
                     console.log('[Queue][SEO] Mode = review — skipping auto-generation');
-                    queueStore.updateItem(item.id, { progress: 93, currentStep: 'Bỏ qua SEO (duyệt trước)' });
+                    queueStore.updateItem(item.id, { progress: 93, currentStep: 'Skip SEO (review mode)' });
                 } else {
-                    queueStore.updateItem(item.id, { progress: 90, currentStep: 'Tạo SEO...' });
+                    queueStore.updateItem(item.id, { progress: 90, currentStep: 'Generating SEO' });
 
                     try {
                         const seoResult = await seoApi.generate({
@@ -9441,7 +9441,7 @@ function QueueView({
             );
 
             if (hasAnyExport) {
-                queueStore.updateItem(item.id, { progress: 93, currentStep: 'Xuất kết quả...' });
+                queueStore.updateItem(item.id, { progress: 93, currentStep: 'Exporting results' });
 
                 try {
                     // Collect scene data with prompts
@@ -9525,7 +9525,7 @@ function QueueView({
                     exportDir = exportResult?.export_dir;
                     console.log('[Queue][Export] Results packaged:', exportResult);
                     completedSteps.push('export');
-                    queueStore.updateItem(item.id, { progress: 99, currentStep: `Xuất xong: ${exportResult?.total_exported || 0} files` });
+                    queueStore.updateItem(item.id, { progress: 99, currentStep: `Exported ${exportResult?.total_exported || 0} files` });
 
                     // ── Production Hub: Update export + video ──
                     if (productionId) {

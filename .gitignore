@@ -48,6 +48,7 @@ release/
 *.msi
 *.dmg
 *.app
+*.zip
 
 # Bundled ffmpeg binaries (auto-downloaded)
 backend/bin/
@@ -79,9 +80,6 @@ _pdf1.txt
 _pdf_log.txt
 _test.pdf
 
-# Playwright
-/test-results/
-/playwright-report/
 
 # Gemini agent data
 .gemini/

@@ -1439,7 +1439,7 @@ async def generate_scene_keywords(request: GenerateSceneKeywordsRequest):
                 num_batches = len(scene_batches)
             batch_label = f'{num_batches} batch' if num_batches > 1 else '1 lần'
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Keywords: {total_scenes} scenes ({batch_label})', 'current': 0, 'total': total_scenes, 'percentage': 2}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Keywords {total_scenes} scenes ({batch_label})', 'current': 0, 'total': total_scenes, 'percentage': 2}, ensure_ascii=False)}\n\n"
 
             # Build consistency context block
             consistency_block = ""
@@ -1463,7 +1463,7 @@ async def generate_scene_keywords(request: GenerateSceneKeywordsRequest):
 
 
             # ── BATCHED PROMPT GENERATION ──
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Tạo prompts: {total_scenes} scenes ({batch_label})', 'current': 0, 'total': total_scenes, 'percentage': 10}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Prompts {total_scenes} scenes ({batch_label})', 'current': 0, 'total': total_scenes, 'percentage': 10}, ensure_ascii=False)}\n\n"
 
             # Build CONCEPT ANCHOR block
             concept_anchor_block = ""
@@ -1871,7 +1871,7 @@ Return ONLY the scene blocks, no other text."""
                     missing_scenes = [s for s in batch_scenes if s.scene_id not in result_map]
                     if missing_scenes and len(missing_scenes) < len(batch_scenes):
                         print(f"[SceneKeywords] Batch {batch_num}: {len(missing_scenes)} scenes missing, retrying...")
-                        yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Retry {len(missing_scenes)} missing scenes', 'current': sum(len(b) for b in scene_batches[:batch_idx + 1]) - len(missing_scenes), 'total': total_scenes, 'percentage': batch_end_pct - 5}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Retry {len(missing_scenes)} scenes', 'current': sum(len(b) for b in scene_batches[:batch_idx + 1]) - len(missing_scenes), 'total': total_scenes, 'percentage': batch_end_pct - 5}, ensure_ascii=False)}\n\n"
                         retry_block_parts = []
                         for scene in missing_scenes:
                             meta = scene_meta[scene.scene_id]
@@ -2030,7 +2030,7 @@ Return ONLY the scene blocks, no other text."""
                             entry = _empty_result(scene.scene_id, gen_image, gen_video)
                             entry['keyword'] = f'(error: {str(ai_err)[:40]})'
                             result_map[scene.scene_id] = entry
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Xong: {total_scenes}/{total_scenes} scenes', 'current': total_scenes, 'total': total_scenes, 'percentage': 95}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Done {total_scenes}/{total_scenes} scenes', 'current': total_scenes, 'total': total_scenes, 'percentage': 95}, ensure_ascii=False)}\n\n"
 
             result_data = {
                 "type": "result",
@@ -2116,7 +2116,7 @@ async def analyze_video_direction(request: AnalyzeVideoDirectionRequest):
             batches = [request.scenes[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
             num_batches = len(batches)
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Đạo diễn: {total} scenes ({num_batches} batch)', 'percentage': 5}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Direction {total} scenes ({num_batches} batch)', 'percentage': 5}, ensure_ascii=False)}\n\n"
 
             # Build style block once (shared across all batches)
             style_block = ""
@@ -2190,7 +2190,7 @@ A cinematic medium shot of a young woman in a red dress walking through a sunlit
 
 Return ONLY the scene blocks with ===SCENE N=== separators, no other text."""
 
-                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: AI phân tích...', 'percentage': batch_start_pct + 5}, ensure_ascii=False)}\n\n"
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: AI analyzing', 'percentage': batch_start_pct + 5}, ensure_ascii=False)}\n\n"
 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     response_text = await loop.run_in_executor(
@@ -2198,7 +2198,7 @@ Return ONLY the scene blocks with ===SCENE N=== separators, no other text."""
                         lambda p=prompt: ai_client.generate(p)
                     )
 
-                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: xử lý kết quả...', 'percentage': batch_end_pct - 5}, ensure_ascii=False)}\n\n"
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Batch {batch_num}/{num_batches}: parsing', 'percentage': batch_end_pct - 5}, ensure_ascii=False)}\n\n"
 
                 # Parse paragraph separator format: ===SCENE N===\nparagraph...
                 scene_blocks = re_mod.split(r'===SCENE\s+(\d+)===', response_text)
@@ -2222,7 +2222,7 @@ Return ONLY the scene blocks with ===SCENE N=== separators, no other text."""
                 all_directions.extend(batch_directions)
                 print(f"[VideoDirection] Batch {batch_num}/{num_batches}: parsed {len(batch_directions)} directions (running total: {len(all_directions)}/{total})")
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Xong: {len(all_directions)}/{total} scenes', 'percentage': 90}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Done {len(all_directions)}/{total} scenes', 'percentage': 90}, ensure_ascii=False)}\n\n"
 
             result_data = {
                 "type": "result",
@@ -2289,7 +2289,7 @@ async def generate_video_prompts_endpoint(request: GenerateVideoPromptsRequest):
             batches = [request.scenes[i:i + BATCH_SIZE] for i in range(0, total, BATCH_SIZE)]
             num_batches = len(batches)
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Video prompts: {total} scenes', 'percentage': 5}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Video prompts {total} scenes', 'percentage': 5}, ensure_ascii=False)}\n\n"
 
             # Build style/consistency block
             style_block = ""
@@ -2413,7 +2413,7 @@ VIDEO_PROMPT: ...
 
 Return ONLY the scene blocks, no other text."""
 
-                yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI generating video prompts...', 'percentage': batch_start_pct + 5}, ensure_ascii=False)}\n\n"
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI generating prompts', 'percentage': batch_start_pct + 5}, ensure_ascii=False)}\n\n"
 
                 try:
                     def call_ai(p=prompt):
@@ -2489,7 +2489,7 @@ VIDEO_PROMPT: ..."""
 
             result_list = sorted(all_results.values(), key=lambda x: x['scene_id'])
             ok_count = sum(1 for r in result_list if r['video_prompt'])
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Done: {ok_count}/{total} prompts', 'percentage': 95}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Done {ok_count}/{total} prompts', 'percentage': 95}, ensure_ascii=False)}\n\n"
 
             result_data = {
                 "type": "result",
@@ -2537,7 +2537,7 @@ async def extract_entities(request: ExtractEntitiesRequest):
             import concurrent.futures
 
             total = len(request.video_prompts)
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Trích xuất entities: {total} prompts', 'percentage': 5}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Entities {total} prompts', 'percentage': 5}, ensure_ascii=False)}\n\n"
 
             prompts_block = "\n".join([
                 f"Scene {p.get('scene_id', i+1)}: {p.get('video_prompt', p.get('direction_notes', ''))}"
@@ -2594,7 +2594,7 @@ RULES:
 
 Return ONLY the JSON object, no other text."""
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI phân tích entities...', 'percentage': 30}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI analyzing entities', 'percentage': 30}, ensure_ascii=False)}\n\n"
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 response_text = await loop.run_in_executor(
@@ -2602,7 +2602,7 @@ Return ONLY the JSON object, no other text."""
                     lambda: ai_client.generate(prompt)
                 )
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Xử lý kết quả...', 'percentage': 80}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Parsing results', 'percentage': 80}, ensure_ascii=False)}\n\n"
 
             import re as re_mod
             json_match = re_mod.search(r'\{.*\}', response_text, re_mod.DOTALL)
@@ -2667,7 +2667,7 @@ async def generate_reference_prompts(request: GenerateReferencePromptsRequest):
             import concurrent.futures
 
             total = len(request.entities)
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Tạo reference: {total} entities', 'percentage': 5}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': f'Reference {total} entities', 'percentage': 5}, ensure_ascii=False)}\n\n"
 
             # Build entity descriptions
             entities_block = ""
@@ -2733,7 +2733,7 @@ Each entity has EXACTLY 1 prompt with angle "REFERENCE_SHEET". The prompt descri
 
 Return ONLY the JSON object, no other text."""
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI tạo reference prompts...', 'percentage': 30}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'AI generating reference prompts', 'percentage': 30}, ensure_ascii=False)}\n\n"
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 response_text = await loop.run_in_executor(
@@ -2741,7 +2741,7 @@ Return ONLY the JSON object, no other text."""
                     lambda: ai_client.generate(prompt)
                 )
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Xử lý kết quả...', 'percentage': 85}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Parsing results', 'percentage': 85}, ensure_ascii=False)}\n\n"
 
             import re as re_mod
             json_match = re_mod.search(r'\{.*\}', response_text, re_mod.DOTALL)
@@ -2912,7 +2912,7 @@ SCENE_BUILDER_PROMPT: ...
 Return ONLY the scene blocks, no other text."""
 
                 batch_label = f' (batch {batch_num}/{num_batches})' if num_batches > 1 else ''
-                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'AI tạo scene builder{batch_label}...', 'percentage': batch_start_pct + 10}, ensure_ascii=False)}\n\n"
+                yield f"data: {json_module.dumps({'type': 'progress', 'message': f'AI scene builder{batch_label}', 'percentage': batch_start_pct + 10}, ensure_ascii=False)}\n\n"
 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     response_text = await loop.run_in_executor(
@@ -2954,7 +2954,7 @@ Return ONLY the scene blocks, no other text."""
 
                 print(f"[SceneBuilder] {'Batch ' + str(batch_num) + ': ' if num_batches > 1 else ''}parsed {parsed_count} scenes (total: {len(all_results)}/{total})")
 
-            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Xử lý kết quả...', 'percentage': 90}, ensure_ascii=False)}\n\n"
+            yield f"data: {json_module.dumps({'type': 'progress', 'message': 'Parsing results', 'percentage': 90}, ensure_ascii=False)}\n\n"
 
             result_data = {
                 "type": "result",
@@ -3349,6 +3349,11 @@ IMPORTANT RULES:
 - Write as a native {lang_name_en} speaker would naturally SAY it, not like an SEO formula
 - Maximum 60 characters
 - Create natural curiosity — viewers click because they're CURIOUS, not because they feel baited
+- CAPITALIZE (ALL CAPS) 1-2 KEY POWER WORDS to grab attention and emphasize critical info
+  + Example (Vietnamese): "Tại sao bạn KHÔNG BAO GIỜ nên làm điều này"
+  + Example (English): "This SHOCKING Truth Will Change Everything"
+  + Only capitalize the MOST impactful words — do NOT capitalize the entire title
+  + Use caps on emotional triggers, surprising elements, or core value words
 - Do NOT use "|" or "—" to split the title
 - Do NOT force numbers (e.g., "3 layers", "5 steps", "7 things") unless the content truly revolves around that number
 - Do NOT start with clichés like "The Truth", "Secret", "Top" unless truly appropriate
@@ -3710,7 +3715,7 @@ async def analyze_metadata_styles_stream(request: AnalyzeMetadataStylesRequest):
                 
                 # Translate titles
                 if has_titles:
-                    yield send_event("progress", {"step": "translate_title", "percentage": 1, "message": f"Đang dịch {len(translated_titles)} tiêu đề {src_name} → {out_name}..."})
+                    yield send_event("progress", {"step": "translate_title", "percentage": 1, "message": f"Translating {len(translated_titles)} titles {src_name} > {out_name}"})
                     new_titles = []
                     for i, title in enumerate(translated_titles):
                         try:
@@ -3720,11 +3725,11 @@ async def analyze_metadata_styles_stream(request: AnalyzeMetadataStylesRequest):
                         except Exception:
                             new_titles.append(title)
                     translated_titles = new_titles
-                    yield send_event("progress", {"step": "translate_title_done", "percentage": 3, "message": f"Đã dịch {len(new_titles)} tiêu đề sang {out_name}"})
+                    yield send_event("progress", {"step": "translate_title_done", "percentage": 3, "message": f"Translated {len(new_titles)} titles to {out_name}"})
                 
                 # Translate descriptions
                 if has_descriptions:
-                    yield send_event("progress", {"step": "translate_desc", "percentage": 3, "message": f"Đang dịch {len(translated_descs)} mô tả {src_name} → {out_name}..."})
+                    yield send_event("progress", {"step": "translate_desc", "percentage": 3, "message": f"Translating {len(translated_descs)} descriptions {src_name} > {out_name}"})
                     new_descs = []
                     for i, desc in enumerate(translated_descs):
                         try:
@@ -3735,7 +3740,7 @@ Rules: Preserve structure, line breaks, links. Output ONLY the translated text.\
                         except Exception:
                             new_descs.append(desc)
                     translated_descs = new_descs
-                    yield send_event("progress", {"step": "translate_desc_done", "percentage": 5, "message": f"Đã dịch {len(new_descs)} mô tả sang {out_name}"})
+                    yield send_event("progress", {"step": "translate_desc_done", "percentage": 5, "message": f"Translated {len(new_descs)} descriptions to {out_name}"})
                 
                 # Update request samples with translated versions
                 request.title_samples = translated_titles
@@ -3765,7 +3770,7 @@ Hãy sẵn sàng phân tích!"""
                 try:
                     conv_id = ai_client.start_conversation(system_prompt)
                     logger.info(f"[Title] Conversation started: {conv_id[:8]}...")
-                    report_progress("title_start", 5, "🏷️ Bắt đầu phân tích tiêu đề...")
+                    report_progress("title_start", 5, "Analyzing titles")
                 except Exception as e:
                     logger.error(f"[Title] Failed to start conversation: {e}, falling back to single-shot")
                     return _analyze_titles_single_shot(ai_client, samples)
@@ -3773,7 +3778,7 @@ Hãy sẵn sàng phân tích!"""
                 # ── STEP 2: Analyze each title individually ──
                 individual_results = []
                 for i, title in enumerate(samples, 1):
-                    report_progress("title_sample", 5 + int((i / num_samples) * 25), f"🏷️ Phân tích tiêu đề {i}/{num_samples}...")
+                    report_progress("title_sample", 5 + int((i / num_samples) * 25), f"Title {i}/{num_samples}")
                     analysis_prompt = f"""Phân tích TIÊU ĐỀ #{i}/{num_samples}:
 
 "{title}"
@@ -3798,7 +3803,7 @@ Trả về JSON ngắn gọn:
                     except Exception as e:
                         logger.error(f"[Title] ❌ Error analyzing title {i}: {e}")
                 
-                report_progress("title_synth", 30, "🏷️ Tổng hợp phong cách tiêu đề...")
+                report_progress("title_synth", 30, "Synthesizing title style")
                 # ── STEP 3: Synthesize ──
                 synthesis_prompt = f"""Bây giờ, dựa trên TẤT CẢ {num_samples} tiêu đề bạn vừa phân tích, hãy ĐÚC KẾT thành "PHONG CÁCH ĐẶT TIÊU ĐỀ".
 
@@ -3860,7 +3865,7 @@ Hãy sẵn sàng phân tích!"""
                 try:
                     conv_id = ai_client.start_conversation(system_prompt)
                     logger.info(f"[Description] Conversation started: {conv_id[:8]}...")
-                    report_progress("desc_start", 35, "📝 Bắt đầu phân tích mô tả...")
+                    report_progress("desc_start", 35, "Analyzing descriptions")
                 except Exception as e:
                     logger.error(f"[Description] Failed to start conversation: {e}, falling back to single-shot")
                     return _analyze_descriptions_single_shot(ai_client, samples)
@@ -3868,7 +3873,7 @@ Hãy sẵn sàng phân tích!"""
                 # ── STEP 2: Analyze each description individually ──
                 individual_results = []
                 for i, desc in enumerate(samples, 1):
-                    report_progress("desc_sample", 35 + int((i / num_samples) * 25), f"📝 Phân tích mô tả {i}/{num_samples}...")
+                    report_progress("desc_sample", 35 + int((i / num_samples) * 25), f"Description {i}/{num_samples}")
                     # Truncate very long descriptions to avoid token limits
                     desc_content = desc[:3000] if len(desc) > 3000 else desc
                     
@@ -3958,7 +3963,7 @@ TRẢ VỀ JSON (không giải thích thêm):
 
             # ── VISION-BASED ANALYSIS (when real images are provided) ──
             if num_images > 0:
-                report_progress("thumb_start", 65, "🖼️ Phân tích thumbnail bằng Vision AI...")
+                report_progress("thumb_start", 65, "Analyzing thumbnails (Vision AI)")
                 logger.info(f"[Thumbnail] Vision analysis with {num_images} images")
 
                 vision_prompt = f"""Bạn là chuyên gia phân tích thumbnail YouTube, chuyên về visual design và CTR optimization.
@@ -4009,14 +4014,14 @@ TRẢ VỀ JSON (không giải thích thêm):
   "style_summary": "Tóm tắt 2-3 câu về phong cách thumbnail"
 }}"""
                 try:
-                    report_progress("thumb_sample", 75, f"🖼️ Gửi {num_images} ảnh đến Vision AI...")
+                    report_progress("thumb_sample", 75, f"Vision AI {num_images} images")
                     response = ai_client.generate_with_images(
                         vision_prompt, thumb_images, temperature=0.3, max_tokens=4000
                     )
                     parsed = _parse_metadata_json(response)
                     if parsed:
                         logger.info(f"[Thumbnail] ✅ Vision analysis complete")
-                        report_progress("thumb_done", 90, "Hoàn thành phân tích thumbnail ✓")
+                        report_progress("thumb_done", 90, "Thumbnail analysis done")
                         return parsed
                     else:
                         logger.warning(f"[Thumbnail] Vision response not valid JSON, raw: {response[:300]}")
@@ -4050,7 +4055,7 @@ Hãy sẵn sàng phân tích!"""
                 try:
                     conv_id = ai_client.start_conversation(system_prompt)
                     logger.info(f"[Thumbnail] Conversation started: {conv_id[:8]}...")
-                    report_progress("thumb_start", 65, "🖼️ Bắt đầu phân tích thumbnail (text)...")
+                    report_progress("thumb_start", 65, "Analyzing thumbnails (text)")
                 except Exception as e:
                     logger.error(f"[Thumbnail] Failed to start conversation: {e}, falling back to single-shot")
                     return _analyze_thumbnails_single_shot(ai_client, samples)
@@ -4058,7 +4063,7 @@ Hãy sẵn sàng phân tích!"""
                 # ── STEP 2: Analyze each thumbnail individually ──
                 individual_results = []
                 for i, thumb_desc in enumerate(samples, 1):
-                    report_progress("thumb_sample", 65 + int((i / num_samples) * 25), f"🖼️ Phân tích thumbnail {i}/{num_samples}...")
+                    report_progress("thumb_sample", 65 + int((i / num_samples) * 25), f"Thumbnail {i}/{num_samples}")
                     analysis_prompt = f"""Phân tích THUMBNAIL #{i}/{num_samples}:
 
 Mô tả:
@@ -4201,7 +4206,7 @@ TRẢ VỀ JSON (không giải thích thêm):
                 except Exception:
                     break
 
-        yield send_event("progress", {"step": "done", "percentage": 100, "message": "Hoàn thành phân tích toàn bộ!"})
+        yield send_event("progress", {"step": "done", "percentage": 100, "message": "Analysis complete"})
         yield send_event("result", {
             "success": True,
             "title_style": results["title_style"],
@@ -4340,13 +4345,13 @@ async def analyze_sync_references_stream(request: AnalyzeSyncReferencesRequest):
         total = sum([has_character, has_style, has_context])
         done_count = 0
 
-        yield send_event("progress", {"step": "sync_init", "percentage": 0, "message": f"Bắt đầu phân tích {total} sync reference..."})
+        yield send_event("progress", {"step": "sync_init", "percentage": 0, "message": f"Sync analysis {total} references"})
 
         loop = asyncio.get_event_loop()
 
         # ── CHARACTER ──
         if has_character:
-            yield send_event("progress", {"step": "sync_character", "percentage": 5, "message": "Đang phân tích nhân vật..."})
+            yield send_event("progress", {"step": "sync_character", "percentage": 5, "message": "Analyzing characters"})
             try:
                 prompt = f"""You are a visual character description expert for AI video/image generation.
 Analyze the character reference below and produce a DETAILED character description optimized for AI prompt generation.
@@ -4364,15 +4369,15 @@ Format as a single cohesive paragraph (3-5 sentences). Output ONLY the descripti
                     result = await loop.run_in_executor(None, lambda: ai_client.generate(prompt, temperature=0.3))
                 results["sync_character_analysis"] = result.strip() if result else None
                 done_count += 1
-                yield send_event("progress", {"step": "sync_character_done", "percentage": int((done_count / total) * 90) + 5, "message": "Hoàn tất phân tích nhân vật"})
+                yield send_event("progress", {"step": "sync_character_done", "percentage": int((done_count / total) * 90) + 5, "message": "Characters done"})
             except Exception as e:
                 logger.error(f"[SyncAnalysis] Character error: {e}")
                 done_count += 1
-                yield send_event("progress", {"step": "sync_character_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Lỗi: {str(e)[:50]}"})
+                yield send_event("progress", {"step": "sync_character_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Error: {str(e)[:50]}"})
 
         # ── STYLE ──
         if has_style:
-            yield send_event("progress", {"step": "sync_style", "percentage": int((done_count / total) * 90) + 5, "message": "Đang phân tích phong cách..."})
+            yield send_event("progress", {"step": "sync_style", "percentage": int((done_count / total) * 90) + 5, "message": "Analyzing visual style"})
             try:
                 prompt = f"""You are a visual style analysis expert for AI video/image generation.
 Analyze the style reference below and produce a DETAILED visual style specification optimized for AI prompt generation.
@@ -4390,15 +4395,15 @@ Format as a single cohesive paragraph (3-5 sentences). Output ONLY the descripti
                     result = await loop.run_in_executor(None, lambda: ai_client.generate(prompt, temperature=0.3))
                 results["sync_style_analysis"] = result.strip() if result else None
                 done_count += 1
-                yield send_event("progress", {"step": "sync_style_done", "percentage": int((done_count / total) * 90) + 5, "message": "Hoàn tất phân tích phong cách"})
+                yield send_event("progress", {"step": "sync_style_done", "percentage": int((done_count / total) * 90) + 5, "message": "Visual style done"})
             except Exception as e:
                 logger.error(f"[SyncAnalysis] Style error: {e}")
                 done_count += 1
-                yield send_event("progress", {"step": "sync_style_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Lỗi: {str(e)[:50]}"})
+                yield send_event("progress", {"step": "sync_style_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Error: {str(e)[:50]}"})
 
         # ── CONTEXT ──
         if has_context:
-            yield send_event("progress", {"step": "sync_context", "percentage": int((done_count / total) * 90) + 5, "message": "Đang phân tích bối cảnh..."})
+            yield send_event("progress", {"step": "sync_context", "percentage": int((done_count / total) * 90) + 5, "message": "Analyzing context"})
             try:
                 prompt = f"""You are a scene/environment description expert for AI video/image generation.
 Analyze the context/environment reference below and produce a DETAILED environment description optimized for AI prompt generation.
@@ -4416,11 +4421,11 @@ Format as a single cohesive paragraph (3-5 sentences). Output ONLY the descripti
                     result = await loop.run_in_executor(None, lambda: ai_client.generate(prompt, temperature=0.3))
                 results["sync_context_analysis"] = result.strip() if result else None
                 done_count += 1
-                yield send_event("progress", {"step": "sync_context_done", "percentage": int((done_count / total) * 90) + 5, "message": "Hoàn tất phân tích bối cảnh"})
+                yield send_event("progress", {"step": "sync_context_done", "percentage": int((done_count / total) * 90) + 5, "message": "Context done"})
             except Exception as e:
                 logger.error(f"[SyncAnalysis] Context error: {e}")
                 done_count += 1
-                yield send_event("progress", {"step": "sync_context_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Lỗi: {str(e)[:50]}"})
+                yield send_event("progress", {"step": "sync_context_done", "percentage": int((done_count / total) * 90) + 5, "message": f"Error: {str(e)[:50]}"})
 
         yield send_event("result", {"success": True, **results})
 

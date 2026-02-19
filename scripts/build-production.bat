@@ -21,6 +21,6 @@ echo ========================================
 echo   Build Complete!
 echo ========================================
 echo.
-echo Your app is ready at: release/Auto Media Architecture Setup.exe
+echo Your app is ready in the release\ folder
 echo.
 pause

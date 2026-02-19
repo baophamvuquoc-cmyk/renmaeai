@@ -27,7 +27,6 @@ a = Analysis(
         'starlette',
         'starlette.middleware',
         'starlette.middleware.cors',
-        'playwright',
         'PIL',
         'PIL._imagingtk',
         'PIL._webp',

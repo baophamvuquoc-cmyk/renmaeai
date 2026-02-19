@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // 
 // TYPES
@@ -129,32 +130,7 @@ interface StepDef {
     children?: { id: string; label: string }[];
 }
 
-const STEPS: StepDef[] = [
-    {
-        id: 'styleAnalysis', label: 'Phân tích', desc: 'Giọng văn, Title, Thumbnail, Description, Sync',
-        children: [
-            { id: 'voiceStyle', label: 'Giọng Văn' },
-            { id: 'title', label: 'Title' },
-            { id: 'thumbnail', label: 'Thumbnail' },
-            { id: 'description', label: 'Description' },
-            { id: 'syncCharacter', label: 'Sync Nhân Vật' },
-            { id: 'syncStyle', label: 'Sync Phong Cách' },
-            { id: 'syncContext', label: 'Sync Bối Cảnh' },
-        ],
-    },
-    { id: 'scriptGeneration', label: 'Tạo kịch bản', desc: 'Remake dựa trên nội dung gốc' },
-    { id: 'voiceGeneration', label: 'Tạo Voice', desc: 'Giọng đọc AI cho từng scene' },
-    {
-        id: 'videoProduction', label: 'Dựng Video', desc: 'Hình ảnh & Video',
-        children: [
-            { id: 'video_prompts', label: 'Tạo Prompts Video' },
-            { id: 'image_prompts', label: 'Tạo Prompts Ảnh' },
-            { id: 'keywords', label: 'Tạo Keywords' },
-            { id: 'footage', label: 'Tìm Video Footage' },
-        ],
-    },
-    { id: 'seoOptimize', label: 'SEO Thô', desc: 'Metadata, title, tags, hash unique' },
-];
+// STEPS is now built inside the component to access t()
 
 const STORAGE_KEY = 'renmae_pipeline_selection';
 
@@ -239,40 +215,71 @@ function Toggle({ checked, onChange, color = '#0EA5E9' }: { checked: boolean; on
 // 
 // HELPERS
 // 
-const LANG_LABELS: Record<string, string> = {
-    vi: 'Tiếng Việt', en: 'Tiếng Anh', zh: 'Tiếng Trung', ja: 'Tiếng Nhật',
-    ko: 'Tiếng Hàn', es: 'Tiếng Tây Ban Nha', fr: 'Tiếng Pháp', th: 'Tiếng Thái',
-    de: 'Tiếng Đức', pt: 'Tiếng Bồ Đào Nha', ru: 'Tiếng Nga',
-};
-const STYLE_LABELS: Record<string, string> = {
-    immersive: 'Nhập vai', documentary: 'Thuyết minh', conversational: 'Đối thoại',
-    analytical: 'Phân tích', narrative: 'Kể chuyện',
-};
-const VOICE_LABELS: Record<string, string> = {
-    first_person: 'Ngôi thứ nhất (Tôi)', second_person: 'Ngôi thứ hai (Bạn)', third_person: 'Ngôi thứ ba',
-};
-const VALUE_LABELS: Record<string, string> = {
-    sell: 'Kêu gọi mua hàng', engage: 'Tương tác & Đăng ký',
-    community: 'Cộng đồng & Đăng ký',
-};
-const ORIENT_LABELS: Record<string, string> = { landscape: 'Ngang (16:9)', portrait: 'Dọc (9:16)' };
-const MODE_LABELS: Record<string, string> = { footage: 'Footage', concept: 'Concept', storytelling: 'Storytelling', custom: 'Custom' };
-const IMAGE_PROMPT_MODE_LABELS: Record<string, string> = {
-    reference: 'Tạo ảnh tham chiếu',
-    scene_builder: 'Scene builder',
-    concept: 'Tạo ảnh theo concept',
-};
-const VIDEO_PROMPT_MODE_LABELS: Record<string, string> = {
-    character_sync: 'Đồng bộ nhân vật',
-    scene_sync: 'Đồng bộ phong cách',
-    full_sync: 'Đồng bộ nhân vật + bối cảnh',
-};
+// Label records are now built inside the component to access t()
 
 // 
 // COMPONENT
 // 
 
 export default function PresetSection({ config, onPipelineChange, initialPipeline, analysisLocked = false }: PresetSectionProps) {
+    const { t } = useTranslation();
+
+    const STEPS: StepDef[] = useMemo(() => [
+        {
+            id: 'styleAnalysis', label: t('preset.analysis'), desc: t('preset.analysisDesc'),
+            children: [
+                { id: 'voiceStyle', label: t('preset.voiceStyle') },
+                { id: 'title', label: 'Title' },
+                { id: 'thumbnail', label: 'Thumbnail' },
+                { id: 'description', label: 'Description' },
+                { id: 'syncCharacter', label: t('preset.syncCharacter') },
+                { id: 'syncStyle', label: t('preset.syncStyle') },
+                { id: 'syncContext', label: t('preset.syncContext') },
+            ],
+        },
+        { id: 'scriptGeneration', label: t('preset.scriptGen'), desc: t('preset.scriptGenDesc') },
+        { id: 'voiceGeneration', label: t('preset.voiceGen'), desc: t('preset.voiceGenDesc') },
+        {
+            id: 'videoProduction', label: t('preset.videoProduction'), desc: t('preset.videoProductionDesc'),
+            children: [
+                { id: 'video_prompts', label: t('preset.videoPrompts') },
+                { id: 'image_prompts', label: t('preset.imagePrompts') },
+                { id: 'keywords', label: t('preset.createKeywords') },
+                { id: 'footage', label: t('preset.findFootage') },
+            ],
+        },
+        { id: 'seoOptimize', label: t('preset.seoRaw'), desc: t('preset.seoRawDesc') },
+    ], [t]);
+
+    const LANG_LABELS: Record<string, string> = useMemo(() => ({
+        vi: t('lang.vi'), en: t('lang.en'), zh: t('lang.zh'), ja: t('lang.ja'),
+        ko: t('lang.ko'), es: t('lang.es'), fr: t('lang.fr'), th: t('lang.th'),
+        de: t('lang.de'), pt: t('lang.pt'), ru: t('lang.ru'),
+    }), [t]);
+    const STYLE_LABELS: Record<string, string> = useMemo(() => ({
+        immersive: t('preset.styleImmersive'), documentary: t('preset.styleDocumentary'), conversational: t('preset.styleConversational'),
+        analytical: t('preset.styleAnalytical'), narrative: t('preset.styleNarrative'),
+    }), [t]);
+    const VOICE_LABELS: Record<string, string> = useMemo(() => ({
+        first_person: t('preset.voiceFirstPerson'), second_person: t('preset.voiceSecondPerson'), third_person: t('preset.voiceThirdPerson'),
+    }), [t]);
+    const VALUE_LABELS: Record<string, string> = useMemo(() => ({
+        sell: t('sidebar.ctaSell'), engage: t('sidebar.ctaEngage'), community: t('sidebar.ctaCommunity'),
+    }), [t]);
+    const ORIENT_LABELS: Record<string, string> = useMemo(() => ({
+        landscape: t('preset.landscape'), portrait: t('preset.portrait'),
+    }), [t]);
+    const MODE_LABELS: Record<string, string> = { footage: 'Footage', concept: 'Concept', storytelling: 'Storytelling', custom: 'Custom' };
+    const IMAGE_PROMPT_MODE_LABELS: Record<string, string> = useMemo(() => ({
+        reference: t('preset.imageRefMode'),
+        scene_builder: t('preset.sceneBuilderMode'),
+        concept: t('preset.conceptMode'),
+    }), [t]);
+    const VIDEO_PROMPT_MODE_LABELS: Record<string, string> = useMemo(() => ({
+        character_sync: t('preset.charSync'),
+        scene_sync: t('preset.styleSync'),
+        full_sync: t('preset.fullSync'),
+    }), [t]);
     const [pipeline, setPipeline] = useState<PipelineSelection>(() => {
         const base = loadPipeline();
         if (initialPipeline) {
@@ -292,17 +299,17 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
     // Determine which steps are locked by dependencies
     const isStepLocked = useCallback((id: string): string | false => {
         if (id === 'scriptGeneration') {
-            if (pipeline.voiceGeneration) return 'Tạo Voice cần kịch bản';
-            if (isEnabled('videoProduction')) return 'Dựng Video cần kịch bản';
-            if (isSeoEnabled(pipeline.seoOptimize)) return 'SEO cần kịch bản';
+            if (pipeline.voiceGeneration) return t('preset.voiceNeedsScript');
+            if (isEnabled('videoProduction')) return t('preset.videoNeedsScript');
+            if (isSeoEnabled(pipeline.seoOptimize)) return t('preset.seoNeedsScript');
         }
         return false;
     }, [pipeline]);
 
     const isSubLocked = useCallback((subId: string): string | false => {
-        if (subId === 'keywords' && pipeline.videoProduction.footage) return 'Footage cần keywords';
-        if (subId === 'footage' && isSeoEnabled(pipeline.seoOptimize)) return 'SEO cần footage';
-        if (subId === 'image_prompts' && pipeline.videoProduction.video_prompts && (pipeline.videoProduction.video_prompt_mode === 'character_sync' || pipeline.videoProduction.video_prompt_mode === 'full_sync')) return 'Đồng bộ cần ảnh tham chiếu';
+        if (subId === 'keywords' && pipeline.videoProduction.footage) return t('preset.footageNeedsKeywords');
+        if (subId === 'footage' && isSeoEnabled(pipeline.seoOptimize)) return t('preset.seoNeedsFootage');
+        if (subId === 'image_prompts' && pipeline.videoProduction.video_prompts && (pipeline.videoProduction.video_prompt_mode === 'character_sync' || pipeline.videoProduction.video_prompt_mode === 'full_sync')) return t('preset.syncNeedsRef');
         // Sync checkboxes: locked by video/image prompt modes (only when those features are enabled)
         const vMode = pipeline.videoProduction.video_prompt_mode;
         const iMode = pipeline.videoProduction.image_prompt_mode;
@@ -310,24 +317,24 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
         const iOn = pipeline.videoProduction.image_prompts;
         if (subId === 'syncCharacter') {
             const reasons: string[] = [];
-            if (vOn && vMode === 'character_sync') reasons.push('Đồng bộ nhân vật');
-            if (vOn && vMode === 'full_sync') reasons.push('Đồng bộ NV+BC');
-            if (iOn && iMode === 'reference') reasons.push('Ảnh tham chiếu');
-            if (iOn && iMode === 'scene_builder') reasons.push('Scene builder');
+            if (vOn && vMode === 'character_sync') reasons.push(t('preset.charSync'));
+            if (vOn && vMode === 'full_sync') reasons.push(t('preset.fullSync'));
+            if (iOn && iMode === 'reference') reasons.push(t('preset.imageRefMode'));
+            if (iOn && iMode === 'scene_builder') reasons.push(t('preset.sceneBuilderMode'));
             if (reasons.length > 0) return reasons.join(' + ');
         }
         if (subId === 'syncStyle') {
             const reasons: string[] = [];
-            if (vOn && vMode === 'scene_sync') reasons.push('Đồng bộ phong cách');
-            if (vOn && vMode === 'full_sync') reasons.push('Đồng bộ NV+BC');
-            if (iOn && iMode === 'scene_builder') reasons.push('Scene builder');
+            if (vOn && vMode === 'scene_sync') reasons.push(t('preset.styleSync'));
+            if (vOn && vMode === 'full_sync') reasons.push(t('preset.fullSync'));
+            if (iOn && iMode === 'scene_builder') reasons.push(t('preset.sceneBuilderMode'));
             if (reasons.length > 0) return reasons.join(' + ');
         }
         if (subId === 'syncContext') {
             const reasons: string[] = [];
-            if (vOn && vMode === 'full_sync') reasons.push('Đồng bộ NV+BC');
-            if (iOn && iMode === 'reference') reasons.push('Ảnh tham chiếu');
-            if (iOn && iMode === 'scene_builder') reasons.push('Scene builder');
+            if (vOn && vMode === 'full_sync') reasons.push(t('preset.fullSync'));
+            if (iOn && iMode === 'reference') reasons.push(t('preset.imageRefMode'));
+            if (iOn && iMode === 'scene_builder') reasons.push(t('preset.sceneBuilderMode'));
             if (reasons.length > 0) return reasons.join(' + ');
         }
         return false;
@@ -424,34 +431,34 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
             <div className="step-controls">
                 <div className="sc-row">
                     <div className="sc-field" style={{ flex: 1 }}>
-                        <label>Tên kênh</label>
+                        <label>{t('preset.channelName')}</label>
                         <input type="text" className="sc-input" value={config.channelName}
                             onChange={e => config.setChannelName(e.target.value)}
-                            placeholder="VD: Tri thức TV, Sáng Tạo Lab..." />
+                            placeholder={t('preset.channelNamePlaceholder')} />
                     </div>
                     <div className="sc-field">
-                        <label>Số từ</label>
+                        <label>{t('preset.wordCount')}</label>
                         <input type="number" className="sc-input" value={as_.targetWordCount}
                             onChange={e => setAdvancedSettings((s: any) => ({ ...s, targetWordCount: parseInt(e.target.value) || 1500 }))}
                             min={500} max={5000} />
                     </div>
                     {as_.language && (
                         <div className="sc-field">
-                            <label>Giọng</label>
+                            <label>{t('preset.dialect')}</label>
                             <select className="sc-input" value={as_.dialect}
                                 onChange={e => setAdvancedSettings((s: any) => ({ ...s, dialect: e.target.value }))}>
-                                <option value="">-- Chọn --</option>
-                                {as_.language === 'vi' && <><option value="Northern">Bắc</option><option value="Central">Trung</option><option value="Southern">Nam</option></>}
-                                {as_.language === 'en' && <><option value="American">Mỹ</option><option value="British">Anh</option><option value="Australian">Úc</option></>}
-                                {as_.language === 'zh' && <><option value="Mandarin">Phổ thông</option><option value="Cantonese">Quảng Đông</option><option value="Traditional">Phồn thể (Đài Loan)</option></>}
-                                {as_.language === 'ja' && <><option value="Standard">Chuẩn (標準語)</option><option value="Kansai">Kansai (関西弁)</option></>}
-                                {as_.language === 'ko' && <><option value="Standard">Chuẩn (표준어)</option><option value="Busan">Busan (부산 사투리)</option></>}
-                                {as_.language === 'es' && <><option value="Spain">Tây Ban Nha</option><option value="LatinAmerica">Mỹ Latinh</option><option value="Mexican">Mexico</option></>}
-                                {as_.language === 'fr' && <><option value="France">Pháp</option><option value="Canadian">Canada</option><option value="Belgian">Bỉ</option></>}
-                                {as_.language === 'th' && <><option value="Standard">Chuẩn (ภาษากลาง)</option><option value="Isan">Isan (อีสาน)</option></>}
-                                {as_.language === 'de' && <><option value="Germany">Đức</option><option value="Austria">Áo</option><option value="Swiss">Thụy Sĩ</option></>}
-                                {as_.language === 'pt' && <><option value="Brazil">Brazil</option><option value="Portugal">Bồ Đào Nha</option></>}
-                                {as_.language === 'ru' && <><option value="Standard">Chuẩn (Стандартный)</option></>}
+                                <option value="">{t('preset.selectDialect')}</option>
+                                {as_.language === 'vi' && <><option value="Northern">{t('preset.dialectNorth')}</option><option value="Central">{t('preset.dialectCentral')}</option><option value="Southern">{t('preset.dialectSouth')}</option></>}
+                                {as_.language === 'en' && <><option value="American">{t('preset.dialectAmerican')}</option><option value="British">{t('preset.dialectBritish')}</option><option value="Australian">{t('preset.dialectAustralian')}</option></>}
+                                {as_.language === 'zh' && <><option value="Mandarin">{t('preset.dialectMandarin')}</option><option value="Cantonese">{t('preset.dialectCantonese')}</option><option value="Traditional">{t('preset.dialectTraditional')}</option></>}
+                                {as_.language === 'ja' && <><option value="Standard">{t('preset.dialectStandard')} (標準語)</option><option value="Kansai">Kansai (関西弁)</option></>}
+                                {as_.language === 'ko' && <><option value="Standard">{t('preset.dialectStandard')} (표준어)</option><option value="Busan">Busan (부산 사투리)</option></>}
+                                {as_.language === 'es' && <><option value="Spain">{t('preset.dialectSpain')}</option><option value="LatinAmerica">{t('preset.dialectLatinAmerica')}</option><option value="Mexican">{t('preset.dialectMexico')}</option></>}
+                                {as_.language === 'fr' && <><option value="France">{t('preset.dialectFrance')}</option><option value="Canadian">{t('preset.dialectCanadian')}</option><option value="Belgian">{t('preset.dialectBelgian')}</option></>}
+                                {as_.language === 'th' && <><option value="Standard">{t('preset.dialectStandard')} (ภาษากลาง)</option><option value="Isan">Isan (อีสาน)</option></>}
+                                {as_.language === 'de' && <><option value="Germany">{t('preset.dialectGermany')}</option><option value="Austria">{t('preset.dialectAustria')}</option><option value="Swiss">{t('preset.dialectSwiss')}</option></>}
+                                {as_.language === 'pt' && <><option value="Brazil">{t('preset.dialectBrazil')}</option><option value="Portugal">{t('preset.dialectPortugal')}</option></>}
+                                {as_.language === 'ru' && <><option value="Standard">{t('preset.dialectStandard')} (Стандартный)</option></>}
                             </select>
                         </div>
                     )}
@@ -459,25 +466,25 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                 <div className="sc-toggles">
                     <div className={`sc-toggle ${as_.enableStorytellingStyle ? 'on' : ''}`}>
                         <div className="sc-toggle-head">
-                            <span>Dẫn chuyện</span>
+                            <span>{t('preset.storytelling')}</span>
                             <Toggle checked={as_.enableStorytellingStyle} onChange={v => setAdvancedSettings((s: any) => ({ ...s, enableStorytellingStyle: v }))} color="linear-gradient(90deg, #a855f7, #8b5cf6)" />
                         </div>
                         {as_.enableStorytellingStyle && (
                             <div className="sc-toggle-body">
                                 <select className="sc-input" value={as_.storytellingStyle} onChange={e => setAdvancedSettings((s: any) => ({ ...s, storytellingStyle: e.target.value }))}>
-                                    <option value="immersive">Nhập vai</option><option value="documentary">Thuyết minh</option><option value="conversational">Đối thoại</option><option value="analytical">Phân tích</option><option value="narrative">Kể chuyện</option>
+                                    <option value="immersive">{t('preset.styleImmersive')}</option><option value="documentary">{t('preset.styleDocumentary')}</option><option value="conversational">{t('preset.styleConversational')}</option><option value="analytical">{t('preset.styleAnalytical')}</option><option value="narrative">{t('preset.styleNarrative')}</option>
                                 </select>
                                 <select className="sc-input" value={as_.narrativeVoice} onChange={e => setAdvancedSettings((s: any) => ({ ...s, narrativeVoice: e.target.value }))}>
-                                    <option value="first_person">Ngôi 1 (Tôi)</option><option value="second_person">Ngôi 2 (Bạn)</option><option value="third_person">Ngôi 3</option>
+                                    <option value="first_person">{t('preset.voiceFirstPerson')}</option><option value="second_person">{t('preset.voiceSecondPerson')}</option><option value="third_person">{t('preset.voiceThirdPerson')}</option>
                                 </select>
-                                <textarea className="sc-input" placeholder="Chi tiết xưng hô..." value={as_.customNarrativeVoice}
+                                <textarea className="sc-input" placeholder={t('preset.narrativeDetailPlaceholder')} value={as_.customNarrativeVoice}
                                     onChange={e => setAdvancedSettings((s: any) => ({ ...s, customNarrativeVoice: e.target.value }))} rows={2} />
                             </div>
                         )}
                     </div>
                     <div className={`sc-toggle ${as_.enableAudienceAddress ? 'on' : ''}`}>
                         <div className="sc-toggle-head">
-                            <span>Xưng hô</span>
+                            <span>{t('preset.audienceAddress')}</span>
                             <Toggle checked={as_.enableAudienceAddress} onChange={v => setAdvancedSettings((s: any) => ({ ...s, enableAudienceAddress: v }))} color="linear-gradient(90deg, #06B6D4, #14B8A6)" />
                         </div>
                         {as_.enableAudienceAddress && (
@@ -505,7 +512,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                                                                             ? <><option value="ты">ты</option><option value="вы">вы</option><option value="уважаемые зрители">уважаемые зрители</option></>
                                                                             : <><option value="bạn">bạn</option><option value="các bạn">các bạn</option><option value="anh chị">anh/chị</option><option value="quý vị">quý vị</option></>}
                                 </select>
-                                <textarea className="sc-input" placeholder="Chi tiết cách xưng hô, ví dụ: Xưng 'mình' gọi 'các bạn', giọng thân mật gần gũi..."
+                                <textarea className="sc-input" placeholder={t('preset.audienceDetailPlaceholder')}
                                     value={as_.customAudienceAddress}
                                     onChange={e => setAdvancedSettings((s: any) => ({ ...s, customAudienceAddress: e.target.value }))} rows={2} />
                             </div>
@@ -513,40 +520,40 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                     </div>
                     <div className={`sc-toggle ${as_.enableValueType ? 'on' : ''}`}>
                         <div className="sc-toggle-head">
-                            <span>Đúc kết & CTA</span>
+                            <span>{t('preset.ctaToggle')}</span>
                             <Toggle checked={as_.enableValueType} onChange={v => setAdvancedSettings((s: any) => ({ ...s, enableValueType: v }))} color="linear-gradient(90deg, #f97316, #ea580c)" />
                         </div>
                         {as_.enableValueType && (
                             <div className="sc-toggle-body">
                                 <select className="sc-input" value={as_.valueType} onChange={e => setAdvancedSettings((s: any) => ({ ...s, valueType: e.target.value }))}>
-                                    <option value="sell">Đúc kết + Kêu gọi mua hàng</option>
-                                    <option value="engage">Đúc kết + Tương tác & Đăng ký</option>
-                                    <option value="community">Đúc kết + Cộng đồng & Đăng ký</option>
+                                    <option value="sell">{t('preset.ctaSell')}</option>
+                                    <option value="engage">{t('preset.ctaEngage')}</option>
+                                    <option value="community">{t('preset.ctaCommunity')}</option>
                                 </select>
                                 <div className="cta-preview">
                                     {as_.valueType === 'sell' && (
                                         <p className="cta-desc">
-                                            Giai đoạn 6-8: Viết đúc kết 300-400 từ → bài học sâu sắc → liên hệ nội dung với khóa học → kêu gọi mua.
+                                            {t('preset.ctaSellDesc')}
                                         </p>
                                     )}
                                     {as_.valueType === 'engage' && (
                                         <p className="cta-desc">
-                                            Giai đoạn 6-8: Viết đúc kết 300-500 từ → bài học sâu sắc → tạo câu hỏi tương tác → kêu gọi comment + đăng ký kênh.
+                                            {t('preset.ctaEngageDesc')}
                                         </p>
                                     )}
                                     {as_.valueType === 'community' && (
                                         <p className="cta-desc">
-                                            Giai đoạn 6-8: Viết đúc kết 300-500 từ → bài học sâu sắc → kêu gọi tham gia cộng đồng + đăng ký kênh.
+                                            {t('preset.ctaCommunityDesc')}
                                         </p>
                                     )}
                                 </div>
                                 <textarea className="sc-input" rows={3}
                                     placeholder={
                                         as_.valueType === 'sell'
-                                            ? 'Nhập thông tin khóa học: tên, giá, ưu đãi, lợi ích, nỗi đau nếu không mua...'
+                                            ? t('preset.ctaSellPlaceholder')
                                             : as_.valueType === 'community'
-                                                ? 'Nhập tên cộng đồng, link, lĩnh vực kiến thức...'
-                                                : 'Thêm chi tiết tùy chỉnh (tùy chọn)...'
+                                                ? t('preset.ctaCommunityPlaceholder')
+                                                : t('preset.ctaCustomPlaceholder')
                                     }
                                     value={as_.customValue}
                                     onChange={e => setAdvancedSettings((s: any) => ({ ...s, customValue: e.target.value }))} />
@@ -556,12 +563,12 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
 
                     <div className={`sc-toggle ${as_.addQuiz ? 'on' : ''}`}>
                         <div className="sc-toggle-head">
-                            <span>Câu hỏi A/B</span>
+                            <span>{t('preset.quizAB')}</span>
                             <Toggle checked={as_.addQuiz} onChange={v => setAdvancedSettings((s: any) => ({ ...s, addQuiz: v }))} color="linear-gradient(90deg, #ec4899, #db2777)" />
                         </div>
                         {as_.addQuiz && (
                             <p style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0', lineHeight: 1.4 }}>
-                                Tạo câu hỏi A/B sau hook để khán giả comment lựa chọn, tăng tương tác.
+                                {t('preset.quizABDesc')}
                             </p>
                         )}
                     </div>
@@ -576,17 +583,17 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
             <div className="step-controls">
                 <div className="sc-row" style={{ flexWrap: 'nowrap' }}>
                     <div className="sc-field" style={{ flex: 1, minWidth: 0 }}>
-                        <label>Ngôn ngữ</label>
+                        <label>{t('preset.voiceLanguage')}</label>
                         <select className="sc-input" value={config.voiceLanguage} disabled
                             style={{ opacity: 0.7, cursor: 'not-allowed' }}>
-                            <option value="">Tự nhận diện</option>
+                            <option value="">{t('preset.voiceAutoDetect')}</option>
                             {Object.entries(LANG_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                     </div>
                     <div className="sc-field" style={{ flex: 1.5, minWidth: 0 }}>
-                        <label>Giọng đọc</label>
+                        <label>{t('preset.voiceReader')}</label>
                         <select className="sc-input" value={config.selectedVoice} onChange={e => config.setSelectedVoice(e.target.value)}>
-                            {langVoices.length === 0 && <option value="">Không có voice</option>}
+                            {langVoices.length === 0 && <option value="">{t('preset.noVoice')}</option>}
                             {langVoices.map((v: { id: string; name: string; gender: string }) => (
                                 <option key={v.id} value={v.id}>{v.gender === 'Female' ? 'F' : 'M'} {v.name}</option>
                             ))}
@@ -594,7 +601,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                     </div>
                 </div>
                 <div className="sc-field" style={{ marginTop: '0.3rem' }}>
-                    <label>Tốc độ: {config.voiceSpeed}x</label>
+                    <label>{t('preset.voiceSpeed')}: {config.voiceSpeed}x</label>
                     <input type="range" min={0.5} max={2} step={0.1} value={config.voiceSpeed}
                         onChange={e => config.setVoiceSpeed(parseFloat(e.target.value))} style={{ accentColor: '#FFD700' }} />
                 </div>
@@ -607,19 +614,19 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
             <div className="step-controls">
                 <div className="sc-row">
                     <div className="sc-field">
-                        <label>Hướng video</label>
+                        <label>{t('preset.videoOrientation')}</label>
                         <select className="sc-input" value={config.footageOrientation} onChange={e => config.setFootageOrientation(e.target.value)}>
-                            <option value="landscape">Ngang (16:9)</option><option value="portrait">Dọc (9:16)</option>
+                            <option value="landscape">{t('preset.landscape')}</option><option value="portrait">{t('preset.portrait')}</option>
                         </select>
                     </div>
                     <div className="sc-field">
-                        <label>Chất lượng</label>
+                        <label>{t('preset.quality')}</label>
                         <select className="sc-input" value={config.videoQuality} onChange={e => config.setVideoQuality(e.target.value)}>
                             <option value="720p">720p HD</option><option value="1080p">1080p Full HD</option><option value="4k">4K Ultra HD</option>
                         </select>
                     </div>
                     <div className="sc-field">
-                        <label>Phụ đề</label>
+                        <label>{t('preset.subtitles')}</label>
                         <div style={{ paddingTop: '0.2rem' }}>
                             <Toggle checked={config.enableSubtitles} onChange={config.setEnableSubtitles} color="linear-gradient(90deg, #FFD700, #F59E0B)" />
                         </div>
@@ -633,11 +640,11 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
         return (
             <div className="step-controls">
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', margin: 0, lineHeight: 1.5 }}>
-                    {analysisOpts.voiceStyle && 'Giọng văn: Nhập 5-20 kịch bản mẫu. '}
-                    {analysisOpts.title && 'Title: Nhập mẫu title YouTube. '}
-                    {analysisOpts.thumbnail && 'Thumbnail: Upload ảnh thumbnail mẫu. '}
-                    {analysisOpts.description && 'Description: Nhập mẫu mô tả YouTube. '}
-                    {!analysisOpts.voiceStyle && !analysisOpts.title && !analysisOpts.thumbnail && !analysisOpts.description && 'Chọn ít nhất 1 mục để phân tích.'}
+                    {analysisOpts.voiceStyle && t('preset.voiceStyleDesc')}
+                    {analysisOpts.title && t('preset.titleDesc')}
+                    {analysisOpts.thumbnail && t('preset.thumbnailDesc')}
+                    {analysisOpts.description && t('preset.descriptionDesc')}
+                    {!analysisOpts.voiceStyle && !analysisOpts.title && !analysisOpts.thumbnail && !analysisOpts.description && t('preset.selectAtLeast1')}
                 </p>
                 {analysisOpts.description && (
                     <div style={{ marginTop: '0.6rem' }}>
@@ -645,7 +652,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                             CTA / Footer Template
                         </label>
                         <p style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', margin: '0 0 0.4rem', lineHeight: 1.4 }}>
-                            Nhập phần CTA cá nhân (link kênh, social, tagline). AI sẽ dùng chính xác nội dung này khi sinh description.
+                            {t('preset.ctaFooterDesc')}
                         </p>
                         <textarea
                             value={analysisOpts.customCta || ''}
@@ -653,7 +660,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                                 ...p,
                                 styleAnalysis: { ...normalizeAnalysis(p.styleAnalysis), customCta: e.target.value },
                             }))}
-                            placeholder={`Ví dụ:\n━━━━━━━━━━━━━━━━━━\n- Đăng ký kênh: [LINK]\n- Follow Tiktok: @your_handle\n- Hợp tác: email@example.com\n#hashtag1 #hashtag2`}
+                            placeholder={t('preset.ctaFooterPlaceholder')}
                             style={{
                                 width: '100%', minHeight: '90px', padding: '0.5rem 0.6rem', borderRadius: '8px',
                                 border: '1px solid var(--border-color)', background: 'var(--bg-tertiary)',
@@ -683,7 +690,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                             cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.2s',
                         }}
                     >
-                        ⚡ AI Tự Động
+                        {t('preset.seoAuto')}
                     </button>
                     <button
                         onClick={() => setPipeline(p => ({ ...p, seoOptimize: { ...normalizeSeo(p.seoOptimize), mode: 'review' } }))}
@@ -695,13 +702,13 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                             cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.2s',
                         }}
                     >
-                        👁 Duyệt Trước
+                        {t('preset.seoReview')}
                     </button>
                 </div>
                 <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
                     {seoOpts.mode === 'auto'
-                        ? 'AI tự động sinh metadata SEO và inject vào video khi export.'
-                        : 'AI sinh metadata SEO → hiển thị popup để bạn chỉnh sửa trước khi inject.'}
+                        ? t('preset.seoAutoDesc')
+                        : t('preset.seoReviewDesc')}
                 </p>
             </div>
         );
@@ -727,7 +734,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
             <div className="overview">
                 {/* Pipeline flow */}
                 <div className="ov-flow">
-                    <h4 className="ov-section-title">Quy trình sẽ thực hiện</h4>
+                    <h4 className="ov-section-title">{t('preset.pipelineFlow')}</h4>
                     <div className="ov-timeline">
                         {STEPS.filter(step => isEnabled(step.id)).map((step, i, enabledSteps) => (
                             <div key={step.id} className="ov-tl-item on">
@@ -741,7 +748,7 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                                     <div className="ov-tl-header">
 
                                         <span className="ov-tl-label">{step.label}</span>
-                                        <span className="ov-tl-status on">Bật</span>
+                                        <span className="ov-tl-status on">{t('preset.on')}</span>
                                     </div>
                                     {renderStepDetail(step.id)}
                                     {step.children && (
@@ -766,31 +773,31 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
 
                 {/* Config summary at bottom */}
                 <div className="ov-config-summary">
-                    <h4 className="ov-section-title">Tóm tắt cấu hình</h4>
+                    <h4 className="ov-section-title">{t('preset.configSummary')}</h4>
                     <div className="ov-config-grid">
                         {pipeline.scriptGeneration && (
                             <div className="ov-config-card">
                                 <div className="ov-config-info">
-                                    <span className="ov-config-label">Kịch bản</span>
+                                    <span className="ov-config-label">{t('preset.script')}</span>
                                     <span className="ov-config-val">
-                                        {as_.targetWordCount} từ • {as_.language ? LANG_LABELS[as_.language] : 'Tự nhận diện'}
-                                        {as_.dialect ? ` • Giọng ${as_.dialect}` : ''}
+                                        {as_.targetWordCount} {t('preset.words')} • {as_.language ? LANG_LABELS[as_.language] : t('preset.autoDetect')}
+                                        {as_.dialect ? ` • ${t('preset.dialectLabel')} ${as_.dialect}` : ''}
                                     </span>
                                     {as_.enableStorytellingStyle && (
                                         <span className="ov-config-val">
-                                            Dẫn chuyện: {STYLE_LABELS[as_.storytellingStyle]} • {VOICE_LABELS[as_.narrativeVoice]}
+                                            {t('preset.narrativeLabel')}: {STYLE_LABELS[as_.storytellingStyle]} • {VOICE_LABELS[as_.narrativeVoice]}
                                         </span>
                                     )}
                                     {as_.enableAudienceAddress && as_.audienceAddress && (
-                                        <span className="ov-config-val">Xưng hô: "{as_.audienceAddress}"</span>
+                                        <span className="ov-config-val">{t('preset.addressLabel')}: "{as_.audienceAddress}"</span>
                                     )}
                                     {as_.enableValueType && (
                                         <span className="ov-config-val">
-                                            CTA: {VALUE_LABELS[as_.valueType]}{as_.customValue ? ' • Có chi tiết' : ''}
+                                            CTA: {VALUE_LABELS[as_.valueType]}{as_.customValue ? ` • ${t('preset.hasDetails')}` : ''}
                                         </span>
                                     )}
                                     {as_.addQuiz && (
-                                        <span className="ov-config-val">Câu hỏi A/B sau hook</span>
+                                        <span className="ov-config-val">{t('preset.quizAfterHook')}</span>
                                     )}
                                 </div>
                             </div>
@@ -800,14 +807,14 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                                 <div className="ov-config-info">
                                     <span className="ov-config-label">Voice</span>
                                     <span className="ov-config-val">
-                                        {config.voiceLanguage ? (config.selectedVoice || '—') : 'Tự nhận diện (tự chọn voice theo ngôn ngữ kịch bản)'} • Tốc độ {config.voiceSpeed}x
+                                        {config.voiceLanguage ? (config.selectedVoice || '—') : t('preset.voiceAutoDetect')} • {t('preset.voiceSpeed')} {config.voiceSpeed}x
                                     </span>
                                     <span className="ov-config-val">
                                         Split: {config.splitMode === 'voiceover' ? 'Voiceover (5-8s)' : 'Footage (3-5s)'}
                                         {' • Scene: '}{MODE_LABELS[config.sceneMode]}
                                     </span>
                                     {config.voiceLanguage && (
-                                        <span className="ov-config-val">Ngôn ngữ: {LANG_LABELS[config.voiceLanguage]}</span>
+                                        <span className="ov-config-val">{t('preset.voiceLanguage')}: {LANG_LABELS[config.voiceLanguage]}</span>
                                     )}
                                 </div>
                             </div>
@@ -818,12 +825,12 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                                     <span className="ov-config-label">Video</span>
                                     <span className="ov-config-val">
                                         {ORIENT_LABELS[config.footageOrientation] || config.footageOrientation} • {config.videoQuality}
-                                        {config.enableSubtitles ? ' • Phụ đề bật' : ''}
+                                        {config.enableSubtitles ? ` • ${t('preset.subtitles')} ${t('preset.on')}` : ''}
                                     </span>
                                     <span className="ov-config-val">
                                         {[
                                             pipeline.videoProduction.video_prompts && 'Prompts Video',
-                                            pipeline.videoProduction.image_prompts && 'Prompts Ảnh',
+                                            pipeline.videoProduction.image_prompts && t('preset.imagePrompts'),
                                             pipeline.videoProduction.keywords && 'Keywords',
                                             pipeline.videoProduction.footage && 'Footage',
                                         ].filter(Boolean).join(' • ')}
@@ -840,9 +847,9 @@ export default function PresetSection({ config, onPipelineChange, initialPipelin
                         {isSeoEnabled(pipeline.seoOptimize) && (
                             <div className="ov-config-card">
                                 <div className="ov-config-info">
-                                    <span className="ov-config-label">SEO Thô</span>
+                                    <span className="ov-config-label">{t('preset.seoRaw')}</span>
                                     <span className="ov-config-val">
-                                        {seoOpts.mode === 'auto' ? '⚡ AI Tự Động' : '👁 Duyệt Trước'}
+                                        {seoOpts.mode === 'auto' ? t('preset.seoAuto') : t('preset.seoReview')}
                                         • Metadata • Title • Tags • Hash
                                     </span>
                                 </div>

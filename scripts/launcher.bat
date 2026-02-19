@@ -1,11 +1,11 @@
 @echo off
-title Auto Media Architecture - Launcher
+title RenmaeAI Studio - Launcher
 color 0A
 
 :menu
 cls
 echo ========================================
-echo   AUTO MEDIA ARCHITECTURE
+echo   RENMAEAI STUDIO
 echo ========================================
 echo.
 echo Chon che do chay:
@@ -80,8 +80,8 @@ goto menu
 :run_prod
 cls
 echo Starting Production App...
-if exist "%~dp0..\release\win-unpacked\Auto Media Architecture.exe" (
-    start "" "%~dp0..\release\win-unpacked\Auto Media Architecture.exe"
+if exist "%~dp0..\release\win-unpacked\RenmaeAI Studio.exe" (
+    start "" "%~dp0..\release\win-unpacked\RenmaeAI Studio.exe"
     echo App started!
     timeout /t 2 /nobreak >nul
     exit

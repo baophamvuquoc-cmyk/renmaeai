@@ -1,184 +1,133 @@
-# Auto Media Architecture
+# RenmaeAI Studio
 
-![Auto Media Architecture](https://via.placeholder.com/1200x400/667eea/ffffff?text=Auto+Media+Architecture)
+**AI-Powered Podcast to Video Production Desktop App**
 
-**AI-Powered Video Production & File Management Desktop Tool**
+Transform podcasts into professional videos with AI — auto-generate scripts, find stock footage, create voiceovers, add subtitles, and export ready-to-upload videos.
 
-Một ứng dụng desktop toàn diện cho tự động hóa quản lý file và sản xuất video AI, từ kịch bản đến video hoàn chỉnh.
+## ✨ Features
 
-## ✨ Tính Năng Chính
+- **AI Script Generation** — Gemini-powered script creation from podcast content
+- **Smart Footage Finder** — Auto-search Pexels & Pixabay for matching stock footage
+- **Multi-Language TTS** — 100+ neural voices across 50+ languages (Edge TTS)
+- **Auto Video Assembly** — Scene-synced visuals, transitions, subtitles
+- **SEO Optimization** — AI-generated titles, descriptions, tags, thumbnails
+- **Production Hub** — Manage, review, and export all your productions
+- **100% Local** — Everything runs on your computer, no cloud processing fees
 
-### 🗂️ Quản Lý File Thông Minh
-- Đổi tên hàng loạt với regex pattern
-- Preview an toàn trước khi thực thi
-- Hỗ trợ đa nền tảng (Windows, macOS, Linux)
-- Metadata extraction và file organization
+## 🚀 Quick Start
 
-### 📝 AI Screenwriter
-- Chuyển đổi kịch bản thành cấu trúc JSON scenes
-- Tích hợp Gemini Pro AI
-- Hỗ trợ tiếng Việt với underthesea
-- Keyword extraction tự động (YAKE)
+### Prerequisites
 
-### 🎬 Asset Management
-- Tìm kiếm stock footage từ Pexels & Pixabay
-- Download và cache thông minh
-- Tích hợp YouTube downloader (yt-dlp)
-- AI video generation (HunyuanVideo, CogVideoX)
+| Tool | Required Version | Download |
+|------|-----------------|----------|
+| **Python** | 3.10+ | [python.org](https://www.python.org/downloads/) |
+| **Node.js** | 18+ | [nodejs.org](https://nodejs.org/) |
+| **FFmpeg** | Any (optional) | [ffmpeg.org](https://ffmpeg.org/download.html) |
 
-### 🎥 Video Production
-- Timeline editor với drag & drop
-- MoviePy integration cho video editing
-- FFmpeg cho rendering chất lượng cao
-- Render queue với progress tracking
+> ⚠️ **Python install:** Check **"Add Python to PATH"** during installation!
 
-## 🚀 Cài Đặt
+### Setup (One-Click)
 
-### Yêu Cầu Hệ Thống
-- **Node.js** 18+ (cho frontend)
-- **Python** 3.10+ (cho backend)
-- **FFmpeg** (cho video processing)
+```bash
+# 1. Clone the repository
+git clone https://github.com/baophamvuquoc-cmyk/renmaeai.git
+cd renmaeai
 
-### Frontend Setup
+# 2. Run the installer (creates venv, installs all dependencies)
+scripts\install.bat
 
-\`\`\`bash
-# Cài đặt dependencies
-npm install
+# 3. Add your API keys to backend\.env (see below)
 
-# Chạy development mode
-npm run dev
+# 4. Launch the app
+scripts\launch-renmaeai.bat
+```
 
-# Build production
-npm run build
-\`\`\`
+### API Keys (Free)
 
-### Backend Setup
+Edit `backend\.env` with your keys:
 
-\`\`\`bash
-# Tạo virtual environment (khuyến nghị)
+```env
+GEMINI_API_KEY=your_key_here       # Required for AI features
+PEXELS_API_KEY=your_key_here       # For stock footage search
+PIXABAY_API_KEY=your_key_here      # For stock footage search
+```
+
+**Get free keys:**
+- **Gemini**: [makersuite.google.com](https://makersuite.google.com/app/apikey)
+- **Pexels**: [pexels.com/api](https://www.pexels.com/api/)
+- **Pixabay**: [pixabay.com/api](https://pixabay.com/api/docs/)
+
+## 📖 Usage
+
+### Podcast Remake Workflow
+
+1. **Import** — Paste a YouTube URL or select a local file
+2. **Configure** — Choose presets, voice, language, and style
+3. **Run Pipeline** — AI processes everything:
+   - Script generation → Keyword extraction → Footage search → TTS voiceover → Video assembly
+4. **Review** — Check output in Production Hub
+5. **Export** — Download the final video with embedded SEO metadata
+
+### Manual Mode
+
+Run backend and frontend separately:
+
+```bash
+# Terminal 1: Backend
 cd backend
-python -m venv venv
+..\.venv\Scripts\activate
+python -m uvicorn main:app --reload --port 8000
 
-# Kích hoạt virtual environment
-# Windows:
-venv\\Scripts\\activate
-# macOS/Linux:
-source venv/bin/activate
+# Terminal 2: Frontend
+npm run dev:web
+```
 
-# Cài đặt dependencies
-pip install -r requirements.txt
+App opens at: [http://localhost:5173](http://localhost:5173)
 
-# Chạy backend server
-python main.py
-# hoặc
-uvicorn main:app --reload
-\`\`\`
+## 🏗️ Architecture
 
-### Cấu Hình API Keys
-
-1. Copy file `.env.example` thành `.env`
-2. Điền các API keys của bạn:
-
-\`\`\`env
-GEMINI_API_KEY=your_key_here
-PEXELS_API_KEY=your_key_here
-PIXABAY_API_KEY=your_key_here
-\`\`\`
-
-#### Lấy API Keys Miễn Phí:
-- **Gemini**: https://makersuite.google.com/app/apikey
-- **Pexels**: https://www.pexels.com/api/
-- **Pixabay**: https://pixabay.com/api/docs/
-
-## 📖 Sử Dụng
-
-### 1. Quản Lý File
-1. Mở tab "Quản Lý File"
-2. Chọn thư mục cần xử lý
-3. Cấu hình pattern đổi tên (prefix, suffix, regex, index)
-4. Xem preview kết quả
-5. Xác nhận để thực thi
-
-### 2. Tạo Video từ Kịch Bản
-1. Mở tab "Kịch Bản"
-2. Nhập nội dung kịch bản
-3. Click "Tạo Scenes với AI"
-4. AI sẽ phân tích và tạo JSON scenes
-5. Download hoặc copy JSON để sử dụng
-
-### 3. Tìm Kiếm Asset
-1. Mở tab "Tài Nguyên"
-2. Nhập từ khóa tìm kiếm
-3. Chọn loại (Video/Image)
-4. Browse kết quả từ Pexels & Pixabay
-5. Download asset về cache
-
-### 4. Render Video
-1. Mở tab "Render"
-2. Theo dõi tiến trình các job
-3. Xem output khi hoàn thành
-
-## 🏗️ Kiến Trúc
-
-\`\`\`
-auto-media-architecture/
+```
+renmaeai/
 ├── electron/              # Electron main process
-│   ├── main.js           # Window management
-│   └── preload.js        # IPC bridge
-├── src/                   # React frontend
-│   ├── components/       # UI components
-│   ├── stores/           # Zustand state management
-│   ├── lib/              # API client
-│   └── styles/           # CSS design system
-└── backend/              # Python FastAPI backend
-    ├── modules/          # Core logic
-    │   ├── file_manager.py
-    │   ├── nlp_processor.py
-    │   └── asset_manager.py
-    └── routes/           # API endpoints
-\`\`\`
+├── src/                   # React + TypeScript frontend
+│   ├── components/        # UI components (workflow steps)
+│   ├── stores/            # Zustand state management
+│   ├── contexts/          # React contexts (i18n, sync)
+│   └── lib/               # API client
+├── backend/               # Python FastAPI backend
+│   ├── modules/           # Core logic (NLP, AI, footage, TTS)
+│   ├── routes/            # API endpoints
+│   └── prompts/           # AI prompt templates
+├── scripts/               # Setup & launcher scripts
+└── website/               # Landing page (GitHub Pages)
+```
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Framework**: Electron + React + TypeScript
-- **Build Tool**: Vite
-- **State Management**: Zustand
-- **Data Fetching**: TanStack React Query
-- **UI**: Custom design system with glassmorphism
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | React, TypeScript, Vite, Zustand, TanStack Query, i18next |
+| **Backend** | Python, FastAPI, Google Gemini AI, Edge TTS |
+| **Video** | MoviePy, FFmpeg |
+| **Desktop** | Electron |
 
-### Backend
-- **Framework**: FastAPI (Python)
-- **File Management**: pathlib
-- **NLP**: underthesea, YAKE, KeyBERT
-- **AI**: Gemini Pro API
-- **Video**: MoviePy, FFmpeg
-- **Download**: yt-dlp, requests
+## 📝 NPM Scripts
 
-## 📝 Scripts NPM
+```bash
+npm run dev          # Frontend + Electron (desktop)
+npm run dev:web      # Frontend + Backend (web browser)
+npm run build        # Build for production
+npm run backend:dev  # Backend server only
+```
 
-\`\`\`bash
-npm run dev              # Chạy frontend + electron
-npm run build            # Build production
-npm run electron:build   # Tạo installer
-npm run backend:dev      # Chạy backend server
-npm run backend:install  # Cài Python dependencies
-\`\`\`
+## 🤝 Contributing
 
-## 🤝 Đóng Góp
-
-Mọi đóng góp đều được chào đón! Hãy tạo issue hoặc pull request.
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## 📄 License
 
-MIT License - Xem file LICENSE để biết thêm chi tiết
-
-## 🙏 Credits
-
-- Design inspired by modern AI tools
-- Built with love for the Vietnamese content creator community
-- Special thanks to all open-source contributors
+MIT License
 
 ---
 
-**Made with ❤️ for Vietnamese Creators**
+**Made with ❤️ by [RenmaeAI](https://baophamvuquoc-cmyk.github.io/renmaeai/)**

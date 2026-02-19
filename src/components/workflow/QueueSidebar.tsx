@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueueStore } from '../../stores/useQueueStore';
 import { youtubeApi } from '../../lib/api';
 import {
@@ -16,35 +17,7 @@ import {
     X,
 } from 'lucide-react';
 
-// Labels for readable display
-const LANG_LABELS: Record<string, string> = {
-    vi: 'Tiếng Việt', en: 'Tiếng Anh', zh: 'Tiếng Trung', ja: 'Tiếng Nhật',
-    ko: 'Tiếng Hàn', es: 'Tiếng Tây Ban Nha', fr: 'Tiếng Pháp', th: 'Tiếng Thái',
-    de: 'Tiếng Đức', pt: 'Tiếng Bồ Đào Nha', ru: 'Tiếng Nga',
-};
-const STYLE_LABELS: Record<string, string> = {
-    immersive: 'Nhập vai', documentary: 'Thuyết minh', conversational: 'Đối thoại',
-    analytical: 'Phân tích', narrative: 'Kể chuyện',
-};
-const VOICE_LABELS: Record<string, string> = {
-    first_person: 'Ngôi thứ nhất (Tôi)', second_person: 'Ngôi thứ hai (Bạn)', third_person: 'Ngôi thứ ba',
-};
-const VALUE_LABELS: Record<string, string> = {
-    sell: 'Kêu gọi mua hàng', engage: 'Tương tác & Đăng ký',
-    community: 'Cộng đồng & Đăng ký',
-};
-const ORIENT_LABELS: Record<string, string> = { landscape: 'Ngang (16:9)', portrait: 'Dọc (9:16)' };
-const MODE_LABELS: Record<string, string> = { footage: 'Footage', concept: 'Concept', storytelling: 'Storytelling', custom: 'Custom', voiceover: 'Voiceover' };
-const IMAGE_PROMPT_MODE_LABELS: Record<string, string> = {
-    reference: 'Tạo ảnh tham chiếu',
-    scene_builder: 'Scene builder',
-    concept: 'Tạo ảnh theo concept',
-};
-const VIDEO_PROMPT_MODE_LABELS: Record<string, string> = {
-    character_sync: 'Đồng bộ nhân vật',
-    scene_sync: 'Đồng bộ phong cách',
-    full_sync: 'Đồng bộ nhân vật + bối cảnh',
-};
+// Label records are now built inside the component for i18n
 
 interface CurrentConfig {
     advancedSettings: {
@@ -136,6 +109,34 @@ function PipelineTag({ label, enabled }: { label: string; enabled: boolean }) {
 }
 
 export default function QueueSidebar({ activePresetName, onSelectOutputPath, currentConfig, isPresetOpen, onPresetToggle, activeVoiceId }: QueueSidebarProps) {
+    const { t } = useTranslation();
+
+    const LANG_LABELS: Record<string, string> = useMemo(() => ({
+        vi: t('lang.vi'), en: t('lang.en'), zh: t('lang.zh'), ja: t('lang.ja'),
+        ko: t('lang.ko'), es: t('lang.es'), fr: t('lang.fr'), th: t('lang.th'),
+        de: t('lang.de'), pt: t('lang.pt'), ru: t('lang.ru'),
+    }), [t]);
+    const STYLE_LABELS: Record<string, string> = useMemo(() => ({
+        immersive: t('preset.styleImmersive'), documentary: t('preset.styleDocumentary'), conversational: t('preset.styleConversational'),
+        analytical: t('preset.styleAnalytical'), narrative: t('preset.styleNarrative'),
+    }), [t]);
+    const VOICE_LABELS: Record<string, string> = useMemo(() => ({
+        first_person: t('preset.voiceFirstPerson'), second_person: t('preset.voiceSecondPerson'), third_person: t('preset.voiceThirdPerson'),
+    }), [t]);
+    const VALUE_LABELS: Record<string, string> = useMemo(() => ({
+        sell: t('sidebar.ctaSell'), engage: t('sidebar.ctaEngage'), community: t('sidebar.ctaCommunity'),
+    }), [t]);
+    const ORIENT_LABELS: Record<string, string> = useMemo(() => ({
+        landscape: t('preset.landscape'), portrait: t('preset.portrait'),
+    }), [t]);
+    const MODE_LABELS: Record<string, string> = { footage: 'Footage', concept: 'Concept', storytelling: 'Storytelling', custom: 'Custom', voiceover: 'Voiceover' };
+    const IMAGE_PROMPT_MODE_LABELS: Record<string, string> = useMemo(() => ({
+        reference: t('preset.imageRefMode'), scene_builder: t('preset.sceneBuilderMode'), concept: t('preset.conceptMode'),
+    }), [t]);
+    const VIDEO_PROMPT_MODE_LABELS: Record<string, string> = useMemo(() => ({
+        character_sync: t('preset.charSync'), scene_sync: t('preset.styleSync'), full_sync: t('preset.fullSync'),
+    }), [t]);
+
     const {
         items,
         maxConcurrent,
@@ -209,7 +210,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
         try {
             const result = await youtubeApi.extractFromUrl(url);
             if (!result.success) {
-                alert(result.error || 'Không thể lấy dữ liệu từ YouTube URL');
+                alert(result.error || t('sidebar.ytCannotExtract'));
                 return;
             }
             // Auto-fill transcript into script textarea
@@ -229,7 +230,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
             });
             setYoutubeUrl('');
         } catch (err: any) {
-            alert(err.message || 'Lỗi kết nối đến server');
+            alert(err.message || t('sidebar.connectionError'));
         } finally {
             setIsExtractingYt(false);
         }
@@ -281,7 +282,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Preset:</span>
                         <span style={{ fontWeight: 600, color: '#FFD700' }}>
-                            {activePresetName || 'Mặc định'}
+                            {activePresetName || t('sidebar.default')}
                         </span>
                     </span>
                     {isPresetOpen ? <ChevronUp size={14} style={{ color: '#FFD700' }} /> : <ChevronDown size={14} style={{ color: '#FFD700' }} />}
@@ -303,8 +304,8 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                 Pipeline
                             </span>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.3rem' }}>
-                                <PipelineTag label="Phân tích" enabled={typeof pipe?.styleAnalysis === 'object' ? (pipe.styleAnalysis.voiceStyle || pipe.styleAnalysis.title || pipe.styleAnalysis.thumbnail || pipe.styleAnalysis.description) : pipe?.styleAnalysis !== false} />
-                                <PipelineTag label="Kịch bản" enabled={pipe?.scriptGeneration !== false} />
+                                <PipelineTag label={t('preset.analysis')} enabled={typeof pipe?.styleAnalysis === 'object' ? (pipe.styleAnalysis.voiceStyle || pipe.styleAnalysis.title || pipe.styleAnalysis.thumbnail || pipe.styleAnalysis.description) : pipe?.styleAnalysis !== false} />
+                                <PipelineTag label={t('preset.script')} enabled={pipe?.scriptGeneration !== false} />
                                 <PipelineTag label="Voice" enabled={pipe?.voiceGeneration !== false} />
                                 <PipelineTag label="Video Prompts" enabled={pipe?.videoProduction?.video_prompts !== false} />
                                 <PipelineTag label="Image Prompts" enabled={pipe?.videoProduction?.image_prompts !== false} />
@@ -320,37 +321,37 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {/* Script Settings */}
                         <div>
                             <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Cài đặt kịch bản
+                                {t('sidebar.scriptSettings')}
                             </span>
                             <div style={{ marginTop: '0.2rem' }}>
                                 {cfg.channelName && (
-                                    <ConfigRow label="Tên kênh" value={cfg.channelName} />
+                                    <ConfigRow label={t('preset.channelName')} value={cfg.channelName} />
                                 )}
-                                <ConfigRow label="Ngôn ngữ" value={LANG_LABELS[adv?.language || 'vi'] || adv?.language || 'vi'} />
+                                <ConfigRow label={t('preset.voiceLanguage')} value={LANG_LABELS[adv?.language || 'vi'] || adv?.language || 'vi'} />
                                 {adv?.sourceLanguage && (
-                                    <ConfigRow label="Ngôn ngữ gốc" value={LANG_LABELS[adv.sourceLanguage] || adv.sourceLanguage} />
+                                    <ConfigRow label={t('sidebar.sourceLanguage')} value={LANG_LABELS[adv.sourceLanguage] || adv.sourceLanguage} />
                                 )}
                                 {adv?.dialect && (
-                                    <ConfigRow label="Phương ngữ" value={adv.dialect} />
+                                    <ConfigRow label={t('sidebar.dialectLabel')} value={adv.dialect} />
                                 )}
-                                <ConfigRow label="Số từ" value={`~${adv?.targetWordCount || 1200} từ`} />
+                                <ConfigRow label={t('preset.wordCount')} value={`~${adv?.targetWordCount || 1200} ${t('preset.words')}`} />
                                 {adv?.enableStorytellingStyle && (
-                                    <ConfigRow label="Phong cách" value={STYLE_LABELS[adv.storytellingStyle] || adv.storytellingStyle} />
+                                    <ConfigRow label={t('sidebar.style')} value={STYLE_LABELS[adv.storytellingStyle] || adv.storytellingStyle} />
                                 )}
-                                <ConfigRow label="Ngôi kể" value={VOICE_LABELS[adv?.narrativeVoice || 'third_person'] || adv?.narrativeVoice || ''} />
+                                <ConfigRow label={t('sidebar.narrativeVoice')} value={VOICE_LABELS[adv?.narrativeVoice || 'third_person'] || adv?.narrativeVoice || ''} />
                                 {adv?.enableAudienceAddress && (
-                                    <ConfigRow label="Xưng hô" value={adv.audienceAddress || adv.customAudienceAddress || 'Bật'} />
+                                    <ConfigRow label={t('preset.audienceAddress')} value={adv.audienceAddress || adv.customAudienceAddress || t('sidebar.quizOn')} />
                                 )}
                                 {adv?.enableValueType && (
-                                    <ConfigRow label="Mục tiêu" value={VALUE_LABELS[adv.valueType] || adv.valueType} />
+                                    <ConfigRow label={t('sidebar.goal')} value={VALUE_LABELS[adv.valueType] || adv.valueType} />
                                 )}
                                 {adv?.enableValueType && adv?.customValue && (
-                                    <ConfigRow label="Chi tiết CTA" value={adv.customValue} />
+                                    <ConfigRow label={t('sidebar.ctaDetails')} value={adv.customValue} />
                                 )}
                                 {adv?.addQuiz && (
-                                    <ConfigRow label="Quiz" value="Bật" />
+                                    <ConfigRow label="Quiz" value={t('sidebar.quizOn')} />
                                 )}
-                                <ConfigRow label="Chia scene" value={MODE_LABELS[cfg.splitMode] || cfg.splitMode} />
+                                <ConfigRow label={t('sidebar.splitScene')} value={MODE_LABELS[cfg.splitMode] || cfg.splitMode} />
                             </div>
                         </div>
 
@@ -365,19 +366,19 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                             <div style={{ marginTop: '0.2rem' }}>
                                 {pipe?.voiceGeneration !== false && (
                                     <>
-                                        <ConfigRow label="Voice" value={cfg.selectedVoice || 'Chưa chọn'} />
-                                        <ConfigRow label="Tốc độ" value={`${cfg.voiceSpeed}x`} />
+                                        <ConfigRow label="Voice" value={cfg.selectedVoice || t('sidebar.notSelected')} />
+                                        <ConfigRow label={t('sidebar.speed')} value={`${cfg.voiceSpeed}x`} />
                                     </>
                                 )}
                                 {pipe?.videoProduction?.footage === true && (
                                     <>
                                         {cfg.footageOrientation && (
-                                            <ConfigRow label="Tỉ lệ" value={ORIENT_LABELS[cfg.footageOrientation] || cfg.footageOrientation} />
+                                            <ConfigRow label={t('sidebar.ratio')} value={ORIENT_LABELS[cfg.footageOrientation] || cfg.footageOrientation} />
                                         )}
                                         {cfg.videoQuality && (
-                                            <ConfigRow label="Chất lượng" value={cfg.videoQuality} />
+                                            <ConfigRow label={t('preset.quality')} value={cfg.videoQuality} />
                                         )}
-                                        <ConfigRow label="Phụ đề" value={cfg.enableSubtitles ? 'Bật' : 'Tắt'} />
+                                        <ConfigRow label={t('preset.subtitles')} value={cfg.enableSubtitles ? t('sidebar.quizOn') : t('sidebar.quizOff')} />
                                         <ConfigRow label="Scene mode" value={MODE_LABELS[cfg.sceneMode] || cfg.sceneMode} />
                                     </>
                                 )}
@@ -398,7 +399,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                     <ConfigRow label="Prompt style" value={cfg.promptStyle.length > 40 ? cfg.promptStyle.slice(0, 40) + '…' : cfg.promptStyle} />
                                 )}
                                 {cfg.mainCharacter && (
-                                    <ConfigRow label="Nhân vật chính" value={cfg.mainCharacter.length > 40 ? cfg.mainCharacter.slice(0, 40) + '…' : cfg.mainCharacter} />
+                                    <ConfigRow label={t('sidebar.mainCharacter')} value={cfg.mainCharacter.length > 40 ? cfg.mainCharacter.slice(0, 40) + '…' : cfg.mainCharacter} />
                                 )}
                                 {cfg.contextDescription && (
                                     <ConfigRow label="Context" value={cfg.contextDescription.length > 40 ? cfg.contextDescription.slice(0, 40) + '…' : cfg.contextDescription} />
@@ -415,7 +416,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                         SEO
                                     </span>
                                     <div style={{ marginTop: '0.2rem' }}>
-                                        <ConfigRow label="Chế độ" value={pipe.seoOptimize.mode === 'review' ? '👁 Duyệt trước' : '⚡ AI Tự động'} />
+                                        <ConfigRow label={t('sidebar.seoMode')} value={pipe.seoOptimize.mode === 'review' ? t('preset.seoReview') : t('preset.seoAuto')} />
                                     </div>
                                 </div>
                             </>
@@ -423,7 +424,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
 
                         {/* Model */}
                         <div style={{ height: '1px', background: 'rgba(255, 215, 0, 0.1)', margin: '0.15rem 0' }} />
-                        <ConfigRow label="Model AI" value={cfg.selectedModel || 'Mặc định'} />
+                        <ConfigRow label="Model AI" value={cfg.selectedModel || t('sidebar.default')} />
                     </div>
                 )}
             </div>
@@ -431,7 +432,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
             {/* Script Input */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minHeight: 0 }}>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    Kịch bản gốc
+                    {t('sidebar.originalScript')}
                 </label>
 
                 {/* YouTube URL Extraction */}
@@ -448,7 +449,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <input
                             type="text"
-                            placeholder="Dán link YouTube..."
+                            placeholder={t('sidebar.pasteYoutubeLink')}
                             value={youtubeUrl}
                             onChange={e => setYoutubeUrl(e.target.value)}
                             disabled={isExtractingYt}
@@ -490,9 +491,9 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                             }}
                         >
                             {isExtractingYt ? (
-                                <><Loader2 size={13} className="spin" /> Đang lấy...</>
+                                <><Loader2 size={13} className="spin" /> {t('sidebar.extracting')}</>
                             ) : (
-                                <>Lấy</>
+                                <>{t('sidebar.extract')}</>
                             )}
                         </button>
                     </div>
@@ -521,7 +522,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                     display: 'flex',
                                     lineHeight: 1,
                                 }}
-                                title="Xóa thông tin"
+                                title={t('sidebar.clearInfo')}
                             >
                                 <X size={10} />
                             </button>
@@ -555,7 +556,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     value={scriptInput}
                     onChange={e => setScriptInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder={"Dán kịch bản gốc vào đây...\n\nCtrl+Enter để thêm vào hàng đợi"}
+                    placeholder={t('sidebar.pasteScriptHere')}
                     style={{
                         flex: 1,
                         minHeight: '180px',
@@ -583,17 +584,17 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         gap: '0.5rem',
                     }}>
                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#8B5CF6' }}>
-                            Metadata gốc
+                            {t('sidebar.originalMetadata')}
                         </span>
 
                         {showTitleInput && (
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                    Title gốc
+                                    {t('sidebar.originalTitle')}
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="Nhập title video gốc..."
+                                    placeholder={t('sidebar.enterOriginalTitle')}
                                     value={metadataTitle}
                                     onChange={e => setMetadataTitle(e.target.value)}
                                     style={{
@@ -614,10 +615,10 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {showDescriptionInput && (
                             <div>
                                 <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                                    Description gốc
+                                    {t('sidebar.originalDescription')}
                                 </label>
                                 <textarea
-                                    placeholder="Nhập description video gốc..."
+                                    placeholder={t('sidebar.enterOriginalDescription')}
                                     value={metadataDescription}
                                     onChange={e => setMetadataDescription(e.target.value)}
                                     rows={3}
@@ -645,7 +646,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="URL hình thumbnail gốc..."
+                                    placeholder={t('sidebar.originalThumbnailUrl')}
                                     value={metadataThumbnailUrl}
                                     onChange={e => setMetadataThumbnailUrl(e.target.value)}
                                     style={{
@@ -702,7 +703,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         transition: 'all 0.3s',
                     }}
                 >
-                    <Plus size={16} /> Thêm vào hàng đợi
+                    <Plus size={16} /> {t('sidebar.addToQueue')}
                 </button>
             </div>
 
@@ -729,7 +730,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     }}
                 >
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <Settings size={14} /> Cài đặt thực thi
+                        <Settings size={14} /> {t('sidebar.executionSettings')}
                     </span>
                     {isSettingsOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
@@ -744,7 +745,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {/* Concurrent threads */}
                         <div>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>
-                                Luồng đồng thời
+                                {t('sidebar.concurrentThreads')}
                             </label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <input
@@ -762,7 +763,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {/* Delay */}
                         <div>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.3rem' }}>
-                                <Clock size={12} /> Delay giữa các luồng
+                                <Clock size={12} /> {t('sidebar.delayBetween')}
                             </label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <input
@@ -781,7 +782,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {/* Output path */}
                         <div>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.3rem' }}>
-                                <FolderOpen size={12} /> Thư mục lưu kết quả
+                                <FolderOpen size={12} /> {t('sidebar.outputFolder')}
                             </label>
                             <button
                                 onClick={onSelectOutputPath}
@@ -803,11 +804,11 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                                     whiteSpace: 'nowrap',
                                 }}
                             >
-                                {outputPath || 'Chưa chọn thư mục'}
+                                {outputPath || t('sidebar.notSelectedFolder')}
                             </button>
                             {outputPath && (
                                 <span style={{ fontSize: '0.7rem', color: 'rgba(34, 197, 94, 0.8)', marginTop: '0.2rem', display: 'block' }}>
-                                    ✓ Kết quả sẽ lưu vào thư mục này
+                                    {t('sidebar.resultSavedHere')}
                                 </span>
                             )}
                         </div>
@@ -815,17 +816,17 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         {/* Export options — dynamic based on pipeline selection */}
                         <div>
                             <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
-                                Xuất kết quả
+                                {t('sidebar.exportResults')}
                             </label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                 {[
-                                    { key: 'fullScript' as const, label: 'Script đầy đủ (.txt)', available: pipe?.scriptGeneration !== false },
-                                    { key: 'splitCsv' as const, label: 'Script chia scene (.csv)', available: pipe?.scriptGeneration !== false },
-                                    { key: 'finalVideo' as const, label: 'Video hoàn chỉnh (.mp4)', available: pipe?.videoProduction?.footage === true },
-                                    { key: 'voiceZip' as const, label: 'Voice (.zip)', available: pipe?.voiceGeneration !== false },
-                                    { key: 'footageZip' as const, label: 'Video footage (.zip)', available: pipe?.videoProduction?.footage === true },
-                                    { key: 'keywordsTxt' as const, label: 'Keywords (.txt)', available: pipe?.videoProduction?.keywords !== false },
-                                    { key: 'promptsTxt' as const, label: 'Prompts (.txt)', available: pipe?.videoProduction?.video_prompts !== false || pipe?.videoProduction?.image_prompts !== false },
+                                    { key: 'fullScript' as const, label: t('sidebar.fullScript'), available: pipe?.scriptGeneration !== false },
+                                    { key: 'splitCsv' as const, label: t('sidebar.splitCsv'), available: pipe?.scriptGeneration !== false },
+                                    { key: 'finalVideo' as const, label: t('sidebar.finalVideo'), available: pipe?.videoProduction?.footage === true },
+                                    { key: 'voiceZip' as const, label: t('sidebar.voiceZip'), available: pipe?.voiceGeneration !== false },
+                                    { key: 'footageZip' as const, label: t('sidebar.footageZip'), available: pipe?.videoProduction?.footage === true },
+                                    { key: 'keywordsTxt' as const, label: t('sidebar.keywordsTxt'), available: pipe?.videoProduction?.keywords !== false },
+                                    { key: 'promptsTxt' as const, label: t('sidebar.promptsTxt'), available: pipe?.videoProduction?.video_prompts !== false || pipe?.videoProduction?.image_prompts !== false },
                                 ].map(opt => (
                                     <label
                                         key={opt.key}
@@ -858,7 +859,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                             </div>
                             {!outputPath && (
                                 <span style={{ fontSize: '0.68rem', color: 'rgba(251, 191, 36, 0.7)', marginTop: '0.3rem', display: 'block' }}>
-                                    ⚠ Chọn thư mục lưu kết quả ở trên để xuất
+                                    {t('sidebar.selectFolderWarning')}
                                 </span>
                             )}
                         </div>
@@ -874,13 +875,13 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                 color: 'var(--text-secondary)',
             }}>
                 <span style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', background: 'var(--bg-tertiary)' }}>
-                    Chờ: {queuedCount}
+                    {t('sidebar.waiting')}: {queuedCount}
                 </span>
                 <span style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', background: 'rgba(255, 215, 0, 0.1)', color: '#FFD700' }}>
-                    Chạy: {runningCount}
+                    {t('sidebar.running')}: {runningCount}
                 </span>
                 <span style={{ padding: '0.25rem 0.5rem', borderRadius: '6px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>
-                    Xong: {doneCount}
+                    {t('sidebar.done')}: {doneCount}
                 </span>
             </div>
 
@@ -916,9 +917,9 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                     }}
                 >
                     {isQueueRunning ? (
-                        <><Square size={16} /> Dừng tất cả</>
+                        <><Square size={16} /> {t('sidebar.stopAll')}</>
                     ) : (
-                        <><Play size={16} /> Chạy hàng đợi ({queuedCount})</>
+                        <><Play size={16} /> {t('sidebar.runQueue')} ({queuedCount})</>
                     )}
                 </button>
                 {!isQueueRunning && queuedCount > 0 && !outputPath && (
@@ -931,7 +932,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                         justifyContent: 'center',
                         gap: '0.3rem',
                     }}>
-                        <FolderOpen size={11} /> Chọn thư mục lưu kết quả trước khi chạy
+                        <FolderOpen size={11} /> {t('sidebar.selectFolderFirst')}
                     </span>
                 )}
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -955,7 +956,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                             opacity: doneCount > 0 ? 1 : 0.5,
                         }}
                     >
-                        Xóa đã xong
+                        {t('sidebar.clearCompleted')}
                     </button>
                     <button
                         onClick={clearAll}
@@ -976,7 +977,7 @@ export default function QueueSidebar({ activePresetName, onSelectOutputPath, cur
                             opacity: items.length > 0 ? 1 : 0.5,
                         }}
                     >
-                        <Trash2 size={12} /> Xóa hết
+                        <Trash2 size={12} /> {t('sidebar.clearAllItems')}
                     </button>
                 </div>
             </div>

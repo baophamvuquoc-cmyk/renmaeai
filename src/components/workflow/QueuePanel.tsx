@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQueueStore, QueueItem, PipelineStep } from '../../stores/useQueueStore';
 import {
     Loader2,
@@ -18,21 +19,7 @@ interface QueuePanelProps {
     onPresetClick?: () => void;
 }
 
-const STEP_CONFIG: { key: PipelineStep; label: string }[] = [
-    { key: 'script', label: 'Kịch bản' },
-    { key: 'scenes', label: 'Chia scenes' },
-    { key: 'metadata', label: 'Metadata' },
-    { key: 'voice', label: 'Tạo voice' },
-    { key: 'keywords', label: 'Keywords' },
-    { key: 'video_direction', label: 'Phân tích đạo diễn' },
-    { key: 'video_prompts', label: 'Tạo prompts' },
-    { key: 'entity_extraction', label: 'Trích xuất entities' },
-    { key: 'reference_prompts', label: 'Ảnh tham chiếu' },
-    { key: 'scene_builder', label: 'Scene Builder' },
-    { key: 'assembly', label: 'Ghép video' },
-    { key: 'seo', label: 'SEO' },
-    { key: 'export', label: 'Xuất' },
-];
+// STEP_CONFIG is now built inside the component for i18n
 
 function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick }: {
     item: QueueItem;
@@ -41,6 +28,24 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
     onRemove: () => void;
     onPresetClick?: () => void;
 }) {
+    const { t } = useTranslation();
+
+    const STEP_CONFIG: { key: PipelineStep; label: string }[] = [
+        { key: 'script', label: t('queue.script') },
+        { key: 'scenes', label: t('queue.splitScenes') },
+        { key: 'metadata', label: t('queue.metadata') },
+        { key: 'voice', label: t('queue.createVoice') },
+        { key: 'keywords', label: t('queue.keywords') },
+        { key: 'video_direction', label: t('queue.directorAnalysis') },
+        { key: 'video_prompts', label: t('queue.createPrompts') },
+        { key: 'entity_extraction', label: t('queue.entityExtraction') },
+        { key: 'reference_prompts', label: t('queue.referenceImages') },
+        { key: 'scene_builder', label: t('queue.sceneBuilder') },
+        { key: 'assembly', label: t('queue.assembleVideo') },
+        { key: 'seo', label: t('queue.seo') },
+        { key: 'export', label: t('queue.export') },
+    ];
+
     const [expanded, setExpanded] = useState(item.status === 'error');
     const canExpand = item.status === 'done' || item.status === 'error';
 
@@ -141,7 +146,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                     {(item.status === 'queued' || item.status === 'done' || item.status === 'error') && (
                         <button
                             onClick={onRemove}
-                            title="Xóa"
+                            title={t('queue.delete')}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -270,7 +275,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                 gap: '0.35rem',
                             }}>
                                 <XCircle size={12} style={{ color: '#ef4444' }} />
-                                Lỗi tại bước: <strong style={{ color: '#ef4444' }}>
+                                {t('queue.errorAtStep')}: <strong style={{ color: '#ef4444' }}>
                                     {STEP_CONFIG.find(s => s.key === item.failedStep)?.label || item.failedStep}
                                 </strong>
                             </div>
@@ -285,7 +290,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                     gap: '0.25rem',
                                     flexWrap: 'wrap',
                                 }}>
-                                    <span>Đã hoàn thành:</span>
+                                    <span>{t('queue.completed')}:</span>
                                     {completedSteps.map(s => (
                                         <span key={s} style={{
                                             padding: '0.1rem 0.35rem',
@@ -329,7 +334,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                 }}
                             >
                                 <RefreshCw size={14} />
-                                Retry từ: {STEP_CONFIG.find(s => s.key === item.failedStep)?.label || item.failedStep}
+                                {t('queue.retryFrom')}: {STEP_CONFIG.find(s => s.key === item.failedStep)?.label || item.failedStep}
                             </button>
 
                             {/* Secondary: Retry all (smaller) */}
@@ -360,7 +365,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                 }}
                             >
                                 <RefreshCw size={10} />
-                                Retry toàn bộ từ đầu
+                                {t('queue.retryAll')}
                             </button>
                         </>
                     ) : (
@@ -372,7 +377,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                 marginBottom: '0.25rem',
                                 fontWeight: 600,
                             }}>
-                                Retry từ bước:
+                                {t('queue.retryFromStep')}:
                             </div>
                             <div style={{
                                 display: 'flex',
@@ -385,7 +390,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                         <button
                                             key={step.key}
                                             onClick={() => onRetryFromStep?.(step.key)}
-                                            title={`Retry từ: ${step.label}`}
+                                            title={`${t('queue.retryFrom')}: ${step.label}`}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -445,7 +450,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
                                 }}
                             >
                                 <RefreshCw size={12} />
-                                Retry toàn bộ
+                                {t('queue.retryAllShort')}
                             </button>
                         </>
                     )}
@@ -479,6 +484,7 @@ function QueueItemBar({ item, onRetry, onRetryFromStep, onRemove, onPresetClick 
 }
 
 export default function QueuePanel({ onRetryItem, onRetryFromStep, onPresetClick }: QueuePanelProps) {
+    const { t } = useTranslation();
     const { items, removeItem } = useQueueStore();
 
     if (items.length === 0) {
@@ -514,14 +520,14 @@ export default function QueuePanel({ onRetryItem, onRetryFromStep, onPresetClick
                         fontWeight: 600,
                         color: 'var(--text-primary)',
                     }}>
-                        Chưa có kịch bản nào trong hàng đợi
+                        {t('queue.emptyTitle')}
                     </p>
                     <p style={{
                         margin: 0,
                         fontSize: '0.85rem',
                         color: 'var(--text-secondary)',
                     }}>
-                        Dán kịch bản gốc ở bên trái và click "Thêm vào hàng đợi"
+                        {t('queue.emptyDesc')}
                     </p>
                 </div>
             </div>
@@ -549,7 +555,7 @@ export default function QueuePanel({ onRetryItem, onRetryFromStep, onPresetClick
                 marginBottom: '0.5rem',
             }}>
                 <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Hàng đợi ({items.length})
+                    {t('queue.queueTitle')} ({items.length})
                 </h3>
             </div>
 

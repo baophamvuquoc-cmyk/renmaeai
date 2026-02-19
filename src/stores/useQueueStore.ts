@@ -122,7 +122,7 @@ export const useQueueStore = create<QueueState>((set, get) => ({
                 thumbnailUrl: metadata?.thumbnailUrl || undefined,
                 status: 'queued',
                 progress: 0,
-                currentStep: 'Đang chờ...',
+                currentStep: 'Queued',
                 addedAt: Date.now(),
             }]
         }));
@@ -139,7 +139,7 @@ export const useQueueStore = create<QueueState>((set, get) => ({
         set(state => ({
             items: state.items.map(item =>
                 item.id === id && (item.status === 'error' || item.status === 'done')
-                    ? { ...item, status: 'queued' as const, progress: 0, currentStep: 'Đang chờ retry...', error: undefined, failedStep: undefined, retryFromStep: undefined }
+                    ? { ...item, status: 'queued' as const, progress: 0, currentStep: 'Waiting for retry', error: undefined, failedStep: undefined, retryFromStep: undefined }
                     : item
             )
         }));
@@ -153,7 +153,7 @@ export const useQueueStore = create<QueueState>((set, get) => ({
                         ...item,
                         status: 'queued' as const,
                         progress: 0,
-                        currentStep: `Đang chờ retry từ bước ${step}...`,
+                        currentStep: `Retry from step ${step}`,
                         error: undefined,
                         failedStep: undefined,
                         retryFromStep: step,

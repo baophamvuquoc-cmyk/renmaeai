@@ -152,7 +152,7 @@ async def generate_batch_voice(request: BatchGenerateRequest):
                 "total": total,
                 "scene_id": scene_id,
                 "percentage": int(((i + 1) / total) * 100),
-                "message": f"Đang tạo voice scene {scene_id}/{total}..."
+                "message": f"Voice {scene_id}/{total}"
             }
             yield f"data: {json.dumps(progress, ensure_ascii=False)}\n\n"
 

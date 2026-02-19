@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLicenseStore } from '../../stores/useLicenseStore';
 import { LEMONSQUEEZY_STORE_URL } from '../../lib/lemonsqueezy';
 
@@ -7,234 +8,236 @@ import { LEMONSQUEEZY_STORE_URL } from '../../lib/lemonsqueezy';
  * Wraps the entire app; only renders children if license is valid.
  */
 export function LicenseGate({ children }: { children: React.ReactNode }) {
-    const {
-        isActivated,
-        isLoading,
-        error,
-        customerEmail,
-        variantName,
-        activate,
-        checkLicense,
-        clearError,
-    } = useLicenseStore();
+  const {
+    isActivated,
+    isLoading,
+    error,
+    customerEmail,
+    variantName,
+    activate,
+    checkLicense,
+    clearError,
+  } = useLicenseStore();
 
-    const [keyInput, setKeyInput] = useState('');
-    const [isActivating, setIsActivating] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [isActivating, setIsActivating] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const { t } = useTranslation();
 
-    // Check license on mount
-    useEffect(() => {
-        checkLicense();
-    }, [checkLicense]);
+  // Check license on mount
+  useEffect(() => {
+    checkLicense();
+  }, [checkLicense]);
 
-    async function handleActivate() {
-        if (!keyInput.trim()) return;
-        setIsActivating(true);
-        clearError();
+  async function handleActivate() {
+    if (!keyInput.trim()) return;
+    setIsActivating(true);
+    clearError();
 
-        const success = await activate(keyInput.trim());
+    const success = await activate(keyInput.trim());
 
-        if (success) {
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
-        }
-
-        setIsActivating(false);
+    if (success) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
     }
 
-    function handleKeyDown(e: React.KeyboardEvent) {
-        if (e.key === 'Enter') handleActivate();
-    }
+    setIsActivating(false);
+  }
 
-    // Loading state
-    if (isLoading) {
-        return (
-            <div className="lic-gate">
-                <div className="lic-aurora">
-                    <div className="lic-orb lic-orb-1" />
-                    <div className="lic-orb lic-orb-2" />
-                </div>
-                <div className="lic-loader">
-                    <div className="lic-spinner" />
-                    <p className="lic-loader-text">Verifying license...</p>
-                </div>
-                <LicenseGateStyles />
-            </div>
-        );
-    }
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') handleActivate();
+  }
 
-    // Activated — render the app
-    if (isActivated && !showSuccess) {
-        return <>{children}</>;
-    }
-
-    // Success flash
-    if (showSuccess) {
-        return (
-            <div className="lic-gate">
-                <div className="lic-aurora">
-                    <div className="lic-orb lic-orb-1" />
-                    <div className="lic-orb lic-orb-2" />
-                </div>
-                <div className="lic-success-card">
-                    <div className="lic-success-icon">✓</div>
-                    <h2 className="lic-success-title">License Activated!</h2>
-                    <p className="lic-success-sub">Welcome to RenmaeAI Studio</p>
-                </div>
-                <LicenseGateStyles />
-            </div>
-        );
-    }
-
-    // Gate — license activation form
+  // Loading state
+  if (isLoading) {
     return (
-        <div className="lic-gate">
-            {/* Aurora Background */}
-            <div className="lic-aurora">
-                <div className="lic-orb lic-orb-1" />
-                <div className="lic-orb lic-orb-2" />
-                <div className="lic-orb lic-orb-3" />
-            </div>
-
-            {/* Particles */}
-            <div className="lic-particles">
-                {Array.from({ length: 20 }).map((_, i) => (
-                    <div
-                        key={i}
-                        className="lic-particle"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 6}s`,
-                            animationDuration: `${5 + Math.random() * 7}s`,
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Main Card */}
-            <div className="lic-card">
-                {/* Logo */}
-                <div className="lic-logo-ring">
-                    <span className="lic-logo-letter">R</span>
-                </div>
-
-                <h1 className="lic-title">RenmaeAI Studio</h1>
-                <p className="lic-subtitle">Enter your license key to get started</p>
-
-                {/* License Input */}
-                <div className="lic-input-group">
-                    <input
-                        type="text"
-                        className="lic-input"
-                        placeholder="XXXX-XXXX-XXXX-XXXX"
-                        value={keyInput}
-                        onChange={(e) => setKeyInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        autoFocus
-                        spellCheck={false}
-                    />
-                    <button
-                        className="lic-activate-btn"
-                        onClick={handleActivate}
-                        disabled={isActivating || !keyInput.trim()}
-                    >
-                        {isActivating ? (
-                            <span className="lic-btn-spinner" />
-                        ) : (
-                            'Activate'
-                        )}
-                    </button>
-                </div>
-
-                {/* Error */}
-                {error && (
-                    <div className="lic-error">
-                        <span className="lic-error-icon">!</span>
-                        {error}
-                    </div>
-                )}
-
-                {/* Divider */}
-                <div className="lic-divider">
-                    <span>Don't have a license?</span>
-                </div>
-
-                {/* Buy Button */}
-                <a
-                    href={LEMONSQUEEZY_STORE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="lic-buy-btn"
-                >
-                    Get License Key
-                    <span className="lic-buy-arrow">→</span>
-                </a>
-
-                {/* Info */}
-                <p className="lic-info">
-                    Purchase a license to unlock all features.
-                    <br />
-                    Your key will be emailed to you instantly after payment.
-                </p>
-
-                {/* Already activated info (shown if deactivated) */}
-                {customerEmail && (
-                    <div className="lic-activated-info">
-                        <span>Previously activated for: {customerEmail}</span>
-                        <span>Plan: {variantName}</span>
-                    </div>
-                )}
-            </div>
-
-            {/* Footer */}
-            <div className="lic-footer">
-                <span>RenmaeAI Studio v1.0</span>
-                <span className="lic-dot">·</span>
-                <a href="https://renmaeai.com" target="_blank" rel="noopener noreferrer">
-                    renmaeai.com
-                </a>
-            </div>
-
-            <LicenseGateStyles />
+      <div className="lic-gate">
+        <div className="lic-aurora">
+          <div className="lic-orb lic-orb-1" />
+          <div className="lic-orb lic-orb-2" />
         </div>
+        <div className="lic-loader">
+          <div className="lic-spinner" />
+          <p className="lic-loader-text">{t('license.verifying')}</p>
+        </div>
+        <LicenseGateStyles />
+      </div>
     );
+  }
+
+  // Activated — render the app
+  if (isActivated && !showSuccess) {
+    return <>{children}</>;
+  }
+
+  // Success flash
+  if (showSuccess) {
+    return (
+      <div className="lic-gate">
+        <div className="lic-aurora">
+          <div className="lic-orb lic-orb-1" />
+          <div className="lic-orb lic-orb-2" />
+        </div>
+        <div className="lic-success-card">
+          <div className="lic-success-icon">✓</div>
+          <h2 className="lic-success-title">{t('license.activated')}</h2>
+          <p className="lic-success-sub">{t('license.welcome')}</p>
+        </div>
+        <LicenseGateStyles />
+      </div>
+    );
+  }
+
+  // Gate — license activation form
+  return (
+    <div className="lic-gate">
+      {/* Aurora Background */}
+      <div className="lic-aurora">
+        <div className="lic-orb lic-orb-1" />
+        <div className="lic-orb lic-orb-2" />
+        <div className="lic-orb lic-orb-3" />
+      </div>
+
+      {/* Particles */}
+      <div className="lic-particles">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="lic-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 6}s`,
+              animationDuration: `${5 + Math.random() * 7}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Main Card */}
+      <div className="lic-card">
+        {/* Logo */}
+        <div className="lic-logo-ring">
+          <span className="lic-logo-letter">R</span>
+        </div>
+
+        <h1 className="lic-title">RenmaeAI Studio</h1>
+        <p className="lic-subtitle">{t('license.enterKey')}</p>
+
+        {/* License Input */}
+        <div className="lic-input-group">
+          <input
+            type="text"
+            className="lic-input"
+            placeholder="XXXX-XXXX-XXXX-XXXX"
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            autoFocus
+            spellCheck={false}
+          />
+          <button
+            className="lic-activate-btn"
+            onClick={handleActivate}
+            disabled={isActivating || !keyInput.trim()}
+          >
+            {isActivating ? (
+              <span className="lic-btn-spinner" />
+            ) : (
+              t('license.activate')
+            )}
+          </button>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="lic-error">
+            <span className="lic-error-icon">!</span>
+            {error}
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="lic-divider">
+          <span>{t('license.noLicense')}</span>
+        </div>
+
+        {/* Buy Button */}
+        <a
+          href={LEMONSQUEEZY_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lic-buy-btn"
+        >
+          {t('license.getLicense')}
+          <span className="lic-buy-arrow">→</span>
+        </a>
+
+        {/* Info */}
+        <p className="lic-info">
+          {t('license.purchaseInfo')}
+          <br />
+          {t('license.emailInfo')}
+        </p>
+
+        {/* Already activated info (shown if deactivated) */}
+        {customerEmail && (
+          <div className="lic-activated-info">
+            <span>{t('license.prevActivated')}: {customerEmail}</span>
+            <span>{t('license.plan')}: {variantName}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="lic-footer">
+        <span>RenmaeAI Studio v1.0</span>
+        <span className="lic-dot">·</span>
+        <a href="https://renmaeai.com" target="_blank" rel="noopener noreferrer">
+          renmaeai.com
+        </a>
+      </div>
+
+      <LicenseGateStyles />
+    </div>
+  );
 }
 
 // ── Deactivate Button (for use in settings) ──
 export function DeactivateLicenseButton() {
-    const { deactivate, customerEmail, variantName } = useLicenseStore();
-    const [isDeactivating, setIsDeactivating] = useState(false);
+  const { deactivate, customerEmail, variantName } = useLicenseStore();
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const { t } = useTranslation();
 
-    async function handleDeactivate() {
-        if (!confirm('Are you sure you want to deactivate this license? You can re-activate it later.')) return;
-        setIsDeactivating(true);
-        await deactivate();
-        setIsDeactivating(false);
-    }
+  async function handleDeactivate() {
+    if (!confirm(t('license.deactivateConfirm'))) return;
+    setIsDeactivating(true);
+    await deactivate();
+    setIsDeactivating(false);
+  }
 
-    return (
-        <div className="lic-deactivate-section">
-            <div className="lic-deactivate-info">
-                <span className="lic-deactivate-label">License</span>
-                <span className="lic-deactivate-email">{customerEmail}</span>
-                <span className="lic-deactivate-plan">{variantName}</span>
-            </div>
-            <button
-                className="lic-deactivate-btn"
-                onClick={handleDeactivate}
-                disabled={isDeactivating}
-            >
-                {isDeactivating ? 'Deactivating...' : 'Deactivate License'}
-            </button>
-        </div>
-    );
+  return (
+    <div className="lic-deactivate-section">
+      <div className="lic-deactivate-info">
+        <span className="lic-deactivate-label">License</span>
+        <span className="lic-deactivate-email">{customerEmail}</span>
+        <span className="lic-deactivate-plan">{variantName}</span>
+      </div>
+      <button
+        className="lic-deactivate-btn"
+        onClick={handleDeactivate}
+        disabled={isDeactivating}
+      >
+        {isDeactivating ? t('license.deactivating') : t('license.deactivate')}
+      </button>
+    </div>
+  );
 }
 
 // ── Styles ──
 function LicenseGateStyles() {
-    return (
-        <style>{`
+  return (
+    <style>{`
       .lic-gate {
         position: fixed;
         inset: 0;
@@ -704,5 +707,5 @@ function LicenseGateStyles() {
         border-color: rgba(239, 68, 68, 0.4);
       }
     `}</style>
-    );
+  );
 }

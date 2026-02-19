@@ -420,7 +420,7 @@ async def search_batch(req: BatchSearchRequest, request: Request):
         # ── AI concept enhancement (optional) ──
         enhanced_keywords: Dict[int, str] = {}
         if req.use_ai_concepts:
-            yield f"data: {json.dumps({'type': 'progress', 'scene_id': 0, 'message': 'Dang phan tich concept voi AI...', 'percentage': 2}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'progress', 'scene_id': 0, 'message': 'AI analyzing concept', 'percentage': 2}, ensure_ascii=False)}\n\n"
             try:
                 enhanced_keywords = await _enhance_keywords_with_ai(req.scenes)
             except Exception as e:
@@ -464,7 +464,7 @@ async def search_batch(req: BatchSearchRequest, request: Request):
                         # ── Thumbnail AI ranking (fast, no video download) ──
                         if thumbnail_ai_client and results:
                             try:
-                                yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': f'Thumbnail AI dang chon footage tot nhat...', 'percentage': pct}, ensure_ascii=False)}\n\n"
+                                yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': f'AI selecting best footage', 'percentage': pct}, ensure_ascii=False)}\n\n"
                                 results = await _rank_with_thumbnails(
                                     results=results,
                                     scene_text=scene.scene_text or kw,
@@ -532,7 +532,7 @@ async def search_batch(req: BatchSearchRequest, request: Request):
                 # ── Single keyword mode (original behavior) ──
                 search_keyword = enhanced_keywords.get(scene.scene_id, scene.keyword)
 
-                yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': f'Tìm scene #{scene.scene_id} [{source_for_scene}]: {search_keyword}', 'percentage': pct}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': f'Scene #{scene.scene_id} [{source_for_scene}]: {search_keyword}', 'percentage': pct}, ensure_ascii=False)}\n\n"
 
                 try:
                     results = await api.search(
@@ -546,7 +546,7 @@ async def search_batch(req: BatchSearchRequest, request: Request):
                     # ── Thumbnail AI ranking (fast, no video download) ──
                     if thumbnail_ai_client and results:
                         try:
-                            yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': 'Thumbnail AI dang chon footage tot nhat...', 'percentage': pct}, ensure_ascii=False)}\n\n"
+                            yield f"data: {json.dumps({'type': 'progress', 'scene_id': scene.scene_id, 'message': 'AI selecting best footage', 'percentage': pct}, ensure_ascii=False)}\n\n"
                             results = await _rank_with_thumbnails(
                                 results=results,
                                 scene_text=scene.scene_text or search_keyword,
@@ -856,9 +856,9 @@ async def assemble_video(req: AssembleRequest, request: Request):
         has_auto_search = any(not s.footage_url and s.keyword for s in req.scenes)
 
         if has_auto_search:
-            yield f"data: {json.dumps({'type': 'progress', 'message': f'🎬 Auto-Sync: {total} scenes (tự tìm & ghép footage)', 'percentage': 1})}\n\n"
+            yield f"data: {json.dumps({'type': 'progress', 'message': f'Auto-Sync {total} scenes', 'percentage': 1})}\n\n"
         else:
-            yield f"data: {json.dumps({'type': 'progress', 'message': f'Bắt đầu ghép video cho {total} scenes...', 'percentage': 2})}\n\n"
+            yield f"data: {json.dumps({'type': 'progress', 'message': f'Assembling {total} scenes', 'percentage': 2})}\n\n"
 
         for idx, scene in enumerate(req.scenes):
             # Check abort
@@ -871,7 +871,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
             audio_path = os.path.join(voice_in_dir, scene.audio_filename)
             if not os.path.exists(audio_path):
                 print(f"[Assemble] Audio not found: {audio_path}")
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Audio không tìm thấy, bỏ qua', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: no audio, skip', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                 continue
 
             audio_duration = get_audio_duration(audio_path)
@@ -889,7 +889,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
                 # Fix rounding: adjust last sub-clip to match exact audio duration
                 sub_durations[-1] = round(audio_duration - sum(sub_durations[:-1]), 2)
 
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] 🎬 Scene #{scene.scene_id}: {num_subs} sub-clips ({audio_duration:.1f}s)', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Scene #{scene.scene_id}: {num_subs} sub-clips ({audio_duration:.1f}s)', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
                 sub_footage_paths = []
                 sub_ok = True
@@ -899,7 +899,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
                     sub_dur = sub_durations[si]
                     pct = pct_base + int(((si + 0.5) / num_subs / total) * 85)
 
-                    yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] 🔍 Sub-clip {sub_label}: \"{kw}\" ({sub_dur:.1f}s)...', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Sub-clip {sub_label}: \"{kw}\" ({sub_dur:.1f}s)', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
                     try:
                         footage_api = get_rotated_footage_api()
@@ -918,7 +918,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
                         if not best:
                             print(f"[Assemble] No footage for sub-clip {sub_label} kw='{kw}'")
-                            yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Sub-clip {sub_label}: Không tìm thấy footage', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                            yield f"data: {json.dumps({'type': 'progress', 'message': f'Sub-clip {sub_label}: no footage found', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                             sub_ok = False
                             break
 
@@ -936,7 +936,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
                     except Exception as e:
                         print(f"[Assemble] Sub-clip {sub_label} error: {e}")
-                        yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Sub-clip {sub_label}: {str(e)[:80]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'progress', 'message': f'Sub-clip {sub_label}: {str(e)[:80]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                         sub_ok = False
                         break
 
@@ -953,7 +953,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
                         loop = asyncio.get_event_loop()
 
                         pct = pct_base + int((0.8 / total) * 85)
-                        yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] 🎬 Đang ghép {num_subs} sub-clips cho scene #{scene.scene_id}...', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Merging {num_subs} sub-clips scene #{scene.scene_id}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
                         _paths = list(sub_footage_paths)
                         _durs = list(sub_durations)
@@ -979,7 +979,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
                     except Exception as e:
                         print(f"[Assemble] Sub-scene assembly error scene #{scene.scene_id}: {e}")
-                        yield f"data: {json.dumps({'type': 'progress', 'message': f'❌ Scene #{scene.scene_id} sub-mode: {str(e)[:100]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id} error: {str(e)[:100]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                         continue
 
             # ══ SINGLE-KEYWORD MODE (original flow + fallback) ══
@@ -991,7 +991,7 @@ async def assemble_video(req: AssembleRequest, request: Request):
             if not footage_url and single_keyword:
                 # Auto-Sync: search + auto-select
                 pct = pct_base + 2
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] 🔍 Tìm footage cho \"{single_keyword}\" ({audio_duration:.1f}s)...', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Searching \"{single_keyword}\" ({audio_duration:.1f}s)', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
                 try:
                     footage_api = get_rotated_footage_api()
@@ -1015,15 +1015,15 @@ async def assemble_video(req: AssembleRequest, request: Request):
                         used_video_ids.add(best.video_id)
                         yield f"data: {json.dumps({'type': 'footage_found', 'scene_id': scene.scene_id, 'video_id': best.video_id, 'source': best.source, 'duration': best.duration, 'thumbnail_url': best.thumbnail_url, 'download_url': best.download_url}, ensure_ascii=False)}\n\n"
                     else:
-                        yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Không tìm thấy footage phù hợp', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: no matching footage', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                         continue
                 except Exception as e:
                     print(f"[Assemble] Auto-search error scene #{scene.scene_id}: {e}")
-                    yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Lỗi tìm footage: {str(e)[:80]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: search error: {str(e)[:80]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                     continue
 
             if not footage_url:
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Không có footage URL', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: no footage URL', 'percentage': pct_base, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                 continue
 
             # Track used video IDs
@@ -1032,19 +1032,19 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
             # ── Step 3: Download footage ──
             pct = pct_base + int((0.5 / total) * 85)
-            yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Đang tải footage scene #{scene.scene_id}...', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Downloading scene #{scene.scene_id}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
             try:
                 cache_key = f"{source or 'url'}_{video_id or scene.scene_id}"
                 footage_path = await cache.download_video(footage_url, cache_key)
                 if not footage_path:
                     print(f"[Assemble] Failed to download footage for scene {scene.scene_id}")
-                    yield f"data: {json.dumps({'type': 'progress', 'message': f'⚠️ Scene #{scene.scene_id}: Không tải được footage, bỏ qua', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: download failed, skip', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
                     continue
 
                 # ── Step 4: Assemble scene ──
                 pct = pct_base + int((0.8 / total) * 85)
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Đang ghép scene #{scene.scene_id} ({audio_duration:.1f}s)...', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'[{idx+1}/{total}] Assembling scene #{scene.scene_id} ({audio_duration:.1f}s)', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
                 import concurrent.futures
                 loop = asyncio.get_event_loop()
@@ -1068,14 +1068,14 @@ async def assemble_video(req: AssembleRequest, request: Request):
 
             except Exception as e:
                 print(f"[Assemble] Error scene #{scene.scene_id}: {e}")
-                yield f"data: {json.dumps({'type': 'progress', 'message': f'❌ Scene #{scene.scene_id}: {str(e)[:100]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
+                yield f"data: {json.dumps({'type': 'progress', 'message': f'Scene #{scene.scene_id}: {str(e)[:100]}', 'percentage': pct, 'scene_id': scene.scene_id}, ensure_ascii=False)}\n\n"
 
         if not scene_videos:
             yield f"event: error\ndata: {json.dumps({'error': 'Không có scene nào ghép thành công'})}\n\n"
             return
 
         # ── Step 5: Concatenate all scenes ──
-        yield f"data: {json.dumps({'type': 'progress', 'message': f'Đang nối {len(scene_videos)} scenes thành video cuối cùng...', 'percentage': 92})}\n\n"
+        yield f"data: {json.dumps({'type': 'progress', 'message': f'Concatenating {len(scene_videos)} scenes', 'percentage': 92})}\n\n"
 
         try:
             import concurrent.futures

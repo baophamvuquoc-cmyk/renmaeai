@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FileManager from './components/file-manager/FileManager';
 import ScriptWorkflow from './components/workflow/ScriptWorkflow';
@@ -6,6 +7,7 @@ import ProductionHub from './components/workflow/ProductionHub';
 import AISettings from './components/ai-settings/AISettings';
 
 import { useAISettingsStore } from './stores/useAISettingsStore';
+import { useLanguageStore } from './stores/useLanguageStore';
 import { ArrowLeft, Package } from 'lucide-react';
 import { BeeFile, BeeSparkle, BeeGear, BeeSleep, BeeSmall } from './components/ui/BeeIcons';
 import { RealtimeSyncProvider } from './contexts/RealtimeSyncContext';
@@ -27,6 +29,8 @@ interface AppButton {
 }
 
 function App() {
+  const { t } = useTranslation();
+  const { language, setLanguage } = useLanguageStore();
   const [activeTab, setActiveTab] = useState<Tab>('landing');
   const [showAIWarning, setShowAIWarning] = useState(false);
 
@@ -70,43 +74,43 @@ function App() {
   const appButtons: AppButton[] = [
     {
       id: 'files',
-      label: 'Đổi Tên File',
-      description: 'Đổi tên hàng loạt file theo mẫu tùy chỉnh.\n• Hỗ trợ prefix, suffix, đánh số tự động\n• Xem trước kết quả trước khi áp dụng\n• Hoàn tác nhanh nếu cần',
+      label: t('app.fileRename'),
+      description: t('app.fileRenameDesc'),
       icon: <BeeFile size={44} />,
       color: '#60A5FA',
     },
     {
       id: 'workflow',
-      label: 'Podcast Remake',
-      description: '🎙️ Chỉ dành cho Podcast\n\nTạo lại podcast thành video hoàn chỉnh bằng AI:\n• Tạo kịch bản từ nội dung podcast\n• Chia scene tự động theo ngữ cảnh\n• Tìm footage miễn phí (Pexels/Pixabay)\n• Ghép video + phụ đề tự động\n• Hỗ trợ TTS đa ngôn ngữ',
+      label: t('app.podcastRemake'),
+      description: t('app.podcastRemakeDesc'),
       icon: <BeeSparkle size={44} />,
       color: '#A78BFA',
       requiresAI: true,
     },
     {
       id: 'ai-settings',
-      label: 'Cấu Hình AI',
-      description: 'Thiết lập và quản lý cấu hình AI.\n• Chọn model AI (GPT, Gemini, Claude...)\n• Cấu hình API key\n• Thiết lập Pexels/Pixabay cho footage\n• Test kết nối trước khi sử dụng',
+      label: t('app.aiSettings'),
+      description: t('app.aiSettingsDesc'),
       icon: <BeeGear size={44} />,
       color: '#FFD700',
     },
     {
       id: 'productions' as Tab,
-      label: 'Production Hub',
-      description: '📦 Quản lý tất cả output\n\nXem và quản lý mọi kết quả đã export:\n• Danh sách toàn bộ productions\n• Xem files output (script, video, voice...)\n• Mở thư mục output nhanh\n• Thống kê dung lượng\n• Upload YouTube (sắp ra mắt)',
+      label: t('app.productionHub'),
+      description: t('app.productionHubDesc'),
       icon: <Package size={36} color="#22c55e" />,
       color: '#22c55e',
     },
     {
       id: 'coming-soon',
-      label: 'Sắp Ra Mắt',
+      label: t('app.comingSoon'),
       icon: <BeeSleep size={44} />,
       color: '#737373',
       isPlaceholder: true,
     },
     {
       id: 'coming-soon',
-      label: 'Sắp Ra Mắt',
+      label: t('app.comingSoon'),
       icon: <BeeSleep size={44} />,
       color: '#737373',
       isPlaceholder: true,
@@ -117,10 +121,10 @@ function App() {
 
   // Tagline typing animation
   const taglines = [
-    'Podcast → Video chuyên nghiệp bằng AI',
-    'Kịch bản thông minh, footage tự động',
-    'TTS đa ngôn ngữ, phụ đề chính xác',
-    'Export một chạm, sẵn sàng upload',
+    t('app.tagline1'),
+    t('app.tagline2'),
+    t('app.tagline3'),
+    t('app.tagline4'),
   ];
   const [taglineIndex, setTaglineIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
@@ -160,8 +164,8 @@ function App() {
                 <div className="cosmo-toast">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                   <div className="cosmo-toast-text">
-                    <strong>Chưa cấu hình AI!</strong>
-                    <span>Đang chuyển đến Cấu Hình AI...</span>
+                    <strong>{t('app.aiWarningTitle')}</strong>
+                    <span>{t('app.aiWarningDesc')}</span>
                   </div>
                 </div>
               )}
@@ -201,9 +205,20 @@ function App() {
                   <span className="cosmo-status">
                     {isAIConfigured()
                       ? <><span style={{ color: '#34d399' }}>●</span> AI Ready</>
-                      : <><span style={{ color: '#ef4444' }}>●</span> Chưa Cấu Hình</>
+                      : <><span style={{ color: '#ef4444' }}>●</span> {t('app.aiNotConfigured')}</>
                     }
                   </span>
+                  <button
+                    onClick={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+                    style={{
+                      padding: '4px 10px', borderRadius: '16px', fontSize: '0.7rem',
+                      fontWeight: 700, cursor: 'pointer', border: '1px solid rgba(255,215,0,0.3)',
+                      background: 'rgba(255,215,0,0.08)', color: '#FFD700',
+                      transition: 'all 0.2s', letterSpacing: '0.5px',
+                    }}
+                  >
+                    {language === 'vi' ? 'EN' : 'VI'}
+                  </button>
                 </div>
 
                 {/* Hero */}
@@ -720,10 +735,10 @@ function App() {
 
   // Workspace view (when a tab is active)
   const tabLabels: Record<Exclude<Tab, 'landing'>, string> = {
-    files: 'Đổi Tên File',
-    workflow: 'Podcast Remake',
-    'ai-settings': 'Cấu Hình AI',
-    productions: 'Production Hub',
+    files: t('app.fileRename'),
+    workflow: t('app.podcastRemake'),
+    'ai-settings': t('app.aiSettings'),
+    productions: t('app.productionHub'),
   };
 
   return (

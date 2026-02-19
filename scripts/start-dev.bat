@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo   Auto Media Architecture (Dev Mode)
+echo   RenmaeAI Studio (Dev Mode)
 echo ========================================
 echo.
 
@@ -10,7 +10,7 @@ if %errorlevel%==0 (
     echo [Backend] Already running on port 8000
 ) else (
     echo [1/2] Starting Backend Server...
-    start "Backend Server" /min cmd /k "cd /d %~dp0backend && call %~dp0.venv\Scripts\activate.bat && python main.py"
+    start "Backend Server" /min cmd /k "cd /d %~dp0backend && call %~dp0..\.venv\Scripts\activate.bat && python main.py"
     timeout /t 4 /nobreak >nul
 )
 
