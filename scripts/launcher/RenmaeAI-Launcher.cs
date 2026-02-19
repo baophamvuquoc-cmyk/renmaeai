@@ -7,9 +7,9 @@ class RenmaeAILauncher
 {
     static void Main()
     {
-        // Get the directory where the .exe lives, then go up to project root
+        // The .exe lives in the project root
         string exeDir = AppDomain.CurrentDomain.BaseDirectory;
-        string projectDir = Path.GetFullPath(Path.Combine(exeDir, ".."));
+        string projectDir = exeDir.TrimEnd(Path.DirectorySeparatorChar);
 
         // Verify project structure
         string backendMain = Path.Combine(projectDir, "backend", "main.py");
@@ -18,8 +18,8 @@ class RenmaeAILauncher
         if (!File.Exists(backendMain))
         {
             Console.WriteLine("[ERROR] Cannot find backend\\main.py");
-            Console.WriteLine("This launcher must be inside the scripts\\ folder of the project.");
-            Console.WriteLine("Expected project at: " + projectDir);
+            Console.WriteLine("Place this .exe in the project root folder.");
+            Console.WriteLine("Looking in: " + projectDir);
             Console.ReadKey();
             return;
         }
